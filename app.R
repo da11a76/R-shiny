@@ -1,23 +1,19 @@
 library(shiny)
-library(shinydashboard)
 library(plotly)
 library(dplyr)
-library(ggplot2)
-library(moments)
-library(nortest)
-library(tidyverse)
+library(readxl) 
+library(shinydashboard)
 library(bslib)
+# ggplot2 and other packages are included here because some UI elements (like renderPlotly) might need them,
+# although traditionally they belong more to the server side. They are included in server.R too for safety.
+library(ggplot2)
+library(nortest)
+library(moments)
+library(tidyverse)
+# readxl package is primarily needed in the server, but for the sake of completeness, 
+# the check from the original file is noted here, though not implemented to stop execution here.
 
-# Cek paket readxl
-if (!requireNamespace("readxl", quietly = TRUE)) {
-  stop("Package 'readxl' required. Install with: install.packages('readxl')")
-} else {
-  library(readxl)
-}
-
-# =====================
-# THEME SETUP
-# =====================
+# Theme
 theme <- bs_theme(
   version = 5,
   bootswatch = "flatly",
@@ -27,11 +23,10 @@ theme <- bs_theme(
 )
 
 # =====================
-# UI DEFINITION
+# UI Definition
 # =====================
 ui <- dashboardPage(
   dashboardHeader(title = "Normality Lab"),
-  
   dashboardSidebar(
     sidebarMenu(
       menuItem("Home", tabName = "home", icon = icon("home")),
@@ -43,39 +38,36 @@ ui <- dashboardPage(
       menuItem("Export", tabName = "export", icon = icon("file-export"))
     )
   ),
-  
   dashboardBody(
-    # Menambahkan CSS untuk Background
+    # --- BAGIAN INI MENAMBAHKAN BACKGROUND ---
     tags$head(tags$style(HTML('
-      /* Mengatur Gambar Background Utama */
+      /* Perhatikan tanda kutip pembuka di atas (setelah HTML) */
+      
       .content-wrapper, .right-side {
-        /* Pastikan file Instagram.jpg ada di dalam folder "www" */
-        background-image: url("Instagram.jpg"); 
+        background-image: url("download (1).jpg");
         background-size: cover;
         background-repeat: no-repeat;
         background-attachment: fixed;
         background-position: center;
       }
       
-      /* Membuat Box menjadi transparan agar background terlihat */
       .box {
-        background-color: rgba(255, 255, 255, 0.9) !important;
+        background-color: rgba(255, 255, 255, 0.9) !important; 
         border-top: 3px solid #2E86C1;
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       }
 
-      /* Mengubah warna teks judul header agar kontras */
       section.content-header > h1 {
-        color: #fff;
+        color: #fff; 
         text-shadow: 2px 2px 4px #000000;
       }
+      
+      /* Perhatikan tanda kutip penutup di bawah ini (sebelum tutup kurung) */
     '))),
-    
-    # Mengaplikasikan tema
     theme = theme,
-    
     tabItems(
-      # --- TAB: HOME ---
+      
+      # HOME: upload / manual input
       tabItem(tabName = "home",
               fluidRow(
                 box(width = 6, title = "Upload / Input Data", solidHeader = TRUE,
@@ -99,7 +91,7 @@ ui <- dashboardPage(
               )
       ),
       
-      # --- TAB: DESKRIPSI ---
+      # DESKRIPSI
       tabItem(tabName = "desc",
               conditionalPanel("input.var != null",
                                fluidRow(
@@ -113,10 +105,10 @@ ui <- dashboardPage(
                                )
               ),
               conditionalPanel("input.var == null",
-                               h3("⚠ Pilih variabel terlebih dahulu di menu Home.", style="color: white; text-shadow: 1px 1px 2px black;"))
+                               h3("⚠ Pilih variabel terlebih dahulu di menu Home."))
       ),
       
-      # --- TAB: VISUALISASI ---
+      # VISUALISASI
       tabItem(tabName = "visual",
               conditionalPanel("input.var != null",
                                fluidRow(
@@ -137,10 +129,10 @@ ui <- dashboardPage(
                                )
               ),
               conditionalPanel("input.var == null",
-                               h3("⚠ Pilih variabel terlebih dahulu di menu Home.", style="color: white; text-shadow: 1px 1px 2px black;"))
+                               h3("⚠ Pilih variabel terlebih dahulu di menu Home."))
       ),
       
-      # --- TAB: UJI FORMAL ---
+      # UJI FORMAL
       tabItem(tabName = "formal",
               conditionalPanel("input.var != null",
                                fluidRow(
@@ -162,10 +154,10 @@ ui <- dashboardPage(
                                )
               ),
               conditionalPanel("input.var == null",
-                               h3("⚠ Pilih variabel terlebih dahulu di menu Home.", style="color: white; text-shadow: 1px 1px 2px black;"))
+                               h3("⚠ Pilih variabel terlebih dahulu di menu Home."))
       ),
       
-      # --- TAB: METRICS ---
+      # METRICS
       tabItem(tabName = "metrics",
               conditionalPanel("input.var != null",
                                box(width = 12, title = "Deviation Metrics", solidHeader = TRUE,
@@ -183,10 +175,10 @@ ui <- dashboardPage(
                                )
               ),
               conditionalPanel("input.var == null",
-                               h3("⚠ Pilih variabel terlebih dahulu di menu Home.", style="color: white; text-shadow: 1px 1px 2px black;"))
+                               h3("⚠ Pilih variabel terlebih dahulu di menu Home."))
       ),
       
-      # --- TAB: SKEWNESS-KURTOSIS ---
+      # SK-KURT
       tabItem(tabName = "skk",
               conditionalPanel("input.var != null",
                                box(width = 12, title = "Skewness & Kurtosis", solidHeader = TRUE,
@@ -200,10 +192,10 @@ ui <- dashboardPage(
                                )
               ),
               conditionalPanel("input.var == null",
-                               h3("⚠ Pilih variabel terlebih dahulu di menu Home.", style="color: white; text-shadow: 1px 1px 2px black;"))
+                               h3("⚠ Pilih variabel terlebih dahulu di menu Home."))
       ),
       
-      # --- TAB: EXPORT ---
+      # EXPORT
       tabItem(tabName = "export",
               box(width = 6, title = "Export", solidHeader = TRUE,
                   downloadButton("download_data", "Download Data Summary (.csv)"),
@@ -218,18 +210,21 @@ ui <- dashboardPage(
   )
 )
 
+
 # =====================
-# SERVER LOGIC
+# SERVER Function
 # =====================
 server <- function(input, output, session) {
   
-  # 1. LOAD DATA
+  # 1. LOAD DATA (no builtin datasets)
   raw_data <- reactive({
+    # prefer manual input if not empty
     if (!is.null(input$manual_data) && nchar(trimws(input$manual_data)) > 0) {
       nums <- suppressWarnings(as.numeric(unlist(strsplit(input$manual_data, ","))))
       return(data.frame(manual = nums))
     }
     
+    # file upload support: csv or excel
     if (!is.null(input$file_data)) {
       ext <- tools::file_ext(input$file_data$name)
       df <- tryCatch({
@@ -243,14 +238,18 @@ server <- function(input, output, session) {
       }, error = function(e) NULL)
       if (!is.null(df)) return(as.data.frame(df))
     }
+    
+    # if nothing provided yet, return NULL (no default dataset)
     return(NULL)
   })
   
-  # 2. UI SELECTORS
+  # 2. UI selectors (reactive to uploaded data)
   output$select_variable <- renderUI({
     df <- raw_data()
     if (is.null(df)) {
-      tagList(tags$div(style = "color:#777;", "Belum ada data — unggah file atau isi manual dahulu."))
+      tagList(
+        tags$div(style = "color:#777;", "Belum ada data — unggah file atau isi manual dahulu.")
+      )
     } else {
       nums <- names(df)[sapply(df, is.numeric)]
       if (length(nums) == 0) {
@@ -269,7 +268,7 @@ server <- function(input, output, session) {
     selectInput("group_var", "Pilih variabel grouping (opsional)", choices = c("None", cats))
   })
   
-  # 3. DATA PROCESSING
+  # 3. selected data (vector)
   selected_data <- reactive({
     req(input$var)
     df <- raw_data()
@@ -281,7 +280,7 @@ server <- function(input, output, session) {
     x
   })
   
-  # 4. SUMMARY OUTPUTS
+  # 4. summary outputs
   output$data_preview <- renderTable({
     df <- raw_data()
     if (is.null(df)) return(NULL)
@@ -311,7 +310,7 @@ server <- function(input, output, session) {
       HTML("<div style='color:red;'>Mean ≠ Median → indikasi skewness</div>")
   })
   
-  # 5. PLOTS
+  # 5. plots
   output$hist_plot <- renderPlotly({
     x <- selected_data(); req(x)
     p <- ggplot(data.frame(x = x), aes(x = x)) +
@@ -372,7 +371,7 @@ server <- function(input, output, session) {
          xlab = "Index", ylab = "|Deviation|", main = "Deviation Strip")
   })
   
-  # 6. METRICS
+  # 6. metrics
   output$max_qq_dev <- renderText({
     x <- selected_data(); req(x)
     qq <- qqnorm(x, plot.it = FALSE)
@@ -409,10 +408,11 @@ server <- function(input, output, session) {
     )
   }, rownames = FALSE)
   
-  # 7. TESTS
+  # 7. tests
   run_tests <- reactive({
     x <- selected_data(); req(x)
     res <- list()
+    # Shapiro (requires 3 <= n <= 5000)
     if (length(x) >= 3 && length(x) <= 5000) {
       res$Shapiro <- tryCatch(shapiro.test(x), error = function(e) list(statistic = NA, p.value = NA))
     } else {
@@ -455,7 +455,7 @@ server <- function(input, output, session) {
     run_tests()
   })
   
-  # 8. SKEWNESS-KURTOSIS PLOT
+  # 8. sk-kurt
   output$sk_kurt_plot <- renderPlotly({
     x <- selected_data(); req(x)
     sk <- skewness(x); kt <- kurtosis(x)
@@ -475,7 +475,44 @@ server <- function(input, output, session) {
                 "</b><br>Kurtosis: <b>", round(kurtosis(x), 4), "</b>"))
   })
   
-  # 9. GAUGE & CONCLUSION
+  # 9. group comparison
+  output$hist_groups <- renderPlotly({
+    req(input$group_var, input$group_var != "None")
+    df <- raw_data()
+    ggplotly(
+      ggplot(df, aes_string(x = input$var, fill = input$group_var)) +
+        geom_histogram(position = "identity", alpha = .5, bins = input$bins) +
+        theme_minimal()
+    )
+  })
+  
+  output$qq_groups <- renderPlotly({
+    req(input$group_var, input$group_var != "None")
+    df <- raw_data()
+    ggplotly(
+      ggplot(df, aes(sample = .data[[input$var]])) +
+        stat_qq() + stat_qq_line() +
+        facet_wrap(as.formula(paste("~", input$group_var))) +
+        theme_minimal()
+    )
+  })
+  
+  output$group_test_table <- renderTable({
+    req(input$group_var, input$group_var != "None")
+    df <- raw_data()
+    group_data <- split(df[[input$var]], df[[input$group_var]])
+    data.frame(
+      Group = names(group_data),
+      Shapiro_p = sapply(group_data, function(x) {
+        xx <- na.omit(as.numeric(x))
+        if (length(xx) >= 3) shapiro.test(xx)$p.value else NA
+      }),
+      stringsAsFactors = FALSE
+    )
+  }, digits = 6)
+  
+  
+  # 10. summary gauge & exports
   output$normality_gauge <- renderUI({
     x <- selected_data(); req(x)
     safe_p <- function(f, x) tryCatch(f(x)$p.value, error = function(e) NA)
@@ -512,7 +549,6 @@ server <- function(input, output, session) {
       HTML("<div style='color:red; font-weight:600;'>Terdapat indikasi kuat bahwa data tidak normal.</div>")
   })
   
-  # 10. EXPORTS
   output$download_report <- downloadHandler(
     filename = function() "report.html",
     content = function(file) {
@@ -538,6 +574,7 @@ server <- function(input, output, session) {
       alpha = if (!is.null(input$alpha)) input$alpha else NA
     )
   })
+  
 }
 
 # Run app
