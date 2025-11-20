@@ -43,7 +43,7 @@ ui <- dashboardPage(
       /* Perhatikan tanda kutip pembuka di atas (setelah HTML) */
       
       .content-wrapper, .right-side {
-        background-image: url("Instagram.jpg");
+        background-image: url("download (1).jpg");
         background-size: cover;
         background-repeat: no-repeat;
         background-attachment: fixed;
