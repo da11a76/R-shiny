@@ -5,7 +5,7 @@ library(ggplot2)
 library(moments)
 library(nortest)
 library(tidyverse)
-library(readxl) # Explicitly load readxl for Excel import
+library(readxl) 
 
 # =====================
 # SERVER Function
@@ -66,11 +66,11 @@ server <- function(input, output, session) {
   
   # 3. selected data (vector)
   selected_data <- reactive({
-    req(input$var)               # require user to pick variable
+    req(input$var)
     df <- raw_data()
     req(!is.null(df))
     x <- df[[input$var]]
-    x <- as.numeric(x)          # coerce if possible
+    x <- as.numeric(x)
     x <- x[!is.na(x)]
     req(length(x) > 0)
     x
@@ -271,7 +271,7 @@ server <- function(input, output, session) {
                 "</b><br>Kurtosis: <b>", round(kurtosis(x), 4), "</b>"))
   })
   
-  # 9. group comparison (Logic retained from original file, though not fully connected to the UI tabs)
+  # 9. group comparison
   output$hist_groups <- renderPlotly({
     req(input$group_var, input$group_var != "None")
     df <- raw_data()
@@ -348,7 +348,6 @@ server <- function(input, output, session) {
   output$download_report <- downloadHandler(
     filename = function() "report.html",
     content = function(file) {
-      # This is a placeholder report content
       writeLines("<h3>Report sederhana - implementasi cepat</h3>", file)
     }
   )

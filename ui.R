@@ -38,6 +38,31 @@ ui <- dashboardPage(
     )
   ),
   dashboardBody(
+    # --- BAGIAN INI MENAMBAHKAN BACKGROUND ---
+    tags$head(tags$style(HTML('
+      /* Perhatikan tanda kutip pembuka di atas (setelah HTML) */
+      
+      .content-wrapper, .right-side {
+        background-image: url("Instagram.jpg");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-position: center;
+      }
+      
+      .box {
+        background-color: rgba(255, 255, 255, 0.9) !important; 
+        border-top: 3px solid #2E86C1;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      }
+
+      section.content-header > h1 {
+        color: #fff; 
+        text-shadow: 2px 2px 4px #000000;
+      }
+      
+      /* Perhatikan tanda kutip penutup di bawah ini (sebelum tutup kurung) */
+    '))),
     theme = theme,
     tabItems(
       
