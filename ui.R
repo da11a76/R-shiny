@@ -1,237 +1,185 @@
-# wana
 library(shiny)
+library(shinydashboard)
 library(plotly)
-# jika ingin tooltips: library(shinyBS)
-# jika ingin valueBox/infoBox (dari shinydashboard): library(shinydashboard)
+library(bslib)
 
-shinyUI(
-  fluidPage(
-    # ====== Header ======
-    tags$head(
-      tags$style(HTML("
-        /* kecilkan margin untuk tampilan rapih */
-        .small-sub { font-size: 12px; color: #666; margin-top: -8px; }
-        .summary-box { background: #f8f9fa; padding: 8px; border-radius: 6px; }
-      "))
-    ),
-    fluidRow(
-      column(9,
-             titlePanel("Normality Lab — Diagnostik Distribusi")
-      ),
-      column(3, align = "right",
-             # contoh logo (server harus menyediakan file di www/ )
-             tags$img(src = "logo.png", height = "40px"),
-             tags$div(class = "small-sub", "Upload data → pilih variabel → lihat EDA & uji formal")
-      )
-    ),
-    hr(),
-    
-    # ====== Layout utama: Sidebar + Main ======
-    sidebarLayout(
-      sidebarPanel(
-        # ---- Kelompok A: Input Data ----
-        h4("Input Data"),
-        fileInput("file_data", "Upload CSV", accept = ".csv"),
-        textAreaInput("manual_data", "Input manual (pisah koma)", placeholder = "1,2,3,...", rows = 3),
-        selectInput("builtin_dataset", "Pilih dataset bawaan", choices = c("mtcars","iris"), selected = "mtcars"),
-        # dinamis: daftar variabel numerik (dihasilkan oleh server)
-        uiOutput("select_variable"),
-        # dinamis: pilihan grouping (jika ada)
-        uiOutput("select_group"),
-        hr(),
-        
-        # ---- Kelompok B: Visual / EDA Controls ----
-        h4("Visual / EDA"),
-        checkboxInput("show_hist", "Histogram", value = TRUE),
-        checkboxInput("show_density", "Density plot", value = TRUE),
-        checkboxInput("show_qq", "Q–Q plot", value = TRUE),
-        checkboxInput("show_ecdf", "ECDF vs Normal", value = FALSE),
-        sliderInput("bins", "Jumlah bins (histogram)", min = 5, max = 80, value = 25),
-        hr(),
-        
-        # ---- Kelompok C: Diagnostic Controls ----
-        h4("Diagnostic"),
-        checkboxInput("overlay_normal", "Overlay kurva normal", value = TRUE),
-        checkboxInput("show_deviation_shading", "Tampilkan shading deviasi (histogram)", value = TRUE),
-        checkboxInput("show_qq_distance", "Tampilkan Q–Q distance bar", value = TRUE),
-        checkboxInput("show_sk_kurt_map", "Show Skewness–Kurtosis Map", value = TRUE),
-        hr(),
-        
-        # ---- Kelompok D: Uji Formal ----
-        h4("Uji Formal"),
-        radioButtons("selected_test", "Pilih uji formal (atau All)",
-                     choices = c("Shapiro","Lilliefors","Jarque-Bera","Chi-square","All"),
-                     selected = "All"),
-        numericInput("alpha", "Significance level (α)", value = 0.05, min = 0.001, max = 0.2, step = 0.005),
-        hr(),
-        
-        # ---- Kelompok E: Output & Export ----
-        h4("Output & Export"),
-        checkboxInput("show_summary","Tampilkan ringkasan statistik", value = TRUE),
-        downloadButton("download_report", "Download Laporan (PDF/HTML)"),
-        br(), br(),
-        downloadButton("download_plots", "Download Plots (ZIP)"),
-        hr(),
-        
-        # UX tips
-        helpText("Tip: gunakan slider bins untuk mengecek sensitivitas histogram terhadap binning"),
-        # placeholder untuk future tooltips (attach with shinyBS::bsTooltip di server)
-        tags$small("Tooltips: gunakan shinyBS::bsTooltip() untuk membantu pemula.")
+# ggplot2 and other packages are included here because some UI elements (like renderPlotly) might need them,
+# although traditionally they belong more to the server side. They are included in server.R too for safety.
+library(ggplot2)
+library(nortest)
+library(moments)
+library(tidyverse)
+# readxl package is primarily needed in the server, but for the sake of completeness, 
+# the check from the original file is noted here, though not implemented to stop execution here.
+
+# Theme
+theme <- bs_theme(
+  version = 5,
+  bootswatch = "flatly",
+  primary = "#2E86C1",
+  base_font = font_google("Inter"),
+  heading_font = font_google("Inter")
+)
+
+# =====================
+# UI Definition
+# =====================
+ui <- dashboardPage(
+  dashboardHeader(title = "Normality Lab"),
+  dashboardSidebar(
+    sidebarMenu(
+      menuItem("Home", tabName = "home", icon = icon("home")),
+      menuItem("Deskripsi Data", tabName = "desc", icon = icon("table")),
+      menuItem("Visualisasi", tabName = "visual", icon = icon("chart-bar")),
+      menuItem("Uji Formal", tabName = "formal", icon = icon("check-circle")),
+      menuItem("Deviation Metrics", tabName = "metrics", icon = icon("tachometer-alt")),
+      menuItem("Skew-Kurtosis", tabName = "skk", icon = icon("dot-circle")),
+      menuItem("Export", tabName = "export", icon = icon("file-export"))
+    )
+  ),
+  dashboardBody(
+    theme = theme,
+    tabItems(
+      
+      # HOME: upload / manual input
+      tabItem(tabName = "home",
+              fluidRow(
+                box(width = 6, title = "Upload / Input Data", solidHeader = TRUE,
+                    fileInput("file_data", "Upload file (CSV / XLSX / XLS)",
+                              accept = c(".csv", ".xlsx", ".xls")),
+                    textAreaInput("manual_data", "Input manual (pisah koma)",
+                                  placeholder = "1,2,3,...", rows = 3),
+                    uiOutput("select_variable"),
+                    uiOutput("select_group")
+                ),
+                box(width = 6, title = "Instruksi", solidHeader = TRUE,
+                    h4("Langkah Analisis"),
+                    tags$ol(
+                      tags$li("Upload file CSV atau Excel (.xlsx/.xls), atau isi manual."),
+                      tags$li("Pilih variabel numerik yang ingin dianalisis."),
+                      tags$li("Buka tab Visualisasi / Uji Formal / Metrics untuk hasil.")
+                    ),
+                    hr(),
+                    p("Aplikasi TIDAK akan menjalankan analisis sampai variabel dipilih.")
+                )
+              )
       ),
       
-      mainPanel(
-        tabsetPanel(
-          id = "main_tabs",
-          
-          # ===== Tab 1: Deskripsi Data =====
-          tabPanel("Deskripsi Data",
-                   br(),
-                   fluidRow(
-                     column(8,
-                            h4("Preview Data"),
-                            tableOutput("data_preview")
-                     ),
-                     column(4,
-                            div(class = "summary-box",
-                                h5("Ringkasan"),
-                                tags$b("Observasi:"), verbatimTextOutput("n_obs"),
-                                tags$b("NA count:"), verbatimTextOutput("n_na"),
-                                br(),
-                                uiOutput("centrality_note") # e.g. "mean ≈ median"
-                            )
-                     )
-                   ),
-                   hr(),
-                   h4("Ringkasan Statistik"),
-                   tableOutput("summary_stats")
-          ),
-          
-          # ===== Tab 2: Visualisasi =====
-          tabPanel("Visualisasi",
-                   br(),
-                   fluidRow(
-                     column(8,
-                            conditionalPanel("input.show_hist == true",
-                                             plotlyOutput("hist_plot", height = "360px")
-                            ),
-                            conditionalPanel("input.show_density == true",
-                                             plotlyOutput("density_plot", height = "240px")
-                            )
-                     ),
-                     column(4,
-                            conditionalPanel("input.show_qq == true",
-                                             plotlyOutput("qq_plot", height = "300px")
-                            ),
-                            conditionalPanel("input.show_qq_distance == true",
-                                             plotlyOutput("qq_distance_bar", height = "200px")
-                            ),
-                            conditionalPanel("input.show_ecdf == true",
-                                             plotlyOutput("ecdf_plot", height = "240px")
-                            ),
-                            hr(),
-                            uiOutput("visual_notes")
-                     )
-                   )
-          ),
-          
-          # ===== Tab 3: Deviation Metrics =====
-          tabPanel("Deviation Metrics",
-                   br(),
-                   fluidRow(
-                     # small info/value boxes (can be replaced with shinydashboard valueBox)
-                     column(3,
-                            wellPanel(
-                              h5("Max Q–Q deviation"),
-                              textOutput("max_qq_dev")
-                            )
-                     ),
-                     column(3,
-                            wellPanel(
-                              h5("Area |f - f_normal|"),
-                              textOutput("area_density_diff")
-                            )
-                     ),
-                     column(3,
-                            wellPanel(
-                              h5("Max |ECDF - CDF|"),
-                              textOutput("ecdf_max_diff")
-                            )
-                     ),
-                     column(3,
-                            wellPanel(
-                              h5("Skew-Kurt distance"),
-                              textOutput("sk_kurt_distance")
-                            )
-                     )
-                   ),
-                   hr(),
-                   h4("Breakdown per Kuantil"),
-                   tableOutput("deviation_table"),
-                   br(),
-                   plotOutput("deviation_strip", height = "80px")
-          ),
-          
-          # ===== Tab 4: Uji Formal =====
-          tabPanel("Uji Formal",
-                   br(),
-                   h4("Hasil Uji"),
-                   tableOutput("test_results_table"),
-                   br(),
-                   uiOutput("test_interpretation"),
-                   br(),
-                   verbatimTextOutput("raw_test_output")
-          ),
-          
-          # ===== Tab 5: Skewness–Kurtosis Map =====
-          tabPanel("Skew-Kurt Map",
-                   br(),
-                   plotlyOutput("sk_kurt_plot", height = "450px"),
-                   br(),
-                   uiOutput("skk_notes")
-          ),
-          
-          # ===== Tab 6: Compare Groups (dinamis) =====
-          # tampilkan tab ini hanya bila server men-generate isi di uiOutput("compare_groups_tab")
-          uiOutput("compare_groups_tab"),
-          
-          # ===== Tab 7: Summary & Score =====
-          tabPanel("Summary & Score",
-                   br(),
-                   fluidRow(
-                     column(6,
-                            h4("Normality Gauge"),
-                            htmlOutput("normality_gauge")
-                     ),
-                     column(6,
-                            h4("Score breakdown"),
-                            tableOutput("score_breakdown")
-                     )
-                   ),
-                   hr(),
-                   h4("Final Conclusion"),
-                   htmlOutput("final_conclusion")
-          ),
-          
-          # ===== Tab 8: Export & Logs =====
-          tabPanel("Export",
-                   br(),
-                   downloadButton("download_report", "Download laporan"),
-                   br(), br(),
-                   downloadButton("download_data", "Download data summary (.csv)"),
-                   hr(),
-                   h4("Session Log"),
-                   verbatimTextOutput("session_log")
-          )
-        ) # end tabsetPanel
-      ) # end mainPanel
-    ) # end sidebarLayout
-    
-    # Footer / bantuan singkat
-    ,hr(),
-    fluidRow(
-      column(12,
-             tags$small("Butuh bantuan? Klik tombol 'Help' di pojok kanan atas (atau lihat tab Dokumentasi).")
+      # DESKRIPSI
+      tabItem(tabName = "desc",
+              conditionalPanel("input.var != null",
+                               fluidRow(
+                                 box(width = 8, title = "Preview Data", solidHeader = TRUE,
+                                     tableOutput("data_preview")
+                                 ),
+                                 box(width = 4, title = "Ringkasan Statistik", solidHeader = TRUE,
+                                     tableOutput("summary_stats"),
+                                     uiOutput("centrality_note")
+                                 )
+                               )
+              ),
+              conditionalPanel("input.var == null",
+                               h3("⚠ Pilih variabel terlebih dahulu di menu Home."))
+      ),
+      
+      # VISUALISASI
+      tabItem(tabName = "visual",
+              conditionalPanel("input.var != null",
+                               fluidRow(
+                                 box(width = 4, title = "Opsi Visual", solidHeader = TRUE,
+                                     checkboxInput("show_hist", "Histogram", TRUE),
+                                     checkboxInput("show_density", "Density plot", TRUE),
+                                     checkboxInput("show_qq", "Q–Q plot", TRUE),
+                                     checkboxInput("show_ecdf", "ECDF vs Normal", FALSE),
+                                     checkboxInput("overlay_normal", "Overlay kurva normal", TRUE),
+                                     sliderInput("bins", "Jumlah bins", min = 5, max = 80, value = 25)
+                                 ),
+                                 box(width = 8, title = "Plots", solidHeader = TRUE,
+                                     conditionalPanel("input.show_hist == true", plotlyOutput("hist_plot")),
+                                     conditionalPanel("input.show_density == true", plotlyOutput("density_plot")),
+                                     conditionalPanel("input.show_qq == true", plotlyOutput("qq_plot")),
+                                     conditionalPanel("input.show_ecdf == true", plotlyOutput("ecdf_plot"))
+                                 )
+                               )
+              ),
+              conditionalPanel("input.var == null",
+                               h3("⚠ Pilih variabel terlebih dahulu di menu Home."))
+      ),
+      
+      # UJI FORMAL
+      tabItem(tabName = "formal",
+              conditionalPanel("input.var != null",
+                               fluidRow(
+                                 box(width = 6, title = "Pengaturan Uji", solidHeader = TRUE,
+                                     radioButtons("selected_test", "Pilih uji formal (atau All)",
+                                                  choices = c("Shapiro", "Lilliefors", "Jarque-Bera", "Chi-square", "All"),
+                                                  selected = "All"),
+                                     numericInput("alpha", "Significance level (α)", 0.05, min = 0.001, max = 0.2, step = 0.005)
+                                 ),
+                                 box(width = 6, title = "Hasil Uji Normalitas", solidHeader = TRUE,
+                                     tableOutput("test_results_table"),
+                                     uiOutput("test_interpretation")
+                                 )
+                               ),
+                               fluidRow(
+                                 box(width = 12, title = "Output Lengkap (raw)", solidHeader = TRUE,
+                                     verbatimTextOutput("raw_test_output")
+                                 )
+                               )
+              ),
+              conditionalPanel("input.var == null",
+                               h3("⚠ Pilih variabel terlebih dahulu di menu Home."))
+      ),
+      
+      # METRICS
+      tabItem(tabName = "metrics",
+              conditionalPanel("input.var != null",
+                               box(width = 12, title = "Deviation Metrics", solidHeader = TRUE,
+                                   fluidRow(
+                                     column(3, wellPanel(h5("Max Q–Q deviation"), textOutput("max_qq_dev"))),
+                                     column(3, wellPanel(h5("Area |f - f_normal|"), textOutput("area_density_diff"))),
+                                     column(3, wellPanel(h5("Max |ECDF - CDF|"), textOutput("ecdf_max_diff"))),
+                                     column(3, wellPanel(h5("Skew-Kurt distance"), textOutput("sk_kurt_distance")))
+                                   ),
+                                   hr(),
+                                   h4("Breakdown per Kuantil"),
+                                   tableOutput("deviation_table"),
+                                   br(),
+                                   plotOutput("deviation_strip", height = "80px")
+                               )
+              ),
+              conditionalPanel("input.var == null",
+                               h3("⚠ Pilih variabel terlebih dahulu di menu Home."))
+      ),
+      
+      # SK-KURT
+      tabItem(tabName = "skk",
+              conditionalPanel("input.var != null",
+                               box(width = 12, title = "Skewness & Kurtosis", solidHeader = TRUE,
+                                   plotlyOutput("sk_kurt_plot", height = "420px"),
+                                   uiOutput("skk_notes"),
+                                   hr(),
+                                   h4("Normality Gauge"),
+                                   uiOutput("normality_gauge"),
+                                   tableOutput("score_breakdown"),
+                                   uiOutput("final_conclusion")
+                               )
+              ),
+              conditionalPanel("input.var == null",
+                               h3("⚠ Pilih variabel terlebih dahulu di menu Home."))
+      ),
+      
+      # EXPORT
+      tabItem(tabName = "export",
+              box(width = 6, title = "Export", solidHeader = TRUE,
+                  downloadButton("download_data", "Download Data Summary (.csv)"),
+                  br(), br(),
+                  downloadButton("download_report", "Download Report (HTML)")
+              ),
+              box(width = 6, title = "Session Log", solidHeader = TRUE,
+                  verbatimTextOutput("session_log")
+              )
       )
     )
-  ) # end fluidPage
-) # end shinyUI
+  )
+)

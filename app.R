@@ -6,7 +6,7 @@ library(dplyr)
 library(ggplot2)
 library(moments)
 library(nortest)
-library(tidyr)
+library(tidyverse)
 library(bslib)
 # readxl for Excel import
 if (!requireNamespace("readxl", quietly = TRUE)) {
