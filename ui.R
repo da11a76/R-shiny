@@ -72,15 +72,13 @@ ui <- dashboardPage(
                 box(width = 6, title = "Upload / Input Data", solidHeader = TRUE,
                     fileInput("file_data", "Upload file (CSV / XLSX / XLS)",
                               accept = c(".csv", ".xlsx", ".xls")),
-                    textAreaInput("manual_data", "Input manual (pisah koma)",
-                                  placeholder = "1,2,3,...", rows = 3),
                     uiOutput("select_variable"),
                     uiOutput("select_group")
                 ),
                 box(width = 6, title = "Instruksi", solidHeader = TRUE,
                     h4("Langkah Analisis"),
                     tags$ol(
-                      tags$li("Upload file CSV atau Excel (.xlsx/.xls), atau isi manual."),
+                      tags$li("Upload file CSV atau Excel (.xlsx/.xls)"),
                       tags$li("Pilih variabel numerik yang ingin dianalisis."),
                       tags$li("Buka tab Visualisasi / Uji Formal / Metrics untuk hasil.")
                     ),

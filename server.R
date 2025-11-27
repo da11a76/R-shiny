@@ -14,11 +14,6 @@ server <- function(input, output, session) {
   
   # 1. LOAD DATA (no builtin datasets)
   raw_data <- reactive({
-    # prefer manual input if not empty
-    if (!is.null(input$manual_data) && nchar(trimws(input$manual_data)) > 0) {
-      nums <- suppressWarnings(as.numeric(unlist(strsplit(input$manual_data, ","))))
-      return(data.frame(manual = nums))
-    }
     
     # file upload support: csv or excel
     if (!is.null(input$file_data)) {
@@ -44,7 +39,7 @@ server <- function(input, output, session) {
     df <- raw_data()
     if (is.null(df)) {
       tagList(
-        tags$div(style = "color:#777;", "Belum ada data — unggah file atau isi manual dahulu.")
+        tags$div(style = "color:#777;", "Belum ada data — unggah file terlebih dahulu.")
       )
     } else {
       nums <- names(df)[sapply(df, is.numeric)]
