@@ -198,53 +198,82 @@ server <- function(input, output, session) {
       deviation = round(abs(qq$x - qq$y), 6)
     )
   }, rownames = FALSE)
+  # 7. tests (REAKTIF SESUAI PILIHAN UJI)
   
-  # 7. tests
   run_tests <- reactive({
-    x <- selected_data(); req(x)
+    
+    req(input$selected_test)   # 🔥 INI KUNCINYA
+    x <- selected_data()
+    
+    sel <- input$selected_test
     res <- list()
-    # Shapiro (requires 3 <= n <= 5000)
-    if (length(x) >= 3 && length(x) <= 5000) {
-      res$Shapiro <- tryCatch(shapiro.test(x), error = function(e) list(statistic = NA, p.value = NA))
-    } else {
-      res$Shapiro <- list(statistic = NA, p.value = NA)
+    
+    if (sel == "Shapiro" || sel == "All") {
+      if (length(x) >= 3 && length(x) <= 5000) {
+        res$Shapiro <- shapiro.test(x)
+      }
     }
-    res$Lilliefors <- tryCatch(lillie.test(x), error = function(e) list(statistic = NA, p.value = NA))
-    res$JarqueBera <- tryCatch(jarque.test(x), error = function(e) list(statistic = NA, p.value = NA))
-    res$ChiSquare <- tryCatch(ks.test(scale(x), "pnorm"), error = function(e) list(statistic = NA, p.value = NA))
+    
+    if (sel == "Lilliefors" || sel == "All") {
+      res$Lilliefors <- lillie.test(x)
+    }
+    
+    if (sel == "Jarque-Bera" || sel == "All") {
+      res$`Jarque-Bera` <- jarque.test(x)
+    }
+    
+    if (sel == "Chi-square" || sel == "All") {
+      res$`Chi-square` <- ks.test(scale(x), "pnorm")
+    }
+    
     res
   })
   
   output$test_results_table <- renderTable({
-    t <- run_tests(); req(t)
+    
+    tests <- run_tests()
+    req(length(tests) > 0)
+    
     alpha <- input$alpha
+    
     data.frame(
-      Test = c("Shapiro", "Lilliefors", "Jarque-Bera", "Chi-square"),
-      Statistic = c(t$Shapiro$statistic, t$Lilliefors$statistic, t$JarqueBera$statistic, t$ChiSquare$statistic),
-      p_value = c(t$Shapiro$p.value, t$Lilliefors$p.value, t$JarqueBera$p.value, t$ChiSquare$p.value),
-      Decision = c(
-        ifelse(!is.na(t$Shapiro$p.value) & t$Shapiro$p.value < alpha, "Reject H0", "Fail"),
-        ifelse(!is.na(t$Lilliefors$p.value) & t$Lilliefors$p.value < alpha, "Reject H0", "Fail"),
-        ifelse(!is.na(t$JarqueBera$p.value) & t$JarqueBera$p.value < alpha, "Reject H0", "Fail"),
-        ifelse(!is.na(t$ChiSquare$p.value) & t$ChiSquare$p.value < alpha, "Reject H0", "Fail")
+      Test = names(tests),
+      Statistic = sapply(tests, function(t) round(unname(t$statistic), 6)),
+      p_value = sapply(tests, function(t) round(t$p.value, 6)),
+      Decision = ifelse(
+        sapply(tests, function(t) t$p.value) < alpha,
+        "Reject H0",
+        "Fail to Reject H0"
       ),
-      stringsAsFactors = FALSE
+      row.names = NULL
     )
-  }, digits = 6)
+  })
   
   output$test_interpretation <- renderUI({
-    t <- run_tests(); req(t)
-    pvals <- c(t$Shapiro$p.value, t$Lilliefors$p.value, t$JarqueBera$p.value, t$ChiSquare$p.value)
-    bad <- sum(!is.na(pvals) & pvals < input$alpha)
-    if (bad == 0)
-      HTML("<div style='color:green; font-weight:600;'>Tidak ada uji yang menolak H0 → data cenderung normal.</div>")
-    else
-      HTML(paste0("<div style='color:red; font-weight:600;'>", bad, " uji menolak H0 → indikasi data tidak normal.</div>"))
+    
+    tests <- run_tests()
+    req(length(tests) > 0)
+    
+    alpha <- input$alpha
+    n_reject <- sum(sapply(tests, function(t) t$p.value < alpha))
+    
+    if (n_reject == 0) {
+      HTML("<div style='color:green; font-weight:600;'>
+         Semua uji yang dipilih gagal menolak H₀ → data konsisten dengan normalitas.
+         </div>")
+    } else {
+      HTML(paste0(
+        "<div style='color:red; font-weight:600;'>",
+        n_reject, " dari ", length(tests),
+        " uji yang dipilih menolak H₀ → indikasi data tidak normal.</div>"
+      ))
+    }
   })
   
   output$raw_test_output <- renderPrint({
     run_tests()
   })
+  
   
   # 8. sk-kurt
   output$sk_kurt_plot <- renderPlotly({
