@@ -1,215 +1,304 @@
 library(shiny)
-library(plotly)
-library(dplyr)
-library(readxl) 
 library(shinydashboard)
 library(bslib)
-# ggplot2 and other packages are included here because some UI elements (like renderPlotly) might need them,
-# although traditionally they belong more to the server side. They are included in server.R too for safety.
-library(ggplot2)
-library(nortest)
-library(moments)
+library(plotly)
 library(tidyverse)
-# readxl package is primarily needed in the server, but for the sake of completeness, 
-# the check from the original file is noted here, though not implemented to stop execution here.
+library(shiny)
+library(plotly)
+library(dplyr)
+library(ggplot2)
+library(moments)
+library(nortest)
+library(tidyverse)
+library(readxl)
 
-# Theme
+# =====================
+# THEME
+# =====================
 theme <- bs_theme(
   version = 5,
-  bootswatch = "flatly",
-  primary = "#2E86C1",
+  bg = "#F8FAFC",
+  fg = "#0F172A",
+  primary = "#2563EB",
   base_font = font_google("Inter"),
-  heading_font = font_google("Inter")
+  heading_font = font_google("Inter"),
+  border_radius = "1.25rem"
 )
 
-# =====================
-# UI Definition
-# =====================
 ui <- dashboardPage(
-  dashboardHeader(title = "Normality Lab"),
+  skin = "blue",
+  dashboardHeader(title = NULL),
+  
   dashboardSidebar(
+    width = 260,
+    tags$div(
+      class = "sidebar-brand",
+      h3("Normality Lab"),
+      p("Statistical Explorer")
+    ),
     sidebarMenu(
-      menuItem("Home", tabName = "home", icon = icon("home")),
-      menuItem("Deskripsi Data", tabName = "desc", icon = icon("table")),
-      menuItem("Visualisasi", tabName = "visual", icon = icon("chart-bar")),
-      menuItem("Uji Formal", tabName = "formal", icon = icon("check-circle")),
-      menuItem("Deviation Metrics", tabName = "metrics", icon = icon("tachometer-alt")),
-      menuItem("Skew-Kurtosis", tabName = "skk", icon = icon("dot-circle")),
-      menuItem("Export", tabName = "export", icon = icon("file-export"))
+      menuItem("Home", tabName = "home"),
+      menuItem("Deskripsi", tabName = "desc"),
+      menuItem("Visualisasi", tabName = "visual"),
+      menuItem("Uji Formal", tabName = "formal"),
+      menuItem("Metrics", tabName = "metrics"),
+      menuItem("Skew–Kurtosis", tabName = "skk"),
+      menuItem("Export", tabName = "export")
     )
   ),
+  
   dashboardBody(
-    # --- BAGIAN INI MENAMBAHKAN BACKGROUND ---
-    tags$head(tags$style(HTML('
-      /* Perhatikan tanda kutip pembuka di atas (setelah HTML) */
-      
-      .content-wrapper, .right-side {
-        background-image: url("download (1).jpg");
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-        background-position: center;
-      }
-      
-      .box {
-        background-color: rgba(255, 255, 255, 0.9) !important; 
-        border-top: 3px solid #2E86C1;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      }
-
-      section.content-header > h1 {
-        color: #fff; 
-        text-shadow: 2px 2px 4px #000000;
-      }
-      
-      /* Perhatikan tanda kutip penutup di bawah ini (sebelum tutup kurung) */
-    '))),
     theme = theme,
+    
+    tags$head(
+      tags$style(HTML('
+        
+        /* =============================
+           FORCE BACKGROUND (IMPORTANT)
+        ==============================*/
+        .wrapper,
+        .content-wrapper {
+          background:
+            radial-gradient(circle at top left, #E0E7FF 0%, transparent 35%),
+            radial-gradient(circle at bottom right, #DBEAFE 0%, transparent 40%),
+            linear-gradient(180deg, #F8FAFC 0%, #EEF2FF 100%) !important;
+          min-height: 100vh;
+        }
+
+        .content {
+          background: transparent;
+          padding: 40px;
+        }
+
+        /* =============================
+           REMOVE DEFAULT HEADER
+        ==============================*/
+        .main-header,
+        .logo,
+        .navbar {
+          display: none;
+        }
+
+        /* =============================
+           SIDEBAR
+        ==============================*/
+        .main-sidebar {
+          background: #0F172A;
+        }
+
+        .sidebar-brand {
+          padding: 24px;
+          color: white;
+        }
+
+        .sidebar-brand h3 {
+          font-weight: 700;
+          margin-bottom: 4px;
+        }
+
+        .sidebar-brand p {
+          font-size: 13px;
+          color: #94A3B8;
+        }
+
+        .sidebar-menu > li > a {
+          color: #CBD5E1;
+          font-size: 14px;
+          padding: 14px 20px;
+        }
+
+        .sidebar-menu > li.active > a {
+          background: rgba(255,255,255,0.08);
+          border-radius: 12px;
+          color: white;
+        }
+
+        /* =============================
+           CARD SYSTEM
+        ==============================*/
+        .box {
+          background: white;
+          border-radius: 24px;
+          border: none;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+          margin-bottom: 32px;
+        }
+
+        .box-header {
+          border-bottom: none;
+          padding: 24px 28px 0 28px;
+        }
+
+        .box-title {
+          font-size: 18px;
+          font-weight: 600;
+          color: #0F172A;
+        }
+
+        .box-body {
+          padding: 28px;
+        }
+
+        /* =============================
+           STAT CARDS
+        ==============================*/
+        .stat {
+          background: #F8FAFC;
+          border-radius: 20px;
+          padding: 24px;
+          text-align: center;
+        }
+
+        .stat-label {
+          font-size: 13px;
+          color: #64748B;
+          margin-bottom: 8px;
+        }
+
+        .stat-value {
+          font-size: 30px;
+          font-weight: 700;
+          color: #2563EB;
+        }
+
+        /* =============================
+           FORMS
+        ==============================*/
+        .form-control,
+        .selectize-input {
+          border-radius: 14px;
+          border: 1px solid #E5E7EB;
+        }
+
+        table {
+          font-size: 14px;
+        }
+
+      '))
+    ),
+    
     tabItems(
       
-      # HOME: upload / manual input
-      tabItem(tabName = "home",
+      # HOME
+      tabItem("home",
               fluidRow(
-                box(width = 6, title = "Upload / Input Data", solidHeader = TRUE,
-                    fileInput("file_data", "Upload file (CSV / XLSX / XLS)",
+                box(width = 6, title = "Data Input",
+                    fileInput("file_data", NULL,
                               accept = c(".csv", ".xlsx", ".xls")),
-                    textAreaInput("manual_data", "Input manual (pisah koma)",
-                                  placeholder = "1,2,3,...", rows = 3),
                     uiOutput("select_variable"),
                     uiOutput("select_group")
                 ),
-                box(width = 6, title = "Instruksi", solidHeader = TRUE,
-                    h4("Langkah Analisis"),
-                    tags$ol(
-                      tags$li("Upload file CSV atau Excel (.xlsx/.xls), atau isi manual."),
-                      tags$li("Pilih variabel numerik yang ingin dianalisis."),
-                      tags$li("Buka tab Visualisasi / Uji Formal / Metrics untuk hasil.")
-                    ),
-                    hr(),
-                    p("Aplikasi TIDAK akan menjalankan analisis sampai variabel dipilih.")
+                box(width = 6, title = "How it works",
+                    tags$ul(
+                      tags$li("Upload dataset"),
+                      tags$li("Select numeric variable"),
+                      tags$li("Explore normality & distribution")
+                    )
                 )
               )
       ),
       
       # DESKRIPSI
-      tabItem(tabName = "desc",
-              conditionalPanel("input.var != null",
-                               fluidRow(
-                                 box(width = 8, title = "Preview Data", solidHeader = TRUE,
-                                     tableOutput("data_preview")
-                                 ),
-                                 box(width = 4, title = "Ringkasan Statistik", solidHeader = TRUE,
-                                     tableOutput("summary_stats"),
-                                     uiOutput("centrality_note")
-                                 )
-                               )
-              ),
-              conditionalPanel("input.var == null",
-                               h3("⚠ Pilih variabel terlebih dahulu di menu Home."))
+      tabItem("desc",
+              box(width = 12, title = "Data Overview",
+                  tableOutput("data_preview"),
+                  br(),
+                  tableOutput("summary_stats"),
+                  uiOutput("centrality_note")
+              )
       ),
       
-      # VISUALISASI
-      tabItem(tabName = "visual",
-              conditionalPanel("input.var != null",
-                               fluidRow(
-                                 box(width = 4, title = "Opsi Visual", solidHeader = TRUE,
-                                     checkboxInput("show_hist", "Histogram", TRUE),
-                                     checkboxInput("show_density", "Density plot", TRUE),
-                                     checkboxInput("show_qq", "Q–Q plot", TRUE),
-                                     checkboxInput("show_ecdf", "ECDF vs Normal", FALSE),
-                                     checkboxInput("overlay_normal", "Overlay kurva normal", TRUE),
-                                     sliderInput("bins", "Jumlah bins", min = 5, max = 80, value = 25)
-                                 ),
-                                 box(width = 8, title = "Plots", solidHeader = TRUE,
-                                     conditionalPanel("input.show_hist == true", plotlyOutput("hist_plot")),
-                                     conditionalPanel("input.show_density == true", plotlyOutput("density_plot")),
-                                     conditionalPanel("input.show_qq == true", plotlyOutput("qq_plot")),
-                                     conditionalPanel("input.show_ecdf == true", plotlyOutput("ecdf_plot"))
-                                 )
-                               )
-              ),
-              conditionalPanel("input.var == null",
-                               h3("⚠ Pilih variabel terlebih dahulu di menu Home."))
+      # VISUAL
+      tabItem("visual",
+              fluidRow(
+                box(width = 4, title = "Controls",
+                    checkboxInput("show_hist", "Histogram", TRUE),
+                    checkboxInput("show_density", "Density", TRUE),
+                    checkboxInput("show_qq", "Q–Q Plot", TRUE),
+                    checkboxInput("show_ecdf", "ECDF", FALSE),
+                    sliderInput("bins", "Bins", 5, 80, 25)
+                ),
+                box(width = 8, title = "Distribution",
+                    plotlyOutput("hist_plot"),
+                    plotlyOutput("density_plot"),
+                    plotlyOutput("qq_plot"),
+                    plotlyOutput("ecdf_plot")
+                )
+              )
       ),
       
-      # UJI FORMAL
-      tabItem(tabName = "formal",
-              conditionalPanel("input.var != null",
-                               fluidRow(
-                                 box(width = 6, title = "Pengaturan Uji", solidHeader = TRUE,
-                                     radioButtons("selected_test", "Pilih uji formal (atau All)",
-                                                  choices = c("Shapiro", "Lilliefors", "Jarque-Bera", "Chi-square", "All"),
-                                                  selected = "All"),
-                                     numericInput("alpha", "Significance level (α)", 0.05, min = 0.001, max = 0.2, step = 0.005)
-                                 ),
-                                 box(width = 6, title = "Hasil Uji Normalitas", solidHeader = TRUE,
-                                     tableOutput("test_results_table"),
-                                     uiOutput("test_interpretation")
-                                 )
-                               ),
-                               fluidRow(
-                                 box(width = 12, title = "Output Lengkap (raw)", solidHeader = TRUE,
-                                     verbatimTextOutput("raw_test_output")
-                                 )
-                               )
+      # FORMAL
+      tabItem("formal",
+              fluidRow(
+                box(width = 5, title = "Test Settings",
+                    radioButtons("selected_test", NULL,
+                                 c("Shapiro", "Lilliefors", "Jarque-Bera", "Chi-square", "All")),
+                    numericInput("alpha", "α", 0.05)
+                ),
+                box(width = 7, title = "Results",
+                    tableOutput("test_results_table"),
+                    uiOutput("test_interpretation")
+                )
               ),
-              conditionalPanel("input.var == null",
-                               h3("⚠ Pilih variabel terlebih dahulu di menu Home."))
+              box(width = 12, title = "Raw Output",
+                  verbatimTextOutput("raw_test_output")
+              )
       ),
       
       # METRICS
-      tabItem(tabName = "metrics",
-              conditionalPanel("input.var != null",
-                               box(width = 12, title = "Deviation Metrics", solidHeader = TRUE,
-                                   fluidRow(
-                                     column(3, wellPanel(h5("Max Q–Q deviation"), textOutput("max_qq_dev"))),
-                                     column(3, wellPanel(h5("Area |f - f_normal|"), textOutput("area_density_diff"))),
-                                     column(3, wellPanel(h5("Max |ECDF - CDF|"), textOutput("ecdf_max_diff"))),
-                                     column(3, wellPanel(h5("Skew-Kurt distance"), textOutput("sk_kurt_distance")))
-                                   ),
-                                   hr(),
-                                   h4("Breakdown per Kuantil"),
-                                   tableOutput("deviation_table"),
-                                   br(),
-                                   plotOutput("deviation_strip", height = "80px")
-                               )
-              ),
-              conditionalPanel("input.var == null",
-                               h3("⚠ Pilih variabel terlebih dahulu di menu Home."))
+      tabItem("metrics",
+              box(width = 12, title = "Deviation Metrics",
+                  fluidRow(
+                    column(3, div(class="stat",
+                                  div("Max Q–Q deviation", class="stat-label"),
+                                  div(textOutput("max_qq_dev"), class="stat-value")
+                    )),
+                    column(3, div(class="stat",
+                                  div("Density distance", class="stat-label"),
+                                  div(textOutput("area_density_diff"), class="stat-value")
+                    )),
+                    column(3, div(class="stat",
+                                  div("ECDF max diff", class="stat-label"),
+                                  div(textOutput("ecdf_max_diff"), class="stat-value")
+                    )),
+                    column(3, div(class="stat",
+                                  div("Skew–Kurt dist", class="stat-label"),
+                                  div(textOutput("sk_kurt_distance"), class="stat-value")
+                    ))
+                  ),
+                  br(),
+                  tableOutput("deviation_table"),
+                  plotOutput("deviation_strip", height = "90px")
+              )
       ),
       
-      # SK-KURT
-      tabItem(tabName = "skk",
-              conditionalPanel("input.var != null",
-                               box(width = 12, title = "Skewness & Kurtosis", solidHeader = TRUE,
-                                   plotlyOutput("sk_kurt_plot", height = "420px"),
-                                   uiOutput("skk_notes"),
-                                   hr(),
-                                   h4("Normality Gauge"),
-                                   uiOutput("normality_gauge"),
-                                   tableOutput("score_breakdown"),
-                                   uiOutput("final_conclusion")
-                               )
-              ),
-              conditionalPanel("input.var == null",
-                               h3("⚠ Pilih variabel terlebih dahulu di menu Home."))
+      # SKK
+      tabItem("skk",
+              box(width = 12, title = "Skewness & Kurtosis",
+                  plotlyOutput("sk_kurt_plot", height = "420px"),
+                  uiOutput("skk_notes"),
+                  uiOutput("normality_gauge"),
+                  tableOutput("score_breakdown"),
+                  uiOutput("final_conclusion")
+              )
       ),
       
       # EXPORT
-      tabItem(tabName = "export",
-              box(width = 6, title = "Export", solidHeader = TRUE,
-                  downloadButton("download_data", "Download Data Summary (.csv)"),
-                  br(), br(),
-                  downloadButton("download_report", "Download Report (HTML)")
-              ),
-              box(width = 6, title = "Session Log", solidHeader = TRUE,
-                  verbatimTextOutput("session_log")
+      tabItem("export",
+              fluidRow(
+                box(width = 6, title = "Export",
+                    downloadButton("download_data", "Download CSV"),
+                    br(), br(),
+                    downloadButton("download_report", "Download HTML")
+                ),
+                box(width = 6, title = "Session Log",
+                    verbatimTextOutput("session_log")
+                )
               )
       )
     )
   )
 )
-
 
 # =====================
 # SERVER Function
@@ -218,11 +307,6 @@ server <- function(input, output, session) {
   
   # 1. LOAD DATA (no builtin datasets)
   raw_data <- reactive({
-    # prefer manual input if not empty
-    if (!is.null(input$manual_data) && nchar(trimws(input$manual_data)) > 0) {
-      nums <- suppressWarnings(as.numeric(unlist(strsplit(input$manual_data, ","))))
-      return(data.frame(manual = nums))
-    }
     
     # file upload support: csv or excel
     if (!is.null(input$file_data)) {
@@ -248,7 +332,7 @@ server <- function(input, output, session) {
     df <- raw_data()
     if (is.null(df)) {
       tagList(
-        tags$div(style = "color:#777;", "Belum ada data — unggah file atau isi manual dahulu.")
+        tags$div(style = "color:#777;", "Belum ada data — unggah file terlebih dahulu.")
       )
     } else {
       nums <- names(df)[sapply(df, is.numeric)]
@@ -407,53 +491,82 @@ server <- function(input, output, session) {
       deviation = round(abs(qq$x - qq$y), 6)
     )
   }, rownames = FALSE)
+  # 7. tests (REAKTIF SESUAI PILIHAN UJI)
   
-  # 7. tests
   run_tests <- reactive({
-    x <- selected_data(); req(x)
+    
+    req(input$selected_test)   # 🔥 INI KUNCINYA
+    x <- selected_data()
+    
+    sel <- input$selected_test
     res <- list()
-    # Shapiro (requires 3 <= n <= 5000)
-    if (length(x) >= 3 && length(x) <= 5000) {
-      res$Shapiro <- tryCatch(shapiro.test(x), error = function(e) list(statistic = NA, p.value = NA))
-    } else {
-      res$Shapiro <- list(statistic = NA, p.value = NA)
+    
+    if (sel == "Shapiro" || sel == "All") {
+      if (length(x) >= 3 && length(x) <= 5000) {
+        res$Shapiro <- shapiro.test(x)
+      }
     }
-    res$Lilliefors <- tryCatch(lillie.test(x), error = function(e) list(statistic = NA, p.value = NA))
-    res$JarqueBera <- tryCatch(jarque.test(x), error = function(e) list(statistic = NA, p.value = NA))
-    res$ChiSquare <- tryCatch(ks.test(scale(x), "pnorm"), error = function(e) list(statistic = NA, p.value = NA))
+    
+    if (sel == "Lilliefors" || sel == "All") {
+      res$Lilliefors <- lillie.test(x)
+    }
+    
+    if (sel == "Jarque-Bera" || sel == "All") {
+      res$`Jarque-Bera` <- jarque.test(x)
+    }
+    
+    if (sel == "Chi-square" || sel == "All") {
+      res$`Chi-square` <- ks.test(scale(x), "pnorm")
+    }
+    
     res
   })
   
   output$test_results_table <- renderTable({
-    t <- run_tests(); req(t)
+    
+    tests <- run_tests()
+    req(length(tests) > 0)
+    
     alpha <- input$alpha
+    
     data.frame(
-      Test = c("Shapiro", "Lilliefors", "Jarque-Bera", "Chi-square"),
-      Statistic = c(t$Shapiro$statistic, t$Lilliefors$statistic, t$JarqueBera$statistic, t$ChiSquare$statistic),
-      p_value = c(t$Shapiro$p.value, t$Lilliefors$p.value, t$JarqueBera$p.value, t$ChiSquare$p.value),
-      Decision = c(
-        ifelse(!is.na(t$Shapiro$p.value) & t$Shapiro$p.value < alpha, "Reject H0", "Fail"),
-        ifelse(!is.na(t$Lilliefors$p.value) & t$Lilliefors$p.value < alpha, "Reject H0", "Fail"),
-        ifelse(!is.na(t$JarqueBera$p.value) & t$JarqueBera$p.value < alpha, "Reject H0", "Fail"),
-        ifelse(!is.na(t$ChiSquare$p.value) & t$ChiSquare$p.value < alpha, "Reject H0", "Fail")
+      Test = names(tests),
+      Statistic = sapply(tests, function(t) round(unname(t$statistic), 6)),
+      p_value = sapply(tests, function(t) round(t$p.value, 6)),
+      Decision = ifelse(
+        sapply(tests, function(t) t$p.value) < alpha,
+        "Reject H0",
+        "Fail to Reject H0"
       ),
-      stringsAsFactors = FALSE
+      row.names = NULL
     )
-  }, digits = 6)
+  })
   
   output$test_interpretation <- renderUI({
-    t <- run_tests(); req(t)
-    pvals <- c(t$Shapiro$p.value, t$Lilliefors$p.value, t$JarqueBera$p.value, t$ChiSquare$p.value)
-    bad <- sum(!is.na(pvals) & pvals < input$alpha)
-    if (bad == 0)
-      HTML("<div style='color:green; font-weight:600;'>Tidak ada uji yang menolak H0 → data cenderung normal.</div>")
-    else
-      HTML(paste0("<div style='color:red; font-weight:600;'>", bad, " uji menolak H0 → indikasi data tidak normal.</div>"))
+    
+    tests <- run_tests()
+    req(length(tests) > 0)
+    
+    alpha <- input$alpha
+    n_reject <- sum(sapply(tests, function(t) t$p.value < alpha))
+    
+    if (n_reject == 0) {
+      HTML("<div style='color:green; font-weight:600;'>
+         Semua uji yang dipilih gagal menolak H₀ → data konsisten dengan normalitas.
+         </div>")
+    } else {
+      HTML(paste0(
+        "<div style='color:red; font-weight:600;'>",
+        n_reject, " dari ", length(tests),
+        " uji yang dipilih menolak H₀ → indikasi data tidak normal.</div>"
+      ))
+    }
   })
   
   output$raw_test_output <- renderPrint({
     run_tests()
   })
+  
   
   # 8. sk-kurt
   output$sk_kurt_plot <- renderPlotly({
@@ -576,6 +689,3 @@ server <- function(input, output, session) {
   })
   
 }
-
-# Run app
-shinyApp(ui, server)

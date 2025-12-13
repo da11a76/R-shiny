@@ -3,29 +3,26 @@ library(shinydashboard)
 library(plotly)
 library(bslib)
 
-# ggplot2 and other packages are included here because some UI elements (like renderPlotly) might need them,
-# although traditionally they belong more to the server side. They are included in server.R too for safety.
-library(ggplot2)
-library(nortest)
-library(moments)
-library(tidyverse)
-# readxl package is primarily needed in the server, but for the sake of completeness, 
-# the check from the original file is noted here, though not implemented to stop execution here.
-
-# Theme
+# =====================
+# THEME
+# =====================
 theme <- bs_theme(
   version = 5,
   bootswatch = "flatly",
   primary = "#2E86C1",
   base_font = font_google("Inter"),
-  heading_font = font_google("Inter")
+  heading_font = font_google("Playfair Display")
 )
 
 # =====================
-# UI Definition
+# UI
 # =====================
 ui <- dashboardPage(
-  dashboardHeader(title = "Normality Lab"),
+  
+  dashboardHeader(
+    title = tags$span("Normality Lab", class = "title-font")
+  ),
+  
   dashboardSidebar(
     sidebarMenu(
       menuItem("Home", tabName = "home", icon = icon("home")),
@@ -37,171 +34,172 @@ ui <- dashboardPage(
       menuItem("Export", tabName = "export", icon = icon("file-export"))
     )
   ),
+  
   dashboardBody(
-    # --- BAGIAN INI MENAMBAHKAN BACKGROUND ---
-    tags$head(tags$style(HTML('
-      /* Perhatikan tanda kutip pembuka di atas (setelah HTML) */
-      
-      .content-wrapper, .right-side {
-        background-image: url("download (1).jpg");
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-        background-position: center;
-      }
-      
-      .box {
-        background-color: rgba(255, 255, 255, 0.9) !important; 
-        border-top: 3px solid #2E86C1;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      }
+    
+    # =====================
+    # CSS & FONT
+    # =====================
+    tags$head(
+      tags$link(
+        href = "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500&display=swap",
+        rel = "stylesheet"
+      ),
+      tags$style(HTML("
+        body {
+          font-family: 'Inter', sans-serif;
+        }
 
-      section.content-header > h1 {
-        color: #fff; 
-        text-shadow: 2px 2px 4px #000000;
-      }
-      
-      /* Perhatikan tanda kutip penutup di bawah ini (sebelum tutup kurung) */
-    '))),
+        .title-font {
+          font-family: 'Playfair Display', serif;
+          font-size: 22px;
+          font-weight: 700;
+        }
+
+        h1, h2, h3, h4, h5 {
+          font-family: 'Playfair Display', serif;
+        }
+
+        /* BACKGROUND */
+        .content-wrapper, .right-side {
+          background-image: url('bg.jpg');
+          background-size: cover;
+          background-position: center;
+          background-attachment: fixed;
+        }
+
+        /* BOX */
+        .box {
+          background: rgba(255,255,245,0.93) !important;
+          border-radius: 18px;
+          border-top: 4px solid #2E86C1;
+          box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+          animation: fadeUp 0.6s ease;
+        }
+
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(25px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* DECOR IMAGES */
+        .decor {
+          position: fixed;
+          opacity: 0.25;
+          z-index: 0;
+          pointer-events: none;
+        }
+
+        .decor1 { bottom: 30px; left: 30px; width: 120px; }
+        .decor2 { top: 90px; right: 40px; width: 140px; }
+        .decor3 { top: 300px; left: 20px; width: 90px; }
+        .decor4 { bottom: 220px; right: 20px; width: 100px; }
+        .decor5 { top: 160px; left: 45%; width: 80px; }
+        .decor6 { bottom: 60px; right: 45%; width: 110px; }
+      "))
+    ),
+    
+    # =====================
+    # DECOR ELEMENTS
+    # =====================
+    tags$img(src = "decor1.png", class = "decor decor1"),
+    tags$img(src = "decor2.png", class = "decor decor2"),
+    tags$img(src = "decor3.png", class = "decor decor3"),
+    tags$img(src = "decor4.png", class = "decor decor4"),
+    tags$img(src = "decor5.png", class = "decor decor5"),
+    tags$img(src = "decor6.png", class = "decor decor6"),
+    
     theme = theme,
+    
     tabItems(
       
-      # HOME: upload / manual input
-      tabItem(tabName = "home",
-              fluidRow(
-                box(width = 6, title = "Upload / Input Data", solidHeader = TRUE,
-                    fileInput("file_data", "Upload file (CSV / XLSX / XLS)",
-                              accept = c(".csv", ".xlsx", ".xls")),
-                    uiOutput("select_variable"),
-                    uiOutput("select_group")
-                ),
-                box(width = 6, title = "Instruksi", solidHeader = TRUE,
-                    h4("Langkah Analisis"),
-                    tags$ol(
-                      tags$li("Upload file CSV atau Excel (.xlsx/.xls)"),
-                      tags$li("Pilih variabel numerik yang ingin dianalisis."),
-                      tags$li("Buka tab Visualisasi / Uji Formal / Metrics untuk hasil.")
-                    ),
-                    hr(),
-                    p("Aplikasi TIDAK akan menjalankan analisis sampai variabel dipilih.")
-                )
-              )
+      # =====================
+      # HOME
+      # =====================
+      tabItem(
+        tabName = "home",
+        fluidRow(
+          box(
+            width = 6, title = "Upload / Input Data", solidHeader = TRUE,
+            fileInput("file_data", "Upload file (CSV / XLSX / XLS)",
+                      accept = c(".csv", ".xlsx", ".xls")),
+            uiOutput("select_variable"),
+            uiOutput("select_group")
+          ),
+          box(
+            width = 6, title = "Instruksi", solidHeader = TRUE,
+            h4("Langkah Analisis"),
+            tags$ol(
+              tags$li("Upload file CSV atau Excel"),
+              tags$li("Pilih variabel numerik"),
+              tags$li("Buka tab analisis untuk hasil")
+            )
+          )
+        )
       ),
       
+      # =====================
       # DESKRIPSI
-      tabItem(tabName = "desc",
-              conditionalPanel("input.var != null",
-                               fluidRow(
-                                 box(width = 8, title = "Preview Data", solidHeader = TRUE,
-                                     tableOutput("data_preview")
-                                 ),
-                                 box(width = 4, title = "Ringkasan Statistik", solidHeader = TRUE,
-                                     tableOutput("summary_stats"),
-                                     uiOutput("centrality_note")
-                                 )
-                               )
-              ),
-              conditionalPanel("input.var == null",
-                               h3("⚠ Pilih variabel terlebih dahulu di menu Home."))
+      # =====================
+      tabItem(
+        tabName = "desc",
+        conditionalPanel(
+          "input.var != null",
+          fluidRow(
+            box(8, title = "Preview Data", tableOutput("data_preview")),
+            box(4, title = "Ringkasan Statistik",
+                tableOutput("summary_stats"),
+                uiOutput("centrality_note"))
+          )
+        ),
+        conditionalPanel("input.var == null",
+                         h3("⚠ Pilih variabel terlebih dahulu di menu Home.")
+        )
       ),
       
+      # =====================
       # VISUALISASI
-      tabItem(tabName = "visual",
-              conditionalPanel("input.var != null",
-                               fluidRow(
-                                 box(width = 4, title = "Opsi Visual", solidHeader = TRUE,
-                                     checkboxInput("show_hist", "Histogram", TRUE),
-                                     checkboxInput("show_density", "Density plot", TRUE),
-                                     checkboxInput("show_qq", "Q–Q plot", TRUE),
-                                     checkboxInput("show_ecdf", "ECDF vs Normal", FALSE),
-                                     checkboxInput("overlay_normal", "Overlay kurva normal", TRUE),
-                                     sliderInput("bins", "Jumlah bins", min = 5, max = 80, value = 25)
-                                 ),
-                                 box(width = 8, title = "Plots", solidHeader = TRUE,
-                                     conditionalPanel("input.show_hist == true", plotlyOutput("hist_plot")),
-                                     conditionalPanel("input.show_density == true", plotlyOutput("density_plot")),
-                                     conditionalPanel("input.show_qq == true", plotlyOutput("qq_plot")),
-                                     conditionalPanel("input.show_ecdf == true", plotlyOutput("ecdf_plot"))
-                                 )
-                               )
-              ),
-              conditionalPanel("input.var == null",
-                               h3("⚠ Pilih variabel terlebih dahulu di menu Home."))
+      # =====================
+      tabItem(
+        tabName = "visual",
+        conditionalPanel(
+          "input.var != null",
+          fluidRow(
+            box(
+              4, title = "Opsi Visual",
+              checkboxInput("show_hist", "Histogram", TRUE),
+              checkboxInput("show_density", "Density plot", TRUE),
+              checkboxInput("show_qq", "Q–Q plot", TRUE),
+              checkboxInput("show_ecdf", "ECDF vs Normal", FALSE),
+              checkboxInput("overlay_normal", "Overlay kurva normal", TRUE),
+              sliderInput("bins", "Jumlah bins", 5, 80, 25)
+            ),
+            box(
+              8, title = "Plots",
+              conditionalPanel("input.show_hist", plotlyOutput("hist_plot")),
+              conditionalPanel("input.show_density", plotlyOutput("density_plot")),
+              conditionalPanel("input.show_qq", plotlyOutput("qq_plot")),
+              conditionalPanel("input.show_ecdf", plotlyOutput("ecdf_plot"))
+            )
+          )
+        ),
+        conditionalPanel("input.var == null",
+                         h3("⚠ Pilih variabel terlebih dahulu di menu Home.")
+        )
       ),
       
-      # UJI FORMAL
-      tabItem(tabName = "formal",
-              conditionalPanel("input.var != null",
-                               fluidRow(
-                                 box(width = 6, title = "Pengaturan Uji", solidHeader = TRUE,
-                                     radioButtons("selected_test", "Pilih uji formal (atau All)",
-                                                  choices = c("Shapiro", "Lilliefors", "Jarque-Bera", "Chi-square", "All"),
-                                                  selected = "All"),
-                                     numericInput("alpha", "Significance level (α)", 0.05, min = 0.001, max = 0.2, step = 0.005)
-                                 ),
-                                 box(width = 6, title = "Hasil Uji Normalitas", solidHeader = TRUE,
-                                     tableOutput("test_results_table"),
-                                     uiOutput("test_interpretation")
-                                 )
-                               ),
-                               fluidRow(
-                                 box(width = 12, title = "Output Lengkap (raw)", solidHeader = TRUE,
-                                     verbatimTextOutput("raw_test_output")
-                                 )
-                               )
-              ),
-              conditionalPanel("input.var == null",
-                               h3("⚠ Pilih variabel terlebih dahulu di menu Home."))
-      ),
-      
-      # METRICS
-      tabItem(tabName = "metrics",
-              conditionalPanel("input.var != null",
-                               box(width = 12, title = "Deviation Metrics", solidHeader = TRUE,
-                                   fluidRow(
-                                     column(3, wellPanel(h5("Max Q–Q deviation"), textOutput("max_qq_dev"))),
-                                     column(3, wellPanel(h5("Area |f - f_normal|"), textOutput("area_density_diff"))),
-                                     column(3, wellPanel(h5("Max |ECDF - CDF|"), textOutput("ecdf_max_diff"))),
-                                     column(3, wellPanel(h5("Skew-Kurt distance"), textOutput("sk_kurt_distance")))
-                                   ),
-                                   hr(),
-                                   h4("Breakdown per Kuantil"),
-                                   tableOutput("deviation_table"),
-                                   br(),
-                                   plotOutput("deviation_strip", height = "80px")
-                               )
-              ),
-              conditionalPanel("input.var == null",
-                               h3("⚠ Pilih variabel terlebih dahulu di menu Home."))
-      ),
-      
-      # SK-KURT
-      tabItem(tabName = "skk",
-              conditionalPanel("input.var != null",
-                               box(width = 12, title = "Skewness & Kurtosis", solidHeader = TRUE,
-                                   plotlyOutput("sk_kurt_plot", height = "420px"),
-                                   uiOutput("skk_notes"),
-                                   hr(),
-                                   h4("Normality Gauge"),
-                                   uiOutput("normality_gauge"),
-                                   tableOutput("score_breakdown"),
-                                   uiOutput("final_conclusion")
-                               )
-              ),
-              conditionalPanel("input.var == null",
-                               h3("⚠ Pilih variabel terlebih dahulu di menu Home."))
-      ),
-      
+      # =====================
       # EXPORT
-      tabItem(tabName = "export",
-              box(width = 6, title = "Export", solidHeader = TRUE,
-                  downloadButton("download_data", "Download Data Summary (.csv)"),
-                  br(), br(),
-                  downloadButton("download_report", "Download Report (HTML)")
-              ),
-              box(width = 6, title = "Session Log", solidHeader = TRUE,
-                  verbatimTextOutput("session_log")
-              )
+      # =====================
+      tabItem(
+        tabName = "export",
+        box(6, title = "Export",
+            downloadButton("download_data", "Download Data (.csv)"),
+            br(), br(),
+            downloadButton("download_report", "Download Report (HTML)")
+        ),
+        box(6, title = "Session Log",
+            verbatimTextOutput("session_log"))
       )
     )
   )
