@@ -252,6 +252,34 @@ ui <- dashboardPage(
   )
 )
 
+evaluate_normality <- function(x, alpha) {
+  n <- length(x)
+  safe_p <- function(f) tryCatch(f(x)$p.value, error = function(e) NA)
+  
+  sh <- if(n >= 3 && n <= 5000) safe_p(shapiro.test) else NA
+  li <- if(n >= 6) safe_p(lillie.test) else NA
+  jb <- if(n >= 20) safe_p(tseries::jarque.test) else NA
+  
+  main_test <- if (n < 50) sh else if (n < 2000) li else jb
+  main_name <- if (n < 50) "Shapiro-Wilk" else if (n < 2000) "Lilliefors" else "Jarque-Bera"
+  
+  decision <- if (is.na(main_test)) "INSUFFICIENT"
+  else if (main_test > alpha) "APPROX_NORMAL"
+  else "NOT_NORMAL"
+  
+  list(
+    n = n,
+    sh = sh, li = li, jb = jb,
+    main_test = main_test,
+    main_name = main_name,
+    decision = decision
+  )
+}
+
+# =========================
+# Server
+# =========================
+
 # =================================================================
 # 2. SERVER: LOGIKA LENGKAP DAN PERBAIKAN Q-Q PLOT
 # =================================================================
@@ -970,11 +998,15 @@ server <- function(input, output, session) {
       }
       
       
-      votes <- c(
-        !is.na(sh) && sh > alpha,
-        !is.na(li) && li > alpha,
-        !is.na(jb) && jb > alpha
-      )
+      res <- evaluate_normality(x, alpha)
+      
+      final_text <- if (res$decision == "APPROX_NORMAL")
+        "Distribusi data mendekati normal."
+      else if (res$decision == "NOT_NORMAL")
+        "Distribusi data menunjukkan penyimpangan dari normalitas."
+      else
+        "Data tidak cukup untuk dianalisis."
+      
       
       final_normal <- mean(votes) >= 0.5
       
