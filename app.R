@@ -59,7 +59,6 @@ ui <- dashboardPage(
       menuItem("📈 Visualisasi Distribusi", tabName = "visual"),
       menuItem("✅ Uji Formal Normalitas", tabName = "formal"), 
       menuItem("🎯 Skewness & Kurtosis", tabName = "skk"),
-      menuItem("🔍 Detail Deviasi", tabName = "metrics"),
       menuItem("👥 Analisis Grouping", tabName = "groups"),
       menuItem("⭐ Kesimpulan Final", tabName = "final")
     )
@@ -201,32 +200,6 @@ ui <- dashboardPage(
                   tags$b("Jarak dari Normal (0, 0):"),
                   textOutput("sk_kurt_distance")
                 )
-              )
-      ),
-      
-      # =====================
-      # 6. DETAIL DEVIASI
-      # =====================
-      tabItem("metrics",
-              tags$h2("Metrik Deviasi Normalitas", class="tab-title-accent"),
-              fluidRow(
-                box(title=tags$span(icon("chart-line"), " Max QQ Deviasi"), 
-                    width = 4, tags$p("Deviasi Maksimum dari titik Q-Q ke garis normal."),
-                    tags$b(textOutput("max_qq_dev"))),
-                box(title=tags$span(icon("chart-bar"), " Area Density Diff"), 
-                    width = 4, tags$p("Perbedaan Area antara Density Data dan Density Normal."),
-                    tags$b(textOutput("area_density_diff"))),
-                box(title=tags$span(icon("chart-area"), " ECDF Max Diff"),
-                    width = 4, tags$p("Perbedaan Maksimal Fungsi Distribusi Kumulatif Empiris vs Normal."),
-                    tags$b(textOutput("ecdf_max_diff")))
-              ),
-              fluidRow(
-                box(title=tags$span(icon("table"), " Tabel Deviasi Q-Q"),
-                    width = 6, 
-                    div(style="overflow-x: auto;", tableOutput("deviation_table"))),
-                box(title=tags$span(icon("chart-bar"), " Strip Deviasi Q-Q"),
-                    width = 6, 
-                    plotOutput("deviation_strip", height = "350px"))
               )
       ),
       
