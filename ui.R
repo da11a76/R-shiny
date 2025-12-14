@@ -27,14 +27,14 @@ ui <- dashboardPage(
       "))
     ),
     sidebarMenu(
-      menuItem("🏠 Home & Setup", tabName = "home", icon = icon("home")),
-      menuItem("📊 Deskripsi Data", tabName = "desc", icon = icon("table")),
-      menuItem("📈 Visualisasi Distribusi", tabName = "visual", icon = icon("chart-area")),
-      menuItem("✅ Uji Formal Normalitas", tabName = "formal", icon = icon("check-circle")),
-      menuItem("🎯 Skewness & Kurtosis", tabName = "skk", icon = icon("crosshairs")),
-      menuItem("🔍 Detail Deviasi", tabName = "metrics", icon = icon("tachometer-alt")),
-      menuItem("👥 Analisis Grouping", tabName = "groups", icon = icon("users")),
-      menuItem("⭐ Kesimpulan Final", tabName = "final", icon = icon("star"))
+      menuItem("🏠 Home & Setup", tabName = "home"),
+      menuItem("📊 Deskripsi Data", tabName = "desc"),
+      menuItem("📈 Visualisasi Distribusi", tabName = "visual"),
+      menuItem("✅ Uji Formal Normalitas", tabName = "formal"), 
+      menuItem("🎯 Skewness & Kurtosis", tabName = "skk"),
+      menuItem("🔍 Detail Deviasi", tabName = "metrics"),
+      menuItem("👥 Analisis Grouping", tabName = "groups"),
+      menuItem("⭐ Kesimpulan Final", tabName = "final")
     )
   ),
   
