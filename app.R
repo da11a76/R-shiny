@@ -227,13 +227,9 @@ ui <- dashboardPage(
       tabItem("final",
               tags$h2("Kesimpulan Akhir Normalitas", class="tab-title-accent"),
               fluidRow(
-                box(title=tags$span(icon("trophy"), " Skor Normalitas"),
+                box(title=tags$span(icon("trophy"), "Normalitas"),
                     width = 4, 
-                    tags$p("Rata-rata tertimbang p-value uji utama (dikonversi ke 100)."),
                     uiOutput("normality_gauge")),
-                box(title=tags$span(icon("list"), " Rincian Skor"),
-                    width = 4, 
-                    tableOutput("score_breakdown")),
                 box(title=tags$span(icon("comments"), " Kesimpulan"),
                     width = 4, 
                     uiOutput("final_conclusion"))
@@ -907,22 +903,25 @@ server <- function(input, output, session) {
   # =====================
   output$normality_gauge <- renderUI({
     x <- selected_data(); req(x)
-    safe_p <- function(f, x) tryCatch(f(x)$p.value, error = function(e) NA)
+    alpha <- input$alpha
     
-    pvals <- c(
-      if(length(x) >= 3 && length(x) <= 5000) safe_p(shapiro.test, x) else NA, 
-      if(length(x) >= 6) safe_p(lillie.test, x) else NA,
-      if(length(x) >= 20) safe_p(tseries::jarque.test, x) else NA
-    )
-    pvals <- pvals[!is.na(pvals)]
+    res <- evaluate_normality(x, alpha)
     
-    if(length(pvals) == 0) return(tags$p("Data terlalu sedikit untuk diuji."))
-    
-    # Skor rata-rata p-value (dibatasi maksimal 1.0) dikalikan 100
-    score <- round(mean(pmin(pvals, 1.0) * 100), 1)
-    
-    color <- ifelse(score > 70, "#2ECC71", ifelse(score > 40, "#FFB600", "#E74C3C")) 
-    HTML(paste0("<h2 style='color:", color, "; font-size:3em;'>", score, "/100</h2>"))
+    if (res$decision == "APPROX_NORMAL") {
+      HTML(paste0(
+        "<h2 style='color:#2ECC71;'>Distribusi Mendekati Normal</h2>",
+        "<p>Uji utama: <b>", res$main_name,
+        "</b> (p-value = ", round(res$main_test, 5), ")</p>"
+      ))
+    } else if (res$decision == "NOT_NORMAL") {
+      HTML(paste0(
+        "<h2 style='color:#E74C3C;'>Distribusi Tidak Normal</h2>",
+        "<p>Uji utama: <b>", res$main_name,
+        "</b> (p-value = ", round(res$main_test, 5), ")</p>"
+      ))
+    } else {
+      tags$p("Data tidak cukup untuk evaluasi normalitas.")
+    }
   })
   
   output$score_breakdown <- renderTable({
@@ -943,24 +942,23 @@ server <- function(input, output, session) {
   
   output$final_conclusion <- renderUI({
     x <- selected_data(); req(x)
-    safe_p <- function(f, x) tryCatch(f(x)$p.value, error = function(e) NA)
+    res <- evaluate_normality(x, input$alpha)
     
-    sh <- if(length(x) >= 3 && length(x) <= 5000) safe_p(shapiro.test, x) else NA
-    li <- if(length(x) >= 6) safe_p(lillie.test, x) else NA
-    jb <- if(length(x) >= 20) safe_p(tseries::jarque.test, x) else NA
-    
-    alpha <- input$alpha
-    
-    is_normal_count <- sum(c(sh > alpha, li > alpha, jb > alpha), na.rm = TRUE)
-    total_tests <- sum(!is.na(c(sh, li, jb)))
-    
-    if (total_tests == 0) return(tags$p("Tidak ada uji utama yang dapat dijalankan."))
-    
-    if (is_normal_count / total_tests >= 0.5) 
-      HTML("<div style='color:#00A388; font-weight:600; font-size:1.1em;'>Secara keseluruhan, **NORMAL**. Gunakan statistik parametrik (t-test, ANOVA, Regresi Linier) jika asumsi lain terpenuhi.</div>")
-    else
-      HTML("<div style='color:#E74C3C; font-weight:600; font-size:1.1em;'>Terdapat indikasi kuat **TIDAK NORMAL**. Pertimbangkan transformasi data atau gunakan uji non-parametrik (Mann-Whitney, Kruskal-Wallis).</div>")
+    if (res$decision == "APPROX_NORMAL") {
+      HTML("<div style='color:#00A388; font-weight:600; font-size:1.1em;'>
+         Secara keseluruhan, distribusi data <b>mendekati normal</b>.
+         Statistik parametrik dapat dipertimbangkan dengan verifikasi asumsi lain.
+         </div>")
+    } else if (res$decision == "NOT_NORMAL") {
+      HTML("<div style='color:#E74C3C; font-weight:600; font-size:1.1em;'>
+         Distribusi data <b>tidak normal</b>.
+         Disarankan transformasi data atau metode non-parametrik.
+         </div>")
+    } else {
+      tags$p("Data tidak cukup untuk kesimpulan normalitas.")
+    }
   })
+  
   
   output$download_report <- downloadHandler(
     filename = function() {
@@ -1007,8 +1005,6 @@ server <- function(input, output, session) {
       else
         "Data tidak cukup untuk dianalisis."
       
-      
-      final_normal <- mean(votes) >= 0.5
       
       html <- paste0(
         "<!DOCTYPE html>
