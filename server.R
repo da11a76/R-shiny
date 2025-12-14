@@ -444,9 +444,45 @@ server <- function(input, output, session) {
   })
   
   output$download_report <- downloadHandler(
-    filename = function() paste0("Normality_Report_", Sys.Date(), ".html"),
+    filename = function() {
+      paste0("normality_report_", Sys.Date(), ".html")
+    },
     content = function(file) {
-      writeLines("<h3>Report Sederhana</h3>", file)
+      writeLines("DOWNLOAD OK", file)
+      
+      x <- selected_data()
+      n <- length(x)
+      
+      stats <- data.frame(
+        Mean = mean(x),
+        Median = median(x),
+        SD = sd(x),
+        Min = min(x),
+        Max = max(x)
+      )
+      
+      sh <- shapiro.test(x)$p.value
+      li <- lillie.test(x)$p.value
+      jb <- jarque.bera.test(x)$p.value
+      
+      writeLines(c(
+        "<h2>Normality Analysis Report</h2>",
+        paste("<p><b>Sample size:</b>", n, "</p>"),
+        
+        "<h3>Descriptive Statistics</h3>",
+        paste("<p>Mean:", round(stats$Mean,2), 
+              "| SD:", round(stats$SD,2), "</p>"),
+        
+        "<h3>Normality Tests (α = 0.05)</h3>",
+        "<ul>",
+        paste("<li>Shapiro-Wilk p-value:", round(sh,4), "</li>"),
+        paste("<li>Lilliefors p-value:", round(li,4), "</li>"),
+        paste("<li>Jarque-Bera p-value:", round(jb,4), "</li>"),
+        "</ul>",
+        
+        "<h3>Interpretation</h3>",
+        "<p>Results should be interpreted cautiously, considering sample size and test sensitivity.</p>"
+      ), file)
     }
   )
   
