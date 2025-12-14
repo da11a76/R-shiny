@@ -256,8 +256,8 @@ evaluate_normality <- function(x, alpha) {
   li <- if(n >= 6) safe_p(lillie.test) else NA
   jb <- if(n >= 20) safe_p(tseries::jarque.test) else NA
   
-  main_test <- if (n < 50) sh else if (n < 2000) li else jb
-  main_name <- if (n < 50) "Shapiro-Wilk" else if (n < 2000) "Lilliefors" else "Jarque-Bera"
+  main_test <- if (n < 30) sh else if (n < 30) li else jb
+  main_name <- if (n < 30) "Shapiro-Wilk" else if (n < 30) "Lilliefors" else "Jarque-Bera"
   
   decision <- if (is.na(main_test)) "INSUFFICIENT"
   else if (main_test > alpha) "APPROX_NORMAL"
