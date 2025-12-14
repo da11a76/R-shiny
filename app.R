@@ -31,7 +31,7 @@ ui <- dashboardPage(
   dashboardHeader(
     title = tags$span("🔬 Normality Lab", class = "title-font-header"),
     tags$li(class = "dropdown", style = "padding: 8px; color: #444;", 
-            tags$b("Analisis Distribusi Normal Komprehensif"))
+            tags$b("Analisis Distribusi Normal"))
   ),
   
   # SIDEBAR
