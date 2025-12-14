@@ -170,6 +170,7 @@ ui <- dashboardPage(
                   width = 12, tags$i(class="icon-decor fas fa-microscope d2"),
                   div(style="overflow-x: auto;", tableOutput("test_results_table")), # OUTPUT BARU
                   hr(),
+                  uiOutput("ks_warning"),
                   uiOutput("test_interpretation") # OUTPUT BARU
                 )
               ),
@@ -750,6 +751,19 @@ server <- function(input, output, session) {
       "**Rekomendasi Uji:** ", rec$recommendation,
       "</div>"
     ))
+  })
+  output$ks_warning <- renderUI({
+    req(input$selected_test)
+    
+    if (input$selected_test == "ks") {
+      div(
+        style = "color: #b30000; background-color: #fff3f3; 
+               padding: 10px; border-radius: 5px;",
+        strong("⚠️ Peringatan Uji Kolmogorov–Smirnov"),
+        p("Uji KS sensitif terhadap estimasi parameter dan ukuran sampel."),
+        p("Dalam aplikasi ini, uji KS digunakan sebagai uji pendukung dan tidak dijadikan dasar utama penentuan normalitas.")
+      )
+    }
   })
   
   # PERBAIKAN 3: Tabel Hasil Uji Formal
