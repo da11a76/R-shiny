@@ -142,13 +142,14 @@ ui <- dashboardPage(
       # =====================
       tabItem("formal",
               tags$h2("Uji Formal Normalitas", class="tab-title-accent"),
+              uiOutput("sample_info"),
+              hr(),
               fluidRow(
                 box(
                   title = tags$span(icon("vial"), " Pengaturan Uji"),
                   width = 4, tags$i(class="icon-decor fas fa-flask d1"),
-                  selectInput("selected_test", "Pilih Uji",
-                              choices = c("All", "Shapiro", "Lilliefors", "Kolmogorov-Smirnov", "Jarque-Bera", "Chi-square"),
-                              selected = "All"),
+                  uiOutput("test_selector")
+                  ,
                   tags$p("H₀: Data terdistribusi normal. H₁: Data tidak normal."),
                   
                   # START PERBAIKAN: Mengganti input$alpha dengan uiOutput
@@ -349,6 +350,9 @@ server <- function(input, output, session) {
     
     x
   })
+  sample_size <- reactive({
+    length(selected_data())
+  })
   
   # =====================
   # 4. summary outputs
@@ -523,6 +527,10 @@ server <- function(input, output, session) {
   # 7. tests
   # =====================
   # Logic Uji Goodness-of-Fit Chi-Square
+  group_by_sturges <- function(x) {
+    k <- ceiling(1 + log2(length(x)))
+    hist(x, breaks = k, plot = FALSE)
+  }
   chi_sq_test <- function(x) {
     # Pembagian data ke dalam 5-10 bins (sesuai aturan N/k >= 5)
     N <- length(x)
@@ -577,65 +585,124 @@ server <- function(input, output, session) {
     )
   }
   
-  run_tests <- reactive({
-    # Memastikan input test selector ada
-    req(input$selected_test) 
-    x <- selected_data(); req(x)
-    
-    sel <- input$selected_test
-    res <- list()
-    N <- length(x)
-    
-    # Fungsi pembungkus untuk penanganan error
-    safe_test <- function(test_func, x, min_n, max_n = Inf) {
-      if (length(x) >= min_n && length(x) <= max_n) {
-        tryCatch(test_func(x), error = function(e) list(statistic = NA, p.value = NA, method = paste("Error:", e$message)))
-      } else {
-        list(statistic = NA, p.value = NA, method = "Tidak Tersedia (N di luar jangkauan)")
-      }
-    }
-    
-    # Shapiro-Wilk: 3 <= N <= 5000
-    if (sel == "Shapiro" || sel == "All") {
-      res$Shapiro <- safe_test(shapiro.test, x, min_n = 3, max_n = 5000)
-    }
-    
-    # Lilliefors (Uji KS yang disesuaikan untuk estimasi parameter dari sampel)
-    if (sel == "Lilliefors" || sel == "All") {
-      res$Lilliefors <- safe_test(lillie.test, x, min_n = 6) # lillie.test butuh N>=6
-    }
-    
-    # Jarque-Bera (Baik untuk N >= 20)
-    if (sel == "Jarque-Bera" || sel == "All") {
-      res$`Jarque-Bera` <- safe_test(tseries::jarque.test, x, min_n = 20)
-    }
-    
-    # Kolmogorov-Smirnov (Menggunakan mean dan SD sampel)
-    if (sel == "Kolmogorov-Smirnov" || sel == "All") {
-      res$`Kolmogorov-Smirnov` <- safe_test(function(data) ks.test(data, "pnorm", mean(data), sd(data)), x, min_n = 5)
-    }
-    
-    # Chi-square Goodness-of-Fit (Baik untuk N besar, N bins harus memenuhi syarat)
-    if (sel == "Chi-square" || sel == "All") {
-      if (N >= 50) {
-        chi_sq_res <- chi_sq_test(x)
-        if (!is.null(chi_sq_res)) {
-          res$`Chi-square` <- chi_sq_res
-        } else {
-          res$`Chi-square` <- list(statistic=NA, p.value=NA, method="Tidak bisa dijalankan: Harapan Freq. < 5")
-        }
-      } else {
-        res$`Chi-square` <- list(statistic=NA, p.value=NA, method="Tidak Tersedia (N < 50 disarankan)")
-      }
-    }
-    
-    # Hapus yang tidak dipilih atau tidak tersedia
-    if (sel != "All") {
-      res <- res[names(res) == sel]
-    }
-    
-    res
+  sample_category <- reactive({
+    n <- length(selected_data())
+    if (n <= 50) "Sampel Kecil (N ≤ 50)" else "Sampel Besar (N > 50)"
   })
+  
+  output$sample_info <- renderUI({
+    x <- selected_data(); req(x)
+    n <- length(x)
+    cat <- sample_category()
+    
+    HTML(paste0(
+      "<div style='background:#F7F9FC; padding:12px; border-left:5px solid #3C8DBC;'>",
+      "<h4>📊 Ringkasan Data</h4>",
+      "<p><b>Jumlah Data (N):</b> ", n, "</p>",
+      "<p><b>Kategori Sampel:</b> ", cat, "</p>",
+      "</div>"
+    ))
+  })
+  
+  output$test_selector <- renderUI({
+    n <- sample_size()
+    req(n)
+    
+    if (n <= 50) {
+      choices <- c(
+        "Shapiro–Wilk" = "shapiro",
+        "Lilliefors"   = "lillie"
+      )
+    } else {
+      choices <- c(
+        "Jarque–Bera"          = "jb",
+        "Kolmogorov–Smirnov"   = "ks",
+        "Chi-square GOF"       = "chi"
+      )
+    }
+    
+    selectInput(
+      "selected_test",
+      "Pilih Uji Normalitas",
+      choices = choices
+    )
+  })
+  
+  safe_jarque <- function(x) {
+    x <- as.numeric(x)
+    x <- x[!is.na(x)]
+    
+    # Syarat minimal
+    if (length(x) < 20) return(NULL)
+    if (sd(x) == 0) return(NULL)
+    
+    tryCatch(
+      tseries::jarque.test(x),
+      error = function(e) NULL
+    )
+  }
+  
+  
+  run_tests <- reactive({
+    x <- selected_data()
+    req(x, input$selected_test)
+    
+    test <- input$selected_test
+    
+    if (test == "shapiro") {
+      return(shapiro.test(x))
+    }
+    
+    if (test == "lillie") {
+      return(lillie.test(x))
+    }
+    
+    jarque_bera_manual <- function(x) {
+      x <- as.numeric(x)
+      x <- x[!is.na(x)]
+      
+      n <- length(x)
+      if (n < 20) return(NULL)
+      if (sd(x) == 0) return(NULL)
+      
+      m <- mean(x)
+      s <- sd(x)
+      
+      skewness <- mean((x - m)^3) / s^3
+      kurtosis <- mean((x - m)^4) / s^4
+      
+      JB <- n / 6 * (skewness^2 + (kurtosis - 3)^2 / 4)
+      p_value <- 1 - pchisq(JB, df = 2)
+      
+      structure(
+        list(
+          statistic = JB,
+          p.value = p_value,
+          method = "Jarque-Bera Test (Manual)",
+          parameter = 2
+        ),
+        class = "htest"
+      )
+    }
+    
+    if (test == "jb") {
+      res <- jarque_bera_manual(x)
+      req(res)
+      return(res)
+    }
+    
+    
+    if (test == "ks") {
+      return(ks.test(x, "pnorm", mean(x), sd(x)))
+    }
+    
+    if (test == "chi") {
+      return(chi_sq_test(x))
+    }
+    
+    NULL
+  })
+  
   
   # Reactive untuk Rekomendasi Uji
   test_recommendations <- reactive({
@@ -648,15 +715,15 @@ server <- function(input, output, session) {
         recommendation = "Normalitas tidak dapat diuji secara statistik. Min. N=3 untuk Shapiro-Wilk.",
         icon = "fas fa-exclamation-triangle"
       ))
-    } else if (N <= 50) {
+    } else if (N < 30) {
       return(list(
-        status = "Sampel Kecil (N ≤ 50)",
+        status = "Sampel Kecil (N < 30)",
         recommendation = "Uji Paling Kuat: **Shapiro-Wilk** (terbaik untuk N kecil). Visualisasikan dengan Q-Q Plot. Lilliefors juga bisa digunakan jika N > 5.",
         icon = "fas fa-leaf"
       ))
-    } else if (N > 50 && N <= 5000) {
+    } else if (N >= 30 && N <= 5000) {
       return(list(
-        status = "Sampel Menengah (50 < N ≤ 5000)",
+        status = "Sampel Menengah (300 < N ≤ 5000)",
         recommendation = "Uji yang Direkomendasikan: **Shapiro-Wilk** (masih baik), **Lilliefors/Kolmogorov-Smirnov**, dan **Jarque-Bera** (jika N≥20).",
         icon = "fas fa-balance-scale"
       ))
@@ -687,73 +754,58 @@ server <- function(input, output, session) {
   
   # PERBAIKAN 3: Tabel Hasil Uji Formal
   output$test_results_table <- renderTable({
-    results <- run_tests(); req(results)
-    alpha <- input$alpha
+    res <- run_tests()
+    req(res)
     
-    rows <- lapply(names(results), function(test_name) {
-      res <- results[[test_name]]
-      
-      p_val <- if (is.null(res$p.value) || is.na(res$p.value)) NA else round(res$p.value, 6)
-      stat_val <- if (is.null(res$statistic) || is.na(res$statistic[1])) NA else round(res$statistic[1], 6)
-      
-      # Tentukan keputusan
-      decision <- if (is.na(p_val)) {
-        "N/A"
-      } else if (p_val > alpha) {
-        "<span style='color:#00A388; font-weight:bold;'>NORMAL (Tolak H₀)</span>"
-      } else {
-        "<span style='color:#E74C3C; font-weight:bold;'>NON-NORMAL (Gagal Tolak H₀)</span>"
-      }
-      
-      # Ambil nama statistik
-      stat_name <- names(res$statistic)[1] %||% "Statistic"
-      
-      data.frame(
-        Uji = test_name,
-        N_Min = if (test_name == "Shapiro") "N≥3" else if (test_name == "Lilliefors") "N≥6" else if (test_name == "Jarque-Bera") "N≥20" else if (test_name == "Chi-square") "N≥50" else "N/A",
-        Statistik_Uji = stat_val,
-        P_Value = p_val,
-        Keputusan = decision,
-        stringsAsFactors = FALSE
+    if (!is.null(res$error)) {
+      return(data.frame(
+        Uji = res$method,
+        Statistik = NA,
+        P_Value = NA,
+        Keputusan = res$error
+      ))
+    }
+    
+    keputusan <- ifelse(
+      res$p.value > input$alpha,
+      "NORMAL (Gagal Tolak H₀)",
+      "TIDAK NORMAL (Tolak H₀)"
+    )
+    
+    data.frame(
+      Uji = res$method,
+      Statistik = round(as.numeric(res$statistic)[1], 6),
+      P_Value = formatC(res$p.value, format = "f", digits = 5),
+      Keputusan = ifelse(
+        res$p.value > input$alpha,
+        "NORMAL (Gagal Tolak H₀)",
+        "TIDAK NORMAL (Tolak H₀)"
       )
-    })
-    
-    df_table <- bind_rows(rows)
-    return(df_table)
-  }, sanitize.text.function = function(x) x, striped = TRUE, hover = TRUE, align = 'llllr')
+    )
+  }, rownames = FALSE)
+  
   
   # PERBAIKAN 4: Interpretasi Hasil Uji Formal
   output$test_interpretation <- renderUI({
-    results <- run_tests(); req(results)
+    res <- run_tests()
+    req(res)
+    
     alpha <- input$alpha
-    
-    decisions <- sapply(results, function(res) {
-      if (is.null(res$p.value) || is.na(res$p.value)) {
-        "NA"
-      } else {
-        ifelse(res$p.value > alpha, "Normal", "Non-Normal")
-      }
-    })
-    
-    normal_count <- sum(decisions == "Normal", na.rm = TRUE)
-    total_count <- sum(decisions != "NA", na.rm = TRUE)
-    
-    if (total_count == 0) return(tags$p("Tidak ada uji yang dapat dijalankan dengan data ini."))
-    
-    majority_decision <- if (normal_count / total_count >= 0.5) {
-      paste0("<b style='color:#00A388;'>Mayoritas Uji (", normal_count, "/", total_count, ") menyarankan Distribusi NORMAL.</b>")
-    } else {
-      paste0("<b style='color:#E74C3C;'>Mayoritas Uji (", total_count - normal_count, "/", total_count, ") menyarankan Distribusi NON-NORMAL.</b>")
-    }
+    normal <- res$p.value > alpha
+    color <- ifelse(normal, "#00A388", "#E74C3C")
     
     HTML(paste0(
-      "<div style='border: 1px solid #CCC; padding: 10px; border-radius: 5px; background-color: #FFF;'>",
-      "<h4>Ringkasan Keputusan Uji Formal (Alpha = ", alpha, ")</h4>",
-      "<p>", majority_decision, "</p>",
-      "<p>Interpretasi: Jika P-Value < Alpha (", alpha, "), maka H₀ ditolak (Data TIDAK Normal). Sebaliknya, H₀ diterima (Data Normal).</p>",
+      "<div style='border-left:5px solid ", color, "; padding:12px;'>",
+      "<h4>Kesimpulan Uji</h4>",
+      "<p><b>", res$method, "</b></p>",
+      "<p>Keputusan: <b style='color:", color, ";'>",
+      ifelse(normal, "NORMAL", "TIDAK NORMAL"),
+      "</b></p>",
       "</div>"
     ))
   })
+  
+  
   
   output$raw_test_output <- renderPrint({ run_tests() })
   
@@ -926,9 +978,10 @@ server <- function(input, output, session) {
       
       keputusan <- function(p) {
         if (is.na(p)) "N/A"
-        else if (p > alpha) "NORMAL"
-        else "TIDAK NORMAL"
+        else if (p > alpha) "NORMAL (Gagal Tolak H₀)"
+        else "TIDAK NORMAL (Tolak H₀)"
       }
+      
       
       votes <- c(
         !is.na(sh) && sh > alpha,
