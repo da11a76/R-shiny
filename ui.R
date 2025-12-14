@@ -11,20 +11,20 @@ ui <- dashboardPage(
   dashboardSidebar(
     tags$head(
       tags$style(HTML("
-        /* Warna Sidebar Baru */
-        .main-sidebar { background-color: #2F4858 !important; } 
-        .sidebar-menu li.active a { border-left: 5px solid #00A388 !important; }
-        .logo { background-color: #2F4858 !important; }
+                /* Warna Sidebar Baru */
+                .main-sidebar { background-color: #2F4858 !important; } 
+                .sidebar-menu li.active a { border-left: 5px solid #00A388 !important; }
+                .logo { background-color: #2F4858 !important; }
 
-        /* Estetika Font dan Box */
-        .content-wrapper { background: #F0FDF5 !important; }
-        .box { border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
-        .box-header h3.box-title { color: #00A388; font-weight: 600; }
-        .icon-decor { font-size: 5em; color: #FFB600; opacity: 0.15; position: absolute; z-index: 0; pointer-events: none; }
-        .d1 { bottom: -10px; right: -10px; }
-        .d2 { top: -10px; left: -10px; }
-        .tab-title-accent { color: #2F4858; font-family: 'Playfair Display'; font-weight: 700; border-bottom: 2px solid #00A388; padding-bottom: 5px; margin-bottom: 20px; }
-      "))
+                /* Estetika Font dan Box */
+                .content-wrapper { background: #F0FDF5 !important; }
+                .box { border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+                .box-header h3.box-title { color: #00A388; font-weight: 600; }
+                .icon-decor { font-size: 5em; color: #FFB600; opacity: 0.15; position: absolute; z-index: 0; pointer-events: none; }
+                .d1 { bottom: -10px; right: -10px; }
+                .d2 { top: -10px; left: -10px; }
+                .tab-title-accent { color: #2F4858; font-family: 'Playfair Display'; font-weight: 700; border-bottom: 2px solid #00A388; padding-bottom: 5px; margin-bottom: 20px; }
+            "))
     ),
     sidebarMenu(
       menuItem("🏠 Home & Setup", tabName = "home"),
@@ -120,17 +120,29 @@ ui <- dashboardPage(
                   title = tags$span(icon("vial"), " Pengaturan Uji"),
                   width = 4, tags$i(class="icon-decor fas fa-flask d1"),
                   selectInput("selected_test", "Pilih Uji",
-                              choices = c("All", "Shapiro", "Lilliefors", "Jarque-Bera", "Chi-square"),
+                              choices = c("All", "Shapiro", "Lilliefors", "Kolmogorov-Smirnov", "Jarque-Bera", "Chi-square"),
                               selected = "All"),
                   tags$p("H₀: Data terdistribusi normal. H₁: Data tidak normal."),
-                  tags$em(paste0("Batas penolakan (Alpha): ", 0.05))
+                  
+                  # START PERBAIKAN: Mengganti input$alpha dengan uiOutput
+                  uiOutput("alpha_display")
+                  # END PERBAIKAN
                 ),
+                
+                # BOX BARU: Ringkasan Data & Rekomendasi
+                box(
+                  title = tags$span(icon("info-circle"), " Ringkasan Data & Rekomendasi"),
+                  width = 8, tags$i(class="icon-decor fas fa-lightbulb d2"),
+                  uiOutput("test_data_summary")
+                )
+              ),
+              fluidRow(
                 box(
                   title = tags$span(icon("table"), " Hasil Uji Statistik"),
-                  width = 8, tags$i(class="icon-decor fas fa-microscope d2"),
-                  div(style="overflow-x: auto;", tableOutput("test_results_table")),
+                  width = 12, tags$i(class="icon-decor fas fa-microscope d2"),
+                  div(style="overflow-x: auto;", tableOutput("test_results_table")), # OUTPUT BARU
                   hr(),
-                  uiOutput("test_interpretation")
+                  uiOutput("test_interpretation") # OUTPUT BARU
                 )
               ),
               fluidRow(
@@ -157,7 +169,7 @@ ui <- dashboardPage(
                   width = 4, tags$i(class="icon-decor fas fa-calculator d2"),
                   uiOutput("skk_notes"),
                   hr(),
-                  tags$b("Jarak dari Normal (0, 3):"),
+                  tags$b("Jarak dari Normal (0, 0):"),
                   textOutput("sk_kurt_distance")
                 )
               )
