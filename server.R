@@ -1,3 +1,8 @@
+
+# =================================================================
+# 2. SERVER: LOGIKA LENGKAP DAN PERBAIKAN Q-Q PLOT
+# =================================================================
+
 server <- function(input, output, session) {
   
   # 1. LOAD DATA
@@ -38,6 +43,12 @@ server <- function(input, output, session) {
     cats <- names(df)[sapply(df, function(x) is.factor(x) || is.character(x))]
     if (length(cats) == 0) return(NULL)
     selectInput("group_var", "Pilih variabel grouping (opsional)", choices = c("None", cats))
+  })
+  
+  # PERBAIKAN 1: Display Alpha di Tab Formal
+  output$alpha_display <- renderUI({
+    req(input$alpha)
+    tags$em(paste0("Batas penolakan (Alpha): ", input$alpha))
   })
   
   # 3. selected data (vector)
@@ -150,12 +161,10 @@ server <- function(input, output, session) {
     ggplotly(p) %>% config(displayModeBar = FALSE)
   })
   
-  # PERBAIKAN Q-Q PLOT: Mengatasi "object 'x' not found"
   output$qq_plot <- renderPlotly({
     x <- selected_data(); 
     req(x) 
     
-    # Membuat data frame eksplisit dengan nama kolom 'Sample'
     df_plot <- data.frame(Sample = x)
     
     p <- ggplot(df_plot, aes(sample = Sample)) +
@@ -173,8 +182,8 @@ server <- function(input, output, session) {
     xs <- seq(min(x), max(x), length.out = 200)
     df_plot <- data.frame(x = xs, ECDF = ec(xs), Normal = pnorm(xs, mean(x), sd(x)))
     p <- ggplot(df_plot) +
-      geom_line(aes(x, ECDF, text="ECDF Data"), size = 1, color="#00A388") +
-      geom_line(aes(x, Normal, text="Normal CDF"), size = 1, linetype = "dashed", color = "#E74C3C") +
+      geom_line(aes(x, ECDF, text=paste("ECDF Data:", round(ECDF,4))), size = 1, color="#00A388") +
+      geom_line(aes(x, Normal, text=paste("Normal CDF:", round(Normal,4))), size = 1, linetype = "dashed", color = "#E74C3C") +
       theme_minimal() +
       labs(title = paste("ECDF vs Normal CDF -", input$var), x = input$var, y = "Probability")
     ggplotly(p, tooltip = c("x", "ECDF", "Normal")) %>% config(displayModeBar = FALSE)
@@ -230,6 +239,61 @@ server <- function(input, output, session) {
   # =====================
   # 7. tests
   # =====================
+  # Logic Uji Goodness-of-Fit Chi-Square
+  chi_sq_test <- function(x) {
+    # Pembagian data ke dalam 5-10 bins (sesuai aturan N/k >= 5)
+    N <- length(x)
+    k <- max(5, floor(N / 50)) # Aturan sederhana untuk jumlah bins
+    k <- min(k, 15) # Batas maksimal bins
+    
+    # Menghitung frekuensi observasi dan frekuensi harapan
+    hist_info <- hist(x, breaks = k, plot = FALSE)
+    observed_freq <- hist_info$counts
+    
+    # Menghitung probabilitas (P(a < X < b)) untuk setiap bin di bawah Normal
+    probabilities <- diff(pnorm(hist_info$breaks, mean(x), sd(x)))
+    expected_freq <- probabilities * N
+    
+    # Menggabungkan bins jika frekuensi harapan terlalu kecil (< 5)
+    while (any(expected_freq < 5) && length(expected_freq) > 2) {
+      idx_small <- which.min(expected_freq)
+      if (idx_small == length(expected_freq)) {
+        # Gabung bin terakhir dengan bin sebelumnya
+        expected_freq[idx_small - 1] <- expected_freq[idx_small - 1] + expected_freq[idx_small]
+        observed_freq[idx_small - 1] <- observed_freq[idx_small - 1] + observed_freq[idx_small]
+        expected_freq <- expected_freq[-idx_small]
+        observed_freq <- observed_freq[-idx_small]
+      } else {
+        # Gabung bin kecil dengan bin setelahnya
+        expected_freq[idx_small + 1] <- expected_freq[idx_small + 1] + expected_freq[idx_small]
+        observed_freq[idx_small + 1] <- observed_freq[idx_small + 1] + observed_freq[idx_small]
+        expected_freq <- expected_freq[-idx_small]
+        observed_freq <- observed_freq[-idx_small]
+      }
+    }
+    
+    # Jika masih ada bin < 5 setelah penggabungan, uji tidak dapat diandalkan
+    if (any(expected_freq < 5)) {
+      return(NULL)
+    }
+    
+    # Derajat kebebasan = jumlah bins - 1 (estimasi mean) - 1 (estimasi sd) - 1
+    # df = length(expected_freq) - 3 (jika mean & sd diestimasi)
+    df_chi <- length(expected_freq) - 3
+    if (df_chi < 1) return(NULL) # Pastikan df > 0
+    
+    # Hitung statistik Chi-Square
+    chi_sq_stat <- sum((observed_freq - expected_freq)^2 / expected_freq)
+    p_val <- pchisq(chi_sq_stat, df = df_chi, lower.tail = FALSE)
+    
+    list(
+      statistic = c(`X-squared` = chi_sq_stat),
+      p.value = p_val,
+      method = "Chi-squared Goodness-of-Fit Test",
+      parameter = c(df = df_chi, `N bins` = length(expected_freq))
+    )
+  }
+  
   run_tests <- reactive({
     # Memastikan input test selector ada
     req(input$selected_test) 
@@ -239,72 +303,173 @@ server <- function(input, output, session) {
     res <- list()
     N <- length(x)
     
+    # Fungsi pembungkus untuk penanganan error
+    safe_test <- function(test_func, x, min_n, max_n = Inf) {
+      if (length(x) >= min_n && length(x) <= max_n) {
+        tryCatch(test_func(x), error = function(e) list(statistic = NA, p.value = NA, method = paste("Error:", e$message)))
+      } else {
+        list(statistic = NA, p.value = NA, method = "Tidak Tersedia (N di luar jangkauan)")
+      }
+    }
+    
     # Shapiro-Wilk: 3 <= N <= 5000
-    if ((sel == "Shapiro" || sel == "All") && N >= 3 && N <= 5000) {
-      res$Shapiro <- shapiro.test(x)
+    if (sel == "Shapiro" || sel == "All") {
+      res$Shapiro <- safe_test(shapiro.test, x, min_n = 3, max_n = 5000)
     }
     
     # Lilliefors (Uji KS yang disesuaikan untuk estimasi parameter dari sampel)
-    if ((sel == "Lilliefors" || sel == "All") && N > 5) {
-      res$Lilliefors <- lillie.test(x)
+    if (sel == "Lilliefors" || sel == "All") {
+      res$Lilliefors <- safe_test(lillie.test, x, min_n = 6) # lillie.test butuh N>=6
     }
     
     # Jarque-Bera (Baik untuk N >= 20)
-    if ((sel == "Jarque-Bera" || sel == "All") && N >= 20) {
-      # Pastikan paket 'moments' dimuat. jarque.test adalah alias untuk jarque.bera.test
-      res$`Jarque-Bera` <- jarque.test(x)
+    if (sel == "Jarque-Bera" || sel == "All") {
+      res$`Jarque-Bera` <- safe_test(tseries::jarque.test, x, min_n = 20)
     }
     
     # Kolmogorov-Smirnov (Menggunakan mean dan SD sampel)
-    if ((sel == "Kolmogorov-Smirnov" || sel == "All") && N >= 5) {
-      res$`Kolmogorov-Smirnov` <- ks.test(x, "pnorm", mean(x), sd(x))
+    if (sel == "Kolmogorov-Smirnov" || sel == "All") {
+      res$`Kolmogorov-Smirnov` <- safe_test(function(data) ks.test(data, "pnorm", mean(data), sd(data)), x, min_n = 5)
+    }
+    
+    # Chi-square Goodness-of-Fit (Baik untuk N besar, N bins harus memenuhi syarat)
+    if (sel == "Chi-square" || sel == "All") {
+      if (N >= 50) {
+        chi_sq_res <- chi_sq_test(x)
+        if (!is.null(chi_sq_res)) {
+          res$`Chi-square` <- chi_sq_res
+        } else {
+          res$`Chi-square` <- list(statistic=NA, p.value=NA, method="Tidak bisa dijalankan: Harapan Freq. < 5")
+        }
+      } else {
+        res$`Chi-square` <- list(statistic=NA, p.value=NA, method="Tidak Tersedia (N < 50 disarankan)")
+      }
+    }
+    
+    # Hapus yang tidak dipilih atau tidak tersedia
+    if (sel != "All") {
+      res <- res[names(res) == sel]
     }
     
     res
   })
   
-  output$test_results_table <- renderTable({
-    tests <- run_tests()
-    req(length(tests) > 0)
+  # Reactive untuk Rekomendasi Uji
+  test_recommendations <- reactive({
+    x <- selected_data(); req(x)
+    N <- length(x)
     
-    alpha <- input$alpha
-    
-    data.frame(
-      Test = names(tests),
-      Statistic = sapply(tests, function(t) round(unname(t$statistic), 6)),
-      p_value = sapply(tests, function(t) round(t$p.value, 6)),
-      # Logika Konsisten: Tolak H0 (NON-NORMAL) jika p-value < alpha
-      Decision = ifelse(
-        sapply(tests, function(t) t$p.value) < alpha,
-        "TOLAK H0 (TIDAK NORMAL)",
-        "GAGAL TOLAK H0 (NORMAL)"
-      ),
-      stringsAsFactors = FALSE
-    )
-  }, striped = TRUE, hover = TRUE)
-  
-  output$test_interpretation <- renderUI({
-    tests <- run_tests()
-    req(length(tests) > 0)
-    
-    alpha <- input$alpha
-    n_total <- length(tests)
-    n_reject <- sum(sapply(tests, function(t) t$p.value < alpha))
-    
-    # Pesan Uji Formal harus paling tegas
-    if (n_reject == 0) {
-      HTML(paste0("<div style='color:#00A388; font-weight:700; background-color: #E6F7E9; padding: 10px; border-radius: 5px; border: 1px solid #00A388;'>
-      <i class='fa fa-check-circle'></i> Kesimpulan Uji Formal: Semua (", n_total, ") uji gagal menolak H₀. Data **KOMPATIBEL DENGAN NORMALITAS**.
-      </div>"))
-    } else if (n_reject == n_total) {
-      HTML(paste0("<div style='color:#E74C3C; font-weight:700; background-color: #FEEEEE; padding: 10px; border-radius: 5px; border: 1px solid #E74C3C;'>
-      <i class='fa fa-times-circle'></i> Kesimpulan Uji Formal: Semua (", n_total, ") uji menolak H₀. Data **SANGAT TIDAK NORMAL**.
-      </div>"))
-    } else {
-      HTML(paste0("<div style='color:#F39C12; font-weight:700; background-color: #FFF8E1; padding: 10px; border-radius: 5px; border: 1px solid #F39C12;'>
-      <i class='fa fa-exclamation-triangle'></i> Kesimpulan Uji Formal: ", n_reject, " dari ", n_total, " uji menolak H₀. Terdapat **INDIKASI KETIDAKNORMALAN** yang signifikan.
-      </div>"))
+    if (N < 3) {
+      return(list(
+        status = "Data Terlalu Sedikit",
+        recommendation = "Normalitas tidak dapat diuji secara statistik. Min. N=3 untuk Shapiro-Wilk.",
+        icon = "fas fa-exclamation-triangle"
+      ))
+    } else if (N <= 50) {
+      return(list(
+        status = "Sampel Kecil (N ≤ 50)",
+        recommendation = "Uji Paling Kuat: **Shapiro-Wilk** (terbaik untuk N kecil). Visualisasikan dengan Q-Q Plot. Lilliefors juga bisa digunakan jika N > 5.",
+        icon = "fas fa-leaf"
+      ))
+    } else if (N > 50 && N <= 5000) {
+      return(list(
+        status = "Sampel Menengah (50 < N ≤ 5000)",
+        recommendation = "Uji yang Direkomendasikan: **Shapiro-Wilk** (masih baik), **Lilliefors/Kolmogorov-Smirnov**, dan **Jarque-Bera** (jika N≥20).",
+        icon = "fas fa-balance-scale"
+      ))
+    } else if (N > 5000) {
+      return(list(
+        status = "Sampel Besar (N > 5000)",
+        recommendation = "Uji yang Direkomendasikan: **Kolmogorov-Smirnov**, **Jarque-Bera**, atau **Chi-square Goodness-of-Fit**. Waspada: Normalitas sering ditolak pada N besar.",
+        icon = "fas fa-city"
+      ))
     }
+  })
+  
+  # Output baru: Ringkasan Data dan Rekomendasi Uji
+  output$test_data_summary <- renderUI({
+    x <- selected_data(); req(x)
+    N <- length(x)
+    rec <- test_recommendations()
+    
+    HTML(paste0(
+      "<div style='background-color: #ECF0F1; padding: 15px; border-radius: 8px; border-left: 5px solid #00A388;'>",
+      "<h4><i class='", rec$icon, "'></i> Status Data & Rekomendasi</h4>",
+      "<p style='margin-bottom: 5px;'>**Jumlah Data (N):** <span style='font-size:1.2em; font-weight:700;'>", N, "</span></p>",
+      "<p style='margin-bottom: 10px;'>**Kelompok Sampel:** <span style='font-weight:600;'>", rec$status, "</span></p>",
+      "**Rekomendasi Uji:** ", rec$recommendation,
+      "</div>"
+    ))
+  })
+  
+  # PERBAIKAN 3: Tabel Hasil Uji Formal
+  output$test_results_table <- renderTable({
+    results <- run_tests(); req(results)
+    alpha <- input$alpha
+    
+    rows <- lapply(names(results), function(test_name) {
+      res <- results[[test_name]]
+      
+      p_val <- if (is.null(res$p.value) || is.na(res$p.value)) NA else round(res$p.value, 6)
+      stat_val <- if (is.null(res$statistic) || is.na(res$statistic[1])) NA else round(res$statistic[1], 6)
+      
+      # Tentukan keputusan
+      decision <- if (is.na(p_val)) {
+        "N/A"
+      } else if (p_val > alpha) {
+        "<span style='color:#00A388; font-weight:bold;'>NORMAL (Tolak H₀)</span>"
+      } else {
+        "<span style='color:#E74C3C; font-weight:bold;'>NON-NORMAL (Gagal Tolak H₀)</span>"
+      }
+      
+      # Ambil nama statistik
+      stat_name <- names(res$statistic)[1] %||% "Statistic"
+      
+      data.frame(
+        Uji = test_name,
+        N_Min = if (test_name == "Shapiro") "N≥3" else if (test_name == "Lilliefors") "N≥6" else if (test_name == "Jarque-Bera") "N≥20" else if (test_name == "Chi-square") "N≥50" else "N/A",
+        Statistik_Uji = stat_val,
+        P_Value = p_val,
+        Keputusan = decision,
+        stringsAsFactors = FALSE
+      )
+    })
+    
+    df_table <- bind_rows(rows)
+    return(df_table)
+  }, sanitize.text.function = function(x) x, striped = TRUE, hover = TRUE, align = 'llllr')
+  
+  # PERBAIKAN 4: Interpretasi Hasil Uji Formal
+  output$test_interpretation <- renderUI({
+    results <- run_tests(); req(results)
+    alpha <- input$alpha
+    
+    decisions <- sapply(results, function(res) {
+      if (is.null(res$p.value) || is.na(res$p.value)) {
+        "NA"
+      } else {
+        ifelse(res$p.value > alpha, "Normal", "Non-Normal")
+      }
+    })
+    
+    normal_count <- sum(decisions == "Normal", na.rm = TRUE)
+    total_count <- sum(decisions != "NA", na.rm = TRUE)
+    
+    if (total_count == 0) return(tags$p("Tidak ada uji yang dapat dijalankan dengan data ini."))
+    
+    majority_decision <- if (normal_count / total_count >= 0.5) {
+      paste0("<b style='color:#00A388;'>Mayoritas Uji (", normal_count, "/", total_count, ") menyarankan Distribusi NORMAL.</b>")
+    } else {
+      paste0("<b style='color:#E74C3C;'>Mayoritas Uji (", total_count - normal_count, "/", total_count, ") menyarankan Distribusi NON-NORMAL.</b>")
+    }
+    
+    HTML(paste0(
+      "<div style='border: 1px solid #CCC; padding: 10px; border-radius: 5px; background-color: #FFF;'>",
+      "<h4>Ringkasan Keputusan Uji Formal (Alpha = ", alpha, ")</h4>",
+      "<p>", majority_decision, "</p>",
+      "<p>Interpretasi: Jika P-Value < Alpha (", alpha, "), maka H₀ ditolak (Data TIDAK Normal). Sebaliknya, H₀ diterima (Data Normal).</p>",
+      "</div>"
+    ))
   })
   
   output$raw_test_output <- renderPrint({ run_tests() })
@@ -382,7 +547,7 @@ server <- function(input, output, session) {
       }),
       stringsAsFactors = FALSE
     )
-    result$Decision <- ifelse(result$Shapiro_p < input$alpha, "NON-NORMAL", "NORMAL")
+    result$Decision <- ifelse(result$N < 3, "N/A", ifelse(result$Shapiro_p < input$alpha, "NON-NORMAL", "NORMAL"))
     
     return(result)
   }, digits = 6, striped = TRUE, hover = TRUE)
@@ -395,15 +560,16 @@ server <- function(input, output, session) {
     safe_p <- function(f, x) tryCatch(f(x)$p.value, error = function(e) NA)
     
     pvals <- c(
-      if(length(x) >= 3) safe_p(shapiro.test, x) else NA, 
-      if(length(x) > 5) safe_p(lillie.test, x) else NA,
-      if(length(x) >= 20) safe_p(jarque.test, x) else NA
+      if(length(x) >= 3 && length(x) <= 5000) safe_p(shapiro.test, x) else NA, 
+      if(length(x) >= 6) safe_p(lillie.test, x) else NA,
+      if(length(x) >= 20) safe_p(tseries::jarque.test, x) else NA
     )
     pvals <- pvals[!is.na(pvals)]
     
     if(length(pvals) == 0) return(tags$p("Data terlalu sedikit untuk diuji."))
     
-    score <- round(mean(pmin(pvals * 100, 100)), 1)
+    # Skor rata-rata p-value (dibatasi maksimal 1.0) dikalikan 100
+    score <- round(mean(pmin(pvals, 1.0) * 100), 1)
     
     color <- ifelse(score > 70, "#2ECC71", ifelse(score > 40, "#FFB600", "#E74C3C")) 
     HTML(paste0("<h2 style='color:", color, "; font-size:3em;'>", score, "/100</h2>"))
@@ -416,9 +582,9 @@ server <- function(input, output, session) {
     data.frame(
       Component = c("Shapiro p-value", "Lilliefors p-value", "Jarque-Bera p-value", "ECDF Max Diff (K-S Stat)"),
       Value = c(
-        safe_p(shapiro.test, x),
-        safe_p(lillie.test, x),
-        safe_p(jarque.test, x),
+        if(length(x) >= 3 && length(x) <= 5000) safe_p(shapiro.test, x) else NA,
+        if(length(x) >= 6) safe_p(lillie.test, x) else NA,
+        if(length(x) >= 20) safe_p(tseries::jarque.test, x) else NA,
         round(max(abs(ecdf(x)(x) - pnorm(x, mean(x), sd(x)))), 6)
       ),
       stringsAsFactors = FALSE
@@ -429,18 +595,21 @@ server <- function(input, output, session) {
     x <- selected_data(); req(x)
     safe_p <- function(f, x) tryCatch(f(x)$p.value, error = function(e) NA)
     
-    sh <- safe_p(shapiro.test, x)
-    li <- safe_p(lillie.test, x)
-    jb <- safe_p(jarque.test, x)
+    sh <- if(length(x) >= 3 && length(x) <= 5000) safe_p(shapiro.test, x) else NA
+    li <- if(length(x) >= 6) safe_p(lillie.test, x) else NA
+    jb <- if(length(x) >= 20) safe_p(tseries::jarque.test, x) else NA
     
     alpha <- input$alpha
     
     is_normal_count <- sum(c(sh > alpha, li > alpha, jb > alpha), na.rm = TRUE)
+    total_tests <- sum(!is.na(c(sh, li, jb)))
     
-    if (is_normal_count >= 2) 
-      HTML("<div style='color:#00A388; font-weight:600; font-size:1.1em;'>Secara keseluruhan, **NORMAL**. Gunakan statistik parametrik.</div>")
+    if (total_tests == 0) return(tags$p("Tidak ada uji utama yang dapat dijalankan."))
+    
+    if (is_normal_count / total_tests >= 0.5) 
+      HTML("<div style='color:#00A388; font-weight:600; font-size:1.1em;'>Secara keseluruhan, **NORMAL**. Gunakan statistik parametrik (t-test, ANOVA, Regresi Linier) jika asumsi lain terpenuhi.</div>")
     else
-      HTML("<div style='color:#E74C3C; font-weight:600; font-size:1.1em;'>Terdapat indikasi kuat **TIDAK NORMAL**. Pertimbangkan uji non-parametrik.</div>")
+      HTML("<div style='color:#E74C3C; font-weight:600; font-size:1.1em;'>Terdapat indikasi kuat **TIDAK NORMAL**. Pertimbangkan transformasi data atau gunakan uji non-parametrik (Mann-Whitney, Kruskal-Wallis).</div>")
   })
   
   output$download_report <- downloadHandler(
@@ -448,6 +617,7 @@ server <- function(input, output, session) {
       paste0("normality_report_", Sys.Date(), ".html")
     },
     content = function(file) {
+    HEAD
       writeLines("DOWNLOAD OK", file)
       
       x <- selected_data()
@@ -483,6 +653,9 @@ server <- function(input, output, session) {
         "<h3>Interpretation</h3>",
         "<p>Results should be interpreted cautiously, considering sample size and test sensitivity.</p>"
       ), file)
+
+      # Logika R Markdown/HTML Report di sini
+      writeLines("<h3>Report Sederhana (Implementasi Report Detail Ditinggalkan)</h3>", file)
     }
   )
   
