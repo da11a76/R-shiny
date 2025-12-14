@@ -266,6 +266,7 @@ ui <- dashboardPage(
 # =================================================================
 # 2. SERVER: LOGIKA LENGKAP DAN PERBAIKAN Q-Q PLOT
 # =================================================================
+
 server <- function(input, output, session) {
   
   # 1. LOAD DATA
@@ -335,14 +336,15 @@ server <- function(input, output, session) {
   output$summary_stats <- renderTable({
     x <- selected_data(); req(x)
     data.frame(
-      Statistik = c("Mean", "Median", "SD", "CV", "Skewness", "Kurtosis (Fisher)", "Min", "Max", "IQR"),
+      Statistik = c("N (Jumlah Data)", "Mean", "Median", "SD", "CV", "Skewness", "Kurtosis (Excess)", "Min", "Max", "IQR"),
       Nilai = c(
+        length(x), # Menambahkan N
         round(mean(x), 6),
         round(median(x), 6),
         round(sd(x), 6),
         round(ifelse(mean(x) != 0, sd(x)/mean(x), NA), 6),
         round(skewness(x), 6),
-        round(kurtosis(x) - 3, 6),
+        round(kurtosis(x) - 3, 6), # Menggunakan Kurtosis Excess (Fisher)
         round(min(x), 6),
         round(max(x), 6),
         round(IQR(x), 6)
@@ -352,10 +354,35 @@ server <- function(input, output, session) {
   
   output$centrality_note <- renderUI({
     x <- selected_data(); req(x)
-    if (abs(mean(x) - median(x)) < 0.1 * sd(x))
-      HTML("<div style='color:#00A388; font-weight:600;'>Mean ≈ Median → simetris (Baik)</div>")
-    else
-      HTML("<div style='color:#E74C3C; font-weight:600;'>Mean ≠ Median → indikasi skewness (Waspada)</div>")
+    # Ambang batas 10% dari SD sebagai indikator signifikan perbedaan Mean-Median
+    threshold <- 0.1 * sd(x)
+    sk <- skewness(x)
+    kt_ex <- kurtosis(x) - 3
+    
+    # Interpretasi Simetri (Mean vs Median)
+    if (abs(mean(x) - median(x)) < threshold) {
+      simetri_msg <- "<span style='color:#00A388;'>Mean ≈ Median → Distribusi **Simetris**</span>"
+    } else if (mean(x) > median(x)) {
+      simetri_msg <- "<span style='color:#E74C3C;'>Mean > Median → Indikasi **Skewness Positif**</span>"
+    } else {
+      simetri_msg <- "<span style='color:#E74C3C;'>Mean < Median → Indikasi **Skewness Negatif**</span>"
+    }
+    
+    # Interpretasi Skewness dan Kurtosis (Rules of Thumb)
+    sk_msg <- if (abs(sk) > 0.5) "Skewness (Abs > 0.5) **tinggi**." else "Skewness (Abs ≤ 0.5) **rendah**."
+    kt_msg <- if (abs(kt_ex) > 0.5) "Kurtosis (Abs > 0.5) **ekstrem**." else "Kurtosis (Abs ≤ 0.5) **wajar**."
+    
+    # Gabungan
+    HTML(paste0(
+      "<div style='background-color: #F7F7F7; padding: 10px; border-radius: 5px; border-left: 3px solid #2E86C1;'>",
+      "<h4>Kesimpulan Deskriptif</h4>",
+      "<ul>",
+      "<li>", simetri_msg, "</li>",
+      "<li>**", sk_msg, "**</li>",
+      "<li>**", kt_msg, "**</li>",
+      "</ul>",
+      "</div>"
+    ))
   })
   
   # =====================
@@ -473,26 +500,33 @@ server <- function(input, output, session) {
   # 7. tests
   # =====================
   run_tests <- reactive({
-    req(input$selected_test)
-    x <- selected_data()
+    # Memastikan input test selector ada
+    req(input$selected_test) 
+    x <- selected_data(); req(x)
     
     sel <- input$selected_test
     res <- list()
+    N <- length(x)
     
-    if ((sel == "Shapiro" || sel == "All") && length(x) >= 3 && length(x) <= 5000) {
+    # Shapiro-Wilk: 3 <= N <= 5000
+    if ((sel == "Shapiro" || sel == "All") && N >= 3 && N <= 5000) {
       res$Shapiro <- shapiro.test(x)
     }
     
-    if ((sel == "Lilliefors" || sel == "All") && length(x) > 5) {
+    # Lilliefors (Uji KS yang disesuaikan untuk estimasi parameter dari sampel)
+    if ((sel == "Lilliefors" || sel == "All") && N > 5) {
       res$Lilliefors <- lillie.test(x)
     }
     
-    if ((sel == "Jarque-Bera" || sel == "All") && length(x) >= 20) {
+    # Jarque-Bera (Baik untuk N >= 20)
+    if ((sel == "Jarque-Bera" || sel == "All") && N >= 20) {
+      # Pastikan paket 'moments' dimuat. jarque.test adalah alias untuk jarque.bera.test
       res$`Jarque-Bera` <- jarque.test(x)
     }
     
-    if ((sel == "Chi-square" || sel == "All") && length(x) >= 5) {
-      res$`Kolmogorov-Smirnov` <- ks.test(scale(x), "pnorm")
+    # Kolmogorov-Smirnov (Menggunakan mean dan SD sampel)
+    if ((sel == "Kolmogorov-Smirnov" || sel == "All") && N >= 5) {
+      res$`Kolmogorov-Smirnov` <- ks.test(x, "pnorm", mean(x), sd(x))
     }
     
     res
@@ -508,12 +542,13 @@ server <- function(input, output, session) {
       Test = names(tests),
       Statistic = sapply(tests, function(t) round(unname(t$statistic), 6)),
       p_value = sapply(tests, function(t) round(t$p.value, 6)),
+      # Logika Konsisten: Tolak H0 (NON-NORMAL) jika p-value < alpha
       Decision = ifelse(
         sapply(tests, function(t) t$p.value) < alpha,
-        "Reject H0 (NON-NORMAL)",
-        "Fail to Reject H0 (NORMAL)"
+        "TOLAK H0 (TIDAK NORMAL)",
+        "GAGAL TOLAK H0 (NORMAL)"
       ),
-      row.names = NULL
+      stringsAsFactors = FALSE
     )
   }, striped = TRUE, hover = TRUE)
   
@@ -522,18 +557,22 @@ server <- function(input, output, session) {
     req(length(tests) > 0)
     
     alpha <- input$alpha
+    n_total <- length(tests)
     n_reject <- sum(sapply(tests, function(t) t$p.value < alpha))
     
+    # Pesan Uji Formal harus paling tegas
     if (n_reject == 0) {
-      HTML("<div style='color:#00A388; font-weight:600; background-color: #E6F7E9; padding: 10px; border-radius: 5px;'>
-           Semua uji yang dipilih gagal menolak H₀. Data dianggap **NORMAL**.
-           </div>")
+      HTML(paste0("<div style='color:#00A388; font-weight:700; background-color: #E6F7E9; padding: 10px; border-radius: 5px; border: 1px solid #00A388;'>
+      <i class='fa fa-check-circle'></i> Kesimpulan Uji Formal: Semua (", n_total, ") uji gagal menolak H₀. Data **KOMPATIBEL DENGAN NORMALITAS**.
+      </div>"))
+    } else if (n_reject == n_total) {
+      HTML(paste0("<div style='color:#E74C3C; font-weight:700; background-color: #FEEEEE; padding: 10px; border-radius: 5px; border: 1px solid #E74C3C;'>
+      <i class='fa fa-times-circle'></i> Kesimpulan Uji Formal: Semua (", n_total, ") uji menolak H₀. Data **SANGAT TIDAK NORMAL**.
+      </div>"))
     } else {
-      HTML(paste0(
-        "<div style='color:#E74C3C; font-weight:600; background-color: #FEEEEE; padding: 10px; border-radius: 5px;'>",
-        n_reject, " dari ", length(tests),
-        " uji yang dipilih menolak H₀. Terdapat indikasi data **TIDAK NORMAL**.</div>"
-      ))
+      HTML(paste0("<div style='color:#F39C12; font-weight:700; background-color: #FFF8E1; padding: 10px; border-radius: 5px; border: 1px solid #F39C12;'>
+      <i class='fa fa-exclamation-triangle'></i> Kesimpulan Uji Formal: ", n_reject, " dari ", n_total, " uji menolak H₀. Terdapat **INDIKASI KETIDAKNORMALAN** yang signifikan.
+      </div>"))
     }
   })
   
