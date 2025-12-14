@@ -900,12 +900,16 @@ server <- function(input, output, session) {
       paste0("normality_report_", Sys.Date(), ".html")
     },
     content = function(file) {
+<<<<<<< HEAD
       HEAD
       writeLines("DOWNLOAD OK", file)
+=======
+>>>>>>> 25ab0e6e179054010c2341973c20ebbf3898a901
       
       x <- selected_data()
       n <- length(x)
       
+<<<<<<< HEAD
       stats <- data.frame(
         Mean = mean(x),
         Median = median(x),
@@ -919,14 +923,33 @@ server <- function(input, output, session) {
       jb <- jarque.bera.test(x)$p.value
       
       writeLines(c(
+=======
+      sh <- shapiro.test(x)$p.value
+      li <- lillie.test(x)$p.value
+      jb <- tseries::jarque.test(x)$p.value
+      
+      html <- c(
+        "<html>",
+        "<head><meta charset='UTF-8'><title>Normality Report</title></head>",
+        "<body style='font-family: Arial;'>",
+        
+>>>>>>> 25ab0e6e179054010c2341973c20ebbf3898a901
         "<h2>Normality Analysis Report</h2>",
         paste("<p><b>Sample size:</b>", n, "</p>"),
         
         "<h3>Descriptive Statistics</h3>",
+<<<<<<< HEAD
         paste("<p>Mean:", round(stats$Mean,2), 
               "| SD:", round(stats$SD,2), "</p>"),
         
         "<h3>Normality Tests (α = 0.05)</h3>",
+=======
+        paste("<p>Mean:", round(mean(x),2),
+              "| Median:", round(median(x),2),
+              "| SD:", round(sd(x),2), "</p>"),
+        
+        "<h3>Normality Tests (α =", input$alpha, ")</h3>",
+>>>>>>> 25ab0e6e179054010c2341973c20ebbf3898a901
         "<ul>",
         paste("<li>Shapiro-Wilk p-value:", round(sh,4), "</li>"),
         paste("<li>Lilliefors p-value:", round(li,4), "</li>"),
@@ -934,11 +957,21 @@ server <- function(input, output, session) {
         "</ul>",
         
         "<h3>Interpretation</h3>",
+<<<<<<< HEAD
         "<p>Results should be interpreted cautiously, considering sample size and test sensitivity.</p>"
       ), file)
       
       # Logika R Markdown/HTML Report di sini
       writeLines("<h3>Report Sederhana (Implementasi Report Detail Ditinggalkan)</h3>", file)
+=======
+        "<p>Jika p-value > alpha, data dianggap normal.</p>",
+        
+        "</body>",
+        "</html>"
+      )
+      
+      writeLines(html, file)
+>>>>>>> 25ab0e6e179054010c2341973c20ebbf3898a901
     }
   )
   
