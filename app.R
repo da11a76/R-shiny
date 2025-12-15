@@ -937,10 +937,7 @@ server <- function(input, output, session) {
   
   
   output$raw_test_output <- renderPrint({ run_tests() })
-  
-  # =====================
-  # 8. sk-kurt
-  # =====================
+ 
   output$sk_kurt_plot <- renderPlotly({
     x <- selected_data(); req(x)
     sk <- skewness(x); kt_fish <- kurtosis(x) - 3
@@ -1083,18 +1080,22 @@ server <- function(input, output, session) {
     res <- evaluate_normality(x, input$alpha)
     vis <- interpret_visual_summary(x)
     
+    keputusan_text <- if (res$decision == "GAGAL_TOLAK_H0") {
+      "<b style='color:#00A388;'>mendekati distribusi normal</b>"
+    } else if (res$decision == "TOLAK_H0") {
+      "<b style='color:#E74C3C;'>tidak mengikuti distribusi normal</b>"
+    } else {
+      "<b>tidak cukup data untuk kesimpulan statistik</b>"
+    }
+    
     HTML(paste0(
-      "<div style='padding:12px;'>",
+      "<div style='padding:15px; background:#F9FBFC; border-radius:8px;'>",
       
-      "<h4>Kesimpulan Statistik</h4>",
-      "<p>Uji formal (<b>", res$main_name,
-      "</b>) menunjukkan bahwa distribusi data ",
-      ifelse(res$decision == "APPROX_NORMAL",
-             "<b style='color:#00A388;'>mendekati normal</b>.",
-             "<b style='color:#E74C3C;'>tidak normal</b>."),
-      "</p>",
+      "<h4>📌 Kesimpulan Statistik</h4>",
+      "<p>Uji formal (<b>", res$test_name, "</b>) menunjukkan bahwa data ",
+      keputusan_text, ".</p>",
       
-      "<h4>Kesimpulan Visual & Bentuk Distribusi</h4>",
+      "<h4>📊 Interpretasi Visual</h4>",
       "<ul>",
       "<li>", vis$sk_msg, "</li>",
       "<li>", vis$kt_msg, "</li>",
@@ -1103,15 +1104,12 @@ server <- function(input, output, session) {
       
       "<p style='font-size:12px; color:#6c757d;'><i>",
       "Catatan: Pada ukuran sampel besar, uji formal sangat sensitif. ",
-      "Evaluasi normalitas sebaiknya menggabungkan uji statistik, visualisasi, ",
-      "dan ukuran skewness–kurtosis.",
+      "Gunakan visualisasi sebagai penyeimbang interpretasi.",
       "</i></p>",
       
       "</div>"
     ))
   })
-  
-  
   output$download_report <- downloadHandler(
     filename = function() {
       paste0("normality_report_", Sys.Date(), ".html")
