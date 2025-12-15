@@ -149,7 +149,8 @@ ui <- dashboardPage(
                   width = 4, tags$i(class="icon-decor fas fa-flask d1"),
                   uiOutput("test_selector")
                   ,
-                  tags$p("H₀: Data terdistribusi normal. H₁: Data tidak normal."),
+                  tags$p("H₀: Data Populasi mengikuti distribusi normal."),
+                  tags$p("H₁: Data Populasi tidak mengikuti distribusi normal."),
                   
                   # START PERBAIKAN: Mengganti input$alpha dengan uiOutput
                   uiOutput("alpha_display")
@@ -172,11 +173,6 @@ ui <- dashboardPage(
                   uiOutput("ks_warning"),
                   uiOutput("test_interpretation") # OUTPUT BARU
                 )
-              ),
-              fluidRow(
-                box(title = tags$span(icon("terminal"), " Output Mentah (Debug)"),
-                    width = 12,
-                    verbatimTextOutput("raw_test_output"))
               )
       ),
       
@@ -252,34 +248,67 @@ evaluate_normality <- function(x, alpha) {
   n <- length(x)
   safe_p <- function(f) tryCatch(f(x)$p.value, error = function(e) NA)
   
-  sh <- if(n >= 3 && n <= 5000) safe_p(shapiro.test) else NA
-  li <- if(n >= 6) safe_p(lillie.test) else NA
-  jb <- if(n >= 20) safe_p(tseries::jarque.test) else NA
+  sh <- if (n >= 3 && n < 30) safe_p(shapiro.test) else NA
+  li <- if (n >= 5 && n < 50) safe_p(lillie.test) else NA
+  jb <- if (n >= 20) {
+    tryCatch(tseries::jarque.test(x)$p.value, error = function(e) NA)
+  } else NA
   
-  main_test <- if (n < 30) sh else if (n < 30) li else jb
-  main_name <- if (n < 30) "Shapiro-Wilk" else if (n < 30) "Lilliefors" else "Jarque-Bera"
+  if (n < 30) {
+    main_test <- sh
+    main_name <- "Shapiro-Wilk"
+  } else if (n < 100) {
+    main_test <- li
+    main_name <- "Lilliefors"
+  } else {
+    main_test <- jb
+    main_name <- "Jarque-Bera"
+  }
   
-  decision <- if (is.na(main_test)) "INSUFFICIENT"
-  else if (main_test > alpha) "APPROX_NORMAL"
-  else "NOT_NORMAL"
+  decision <- if (is.na(main_test)) {
+    "INSUFFICIENT"
+  } else if (main_test > alpha) {
+    "APPROX_NORMAL"
+  } else {
+    "NOT_NORMAL"
+  }
   
   list(
     n = n,
-    sh = sh, li = li, jb = jb,
     main_test = main_test,
     main_name = main_name,
     decision = decision
   )
 }
 
+
+interpret_skew_vis <- function(x) {
+  sk <- skewness(x)
+  kt <- kurtosis(x) - 3
+  
+  sk_msg <- if (abs(sk) < 0.5) {
+    "Distribusi relatif simetris (skewness kecil)."
+  } else if (sk > 0) {
+    "Distribusi condong ke kanan (positive skew)."
+  } else {
+    "Distribusi condong ke kiri (negative skew)."
+  }
+  
+  kt_msg <- if (abs(kt) < 0.5) {
+    "Ketajaman distribusi mendekati normal."
+  } else if (kt > 0) {
+    "Distribusi lebih runcing dari normal (leptokurtic)."
+  } else {
+    "Distribusi lebih datar dari normal (platykurtic)."
+  }
+  
+  list(sk = sk, kt = kt, sk_msg = sk_msg, kt_msg = kt_msg)
+}
+
+
 # =========================
 # Server
 # =========================
-
-# =================================================================
-# 2. SERVER: LOGIKA LENGKAP DAN PERBAIKAN Q-Q PLOT
-# =================================================================
-
 
 # =================================================================
 # 2. SERVER: LOGIKA LENGKAP DAN PERBAIKAN Q-Q PLOT
@@ -585,7 +614,7 @@ server <- function(input, output, session) {
   
   sample_category <- reactive({
     n <- length(selected_data())
-    if (n <= 50) "Sampel Kecil (N ≤ 50)" else "Sampel Besar (N > 50)"
+    if (n < 30) "Sampel Kecil (N < 30)" else if (n>=30 && n<100) "Sampel Besar (N <= 100)" else "Sampel Sangat Besar (N > 100)"
   })
   
   output$sample_info <- renderUI({
@@ -606,7 +635,7 @@ server <- function(input, output, session) {
     n <- sample_size()
     req(n)
     
-    if (n <= 50) {
+    if (n < 30) {
       choices <- c(
         "Shapiro–Wilk" = "shapiro",
         "Lilliefors"   = "lillie"
@@ -710,25 +739,25 @@ server <- function(input, output, session) {
     if (N < 3) {
       return(list(
         status = "Data Terlalu Sedikit",
-        recommendation = "Normalitas tidak dapat diuji secara statistik. Min. N=3 untuk Shapiro-Wilk.",
+        recommendation = "Normalitas tidak dapat diuji secara statistik. Min. n=3 untuk Shapiro-Wilk.",
         icon = "fas fa-exclamation-triangle"
       ))
     } else if (N < 30) {
       return(list(
         status = "Sampel Kecil (N < 30)",
-        recommendation = "Uji Paling Kuat: **Shapiro-Wilk** (terbaik untuk N kecil). Visualisasikan dengan Q-Q Plot. Lilliefors juga bisa digunakan jika N > 5.",
+        recommendation = "Uji Paling Kuat: Shapiro-Wilk dan Lilliefors. Visualisasikan dengan Q-Q Plot.",
         icon = "fas fa-leaf"
       ))
-    } else if (N >= 30 && N <= 5000) {
+    } else if (N >= 30 && N <= 100) {
       return(list(
-        status = "Sampel Menengah (300 < N ≤ 5000)",
-        recommendation = "Uji yang Direkomendasikan: **Shapiro-Wilk** (masih baik), **Lilliefors/Kolmogorov-Smirnov**, dan **Jarque-Bera** (jika N≥20).",
+        status = "Sampel Besar (30 < N ≤ 100)",
+        recommendation = "Uji yang Direkomendasikan: Shapiro-Wilk (masih baik), Lilliefors/Kolmogorov-Smirnov dan Jarque-Bera (jika n≥20).",
         icon = "fas fa-balance-scale"
       ))
-    } else if (N > 5000) {
+    } else if (N > 100) {
       return(list(
-        status = "Sampel Besar (N > 5000)",
-        recommendation = "Uji yang Direkomendasikan: **Kolmogorov-Smirnov**, **Jarque-Bera**, atau **Chi-square Goodness-of-Fit**. Waspada: Normalitas sering ditolak pada N besar.",
+        status = "Sampel sangat besar  (N > 100)",
+        recommendation = "Uji yang Direkomendasikan: Jarque-Bera atau Chi-square Goodness-of-Fit. Waspada: Normalitas sering ditolak pada n besar.",
         icon = "fas fa-city"
       ))
     }
@@ -743,9 +772,9 @@ server <- function(input, output, session) {
     HTML(paste0(
       "<div style='background-color: #ECF0F1; padding: 15px; border-radius: 8px; border-left: 5px solid #00A388;'>",
       "<h4><i class='", rec$icon, "'></i> Status Data & Rekomendasi</h4>",
-      "<p style='margin-bottom: 5px;'>**Jumlah Data (N):** <span style='font-size:1.2em; font-weight:700;'>", N, "</span></p>",
-      "<p style='margin-bottom: 10px;'>**Kelompok Sampel:** <span style='font-weight:600;'>", rec$status, "</span></p>",
-      "**Rekomendasi Uji:** ", rec$recommendation,
+      "<p style='margin-bottom: 5px;'>Jumlah Data (N): <span style='font-size:1.2em; font-weight:700;'>", N, "</span></p>",
+      "<p style='margin-bottom: 10px;'>Kelompok Sampel: <span style='font-weight:600;'>", rec$status, "</span></p>",
+      "Rekomendasi Uji: ", rec$recommendation,
       "</div>"
     ))
   })
@@ -757,8 +786,7 @@ server <- function(input, output, session) {
         style = "color: #b30000; background-color: #fff3f3; 
                padding: 10px; border-radius: 5px;",
         strong("⚠️ Peringatan Uji Kolmogorov–Smirnov"),
-        p("Uji KS sensitif terhadap estimasi parameter dan ukuran sampel."),
-        p("Dalam aplikasi ini, uji KS digunakan sebagai uji pendukung dan tidak dijadikan dasar utama penentuan normalitas.")
+        p("Uji KS sensitif terhadap estimasi parameter dan ukuran sampel.")
       )
     }
   })
@@ -889,7 +917,7 @@ server <- function(input, output, session) {
       N = sapply(group_data, function(x) length(na.omit(as.numeric(x)))),
       Shapiro_p = sapply(group_data, function(x) {
         xx <- na.omit(as.numeric(x))
-        if (length(xx) >= 3 && length(xx) <= 5000) shapiro.test(xx)$p.value else NA
+        if (length(xx) >= 3 && length(xx) < 30) shapiro.test(xx)$p.value else NA
       }),
       stringsAsFactors = FALSE
     )
@@ -911,17 +939,24 @@ server <- function(input, output, session) {
       HTML(paste0(
         "<h2 style='color:#2ECC71;'>Distribusi Mendekati Normal</h2>",
         "<p>Uji utama: <b>", res$main_name,
-        "</b> (p-value = ", round(res$main_test, 5), ")</p>"
+        "</b><br>p-value = <b>", formatC(res$main_test, format = "f", digits = 5), "</b></p>",
+        "<p>Jumlah data (N): ", res$n, "</p>"
       ))
     } else if (res$decision == "NOT_NORMAL") {
       HTML(paste0(
         "<h2 style='color:#E74C3C;'>Distribusi Tidak Normal</h2>",
         "<p>Uji utama: <b>", res$main_name,
-        "</b> (p-value = ", round(res$main_test, 5), ")</p>"
+        "</b><br>p-value = <b>", formatC(res$main_test, format = "f", digits = 5), "</b></p>",
+        "<p>Jumlah data (N): ", res$n, "</p>"
       ))
     } else {
       tags$p("Data tidak cukup untuk evaluasi normalitas.")
     }
+    verbatimTextOutput("debug_norm")
+    output$debug_norm <- renderPrint({
+      evaluate_normality(selected_data(), input$alpha)
+    })
+    
   })
   
   output$score_breakdown <- renderTable({
@@ -931,34 +966,46 @@ server <- function(input, output, session) {
     data.frame(
       Component = c("Shapiro p-value", "Lilliefors p-value", "Jarque-Bera p-value", "ECDF Max Diff (K-S Stat)"),
       Value = c(
-        if(length(x) >= 3 && length(x) <= 5000) safe_p(shapiro.test, x) else NA,
+        if(length(x) >= 3 && length(x) < 30) safe_p(shapiro.test, x) else NA,
         if(length(x) >= 6) safe_p(lillie.test, x) else NA,
         if(length(x) >= 20) safe_p(tseries::jarque.test, x) else NA,
         round(max(abs(ecdf(x)(x) - pnorm(x, mean(x), sd(x)))), 6)
       ),
       stringsAsFactors = FALSE
     )
-  }, digits = 6, striped = TRUE, hover = TRUE)
+  }, digits = 8, striped = TRUE, hover = TRUE)
   
   output$final_conclusion <- renderUI({
     x <- selected_data(); req(x)
     res <- evaluate_normality(x, input$alpha)
+    iv <- interpret_skew_vis(x)
     
-    if (res$decision == "APPROX_NORMAL") {
-      HTML("<div style='color:#00A388; font-weight:600; font-size:1.1em;'>
-         Secara keseluruhan, distribusi data <b>mendekati normal</b>.
-         Statistik parametrik dapat dipertimbangkan dengan verifikasi asumsi lain.
-         </div>")
-    } else if (res$decision == "NOT_NORMAL") {
-      HTML("<div style='color:#E74C3C; font-weight:600; font-size:1.1em;'>
-         Distribusi data <b>tidak normal</b>.
-         Disarankan transformasi data atau metode non-parametrik.
-         </div>")
-    } else {
-      tags$p("Data tidak cukup untuk kesimpulan normalitas.")
-    }
+    HTML(paste0(
+      "<div style='padding:12px;'>",
+      "<h4>Kesimpulan Statistik</h4>",
+      "<p>Uji formal (<b>", res$main_name, "</b>) menunjukkan bahwa distribusi data ",
+      ifelse(res$decision == "APPROX_NORMAL",
+             "<b style='color:#00A388;'>mendekati normal</b>.",
+             "<b style='color:#E74C3C;'>tidak normal</b>."),
+      "</p>",
+      
+      "<h4>Kesimpulan Visual & Bentuk Distribusi</h4>",
+      "<ul>",
+      "<li>", iv$sk_msg, "</li>",
+      "<li>", iv$kt_msg, "</li>",
+      "<li>Q-Q plot menunjukkan ",
+      ifelse(abs(iv$sk) < 0.5,
+             "titik relatif mengikuti garis diagonal.",
+             "deviasi yang cukup jelas dari garis diagonal."),
+      "</li>",
+      "</ul>",
+      
+      "<p><b>Catatan:</b> Pada ukuran sampel besar, uji formal sangat sensitif.
+    Evaluasi normalitas sebaiknya menggabungkan <i>uji statistik</i>,
+    <i>visualisasi</i>, dan <i>skewness–kurtosis</i>.</p>",
+      "</div>"
+    ))
   })
-  
   
   output$download_report <- downloadHandler(
     filename = function() {
@@ -982,8 +1029,8 @@ server <- function(input, output, session) {
         Max = max(x)
       )
       
-      sh <- if (n >= 3 && n <= 5000) shapiro.test(x)$p.value else NA
-      li <- if (n >= 6) lillie.test(x)$p.value else NA
+      sh <- if (n >= 3 && n < 30) shapiro.test(x)$p.value else NA
+      li <- if (n >= 6 && n < 30) lillie.test(x)$p.value else NA
       jb <- if (n >= 20) {
         tryCatch(tseries::jarque.test(x)$p.value, error = function(e) NA)
       } else NA
