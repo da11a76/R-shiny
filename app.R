@@ -14,9 +14,21 @@ library(tidyverse)
 # =====================
 # 1. THEME & FONT (Teal & Emas)
 # =====================
-theme_app <- bs_theme(
+
+light_theme <- bs_theme(
   version = 5,
   bootswatch = "flatly",
+  primary = "#00A388",
+  secondary = "#2F4858",
+  success = "#2ECC71",
+  info = "#3498DB",
+  base_font = font_google("Inter"),
+  heading_font = font_google("Playfair Display")
+)
+
+dark_theme <- bs_theme(
+  version = 5,
+  bootswatch = "darkly",
   primary = "#00A388",
   secondary = "#2F4858",
   success = "#2ECC71",
@@ -53,9 +65,9 @@ ui <- dashboardPage(
                 .tab-title-accent { color: #2F4858; font-family: 'Playfair Display'; font-weight: 700; border-bottom: 2px solid #00A388; padding-bottom: 5px; margin-bottom: 20px; }
             "))
     ),
-    sidebarMenu(
-      menuItem("🏠 Home & Setup", tabName = "home"),
-      menuItem("📊 Deskripsi Data", tabName = "desc"),
+    sidebarMenu(id = "tabs",
+      menuItem("🏠 Home", tabName = "home"),
+      menuItem("📊 Unggah & Deskripsi Data", tabName = "desc"),
       menuItem("📈 Visualisasi Distribusi", tabName = "visual"),
       menuItem("✅ Uji Formal Normalitas", tabName = "formal"), 
       menuItem("🎯 Skewness & Kurtosis", tabName = "skk"),
@@ -67,45 +79,86 @@ ui <- dashboardPage(
   # BODY
   dashboardBody(
     
+    theme = bs_theme(version = 5, bootswatch = "flatly"),
+    
     tabItems(
       
       # ===================== 
       # 1. HOME & SETUP
       # =====================
       tabItem("home",
-              tags$h2("Pengaturan Data", class="tab-title-accent"),
+              tags$h2("🔬 Normality Lab", class="tab-title-accent"),
+              
+              box(
+                width = 12,
+                title = "Tentang Aplikasi",
+                tags$p(
+                  "Normality Lab adalah aplikasi Shiny untuk mengevaluasi asumsi ",
+                  strong("distribusi normal"),
+                  " menggunakan pendekatan visual, statistik deskriptif, ",
+                  "dan uji formal (Shapiro-Wilk, Lilliefors, Jarque-Bera, KS, Chi-square)."
+                ),
+                tags$ul(
+                  tags$li("Menyesuaikan uji dengan ukuran sampel"),
+                  tags$li("Menampilkan interpretasi statistik & visual"),
+                  tags$li("Dirancang untuk analisis akademik & praktis")
+                )
+              ),
+              
               fluidRow(
                 box(
-                  title = tags$span(icon("upload"), " Unggah dan Pilih Variabel"),
-                  width = 6, tags$i(class="icon-decor fas fa-database d1"),
-                  fileInput("file_data", "Pilih file CSV / Excel", accept = c(".csv", ".xlsx", ".xls")),
-                  uiOutput("select_variable"),
-                  uiOutput("select_group")
+                  width = 4,
+                  actionButton("go_desc", "📂 Unggah & Deskripsi Data", class = "btn-success", width = "100%")
                 ),
                 box(
-                  title = tags$span(icon("cogs"), " Opsi Global"),
-                  width = 6, tags$i(class="icon-decor fas fa-sliders-h d2"),
-                  sliderInput("alpha", "Tingkat Signifikansi (Alpha)", 0.01, 0.1, 0.05, step = 0.005),
-                  tags$p("Alpha digunakan sebagai batas keputusan untuk Uji Formal."),
-                  hr(),
-                  tags$p(icon("info-circle"), " Semua analisis di tab lain akan bergantung pada variabel yang Anda pilih di sini.")
+                  width = 4,
+                  actionButton("go_visual", "📈 Visualisasi Distribusi", class = "btn-info", width = "100%")
+                ),
+                box(
+                  width = 4,
+                  actionButton("go_formal", "✅ Uji Formal Normalitas", class = "btn-primary", width = "100%")
                 )
               )
       ),
+      
       
       # =====================
       # 2. DESKRIPSI DATA
       # =====================
       tabItem("desc",
-              tags$h2("Deskripsi Statistik Data", class="tab-title-accent"),
+              tags$h2("Unggah & Deskripsi Data", class="tab-title-accent"),
+              
               fluidRow(
-                box(title=tags$span(icon("table"), " Preview Data (10 Baris Pertama)"),
-                    width = 7, tags$i(class="icon-decor fas fa-eye d1"),
-                    div(style="overflow-x: auto;", tableOutput("data_preview"))),
-                box(title=tags$span(icon("calculator"), " Statistik Kunci"),
-                    width = 5, tags$i(class="icon-decor fas fa-chart-line d2"),
-                    div(style="font-size:1.1em;", tableOutput("summary_stats")),
-                    uiOutput("centrality_note"))
+                box(
+                  title = tags$span(icon("upload"), " Unggah dan Pilih Variabel"),
+                  width = 6,
+                  fileInput("file_data", "Pilih file CSV / Excel", accept = c(".csv", ".xlsx", ".xls")),
+                  uiOutput("select_variable"),
+                  uiOutput("select_group")
+                ),
+                
+                box(
+                  title = tags$span(icon("sliders-h"), " Parameter Analisis"),
+                  width = 6,
+                  sliderInput("alpha", "Tingkat Signifikansi (Alpha)", 0.01, 0.1, 0.05, step = 0.005),
+                  tags$p("Alpha digunakan sebagai batas keputusan pada uji formal normalitas.")
+                )
+              ),
+              
+              hr(),
+              
+              fluidRow(
+                box(
+                  title=tags$span(icon("table"), " Preview Data (10 Baris Pertama)"),
+                  width = 7,
+                  tableOutput("data_preview")
+                ),
+                box(
+                  title=tags$span(icon("calculator"), " Statistik Deskriptif"),
+                  width = 5,
+                  tableOutput("summary_stats"),
+                  uiOutput("centrality_note")
+                )
               )
       ),
       
@@ -240,39 +293,6 @@ ui <- dashboardPage(
     )
   )
 )
-interpret_visual_summary <- function(x) {
-  sk <- moments::skewness(x)
-  kt <- moments::kurtosis(x) - 3
-  
-  sk_msg <- if (sk > 0.5) {
-    "Histogram menunjukkan distribusi condong ke kanan (positive skew)."
-  } else if (sk < -0.5) {
-    "Histogram menunjukkan distribusi condong ke kiri (negative skew)."
-  } else {
-    "Histogram menunjukkan distribusi relatif simetris."
-  }
-  
-  kt_msg <- if (abs(kt) < 0.5) {
-    "Ketajaman distribusi mendekati normal berdasarkan nilai kurtosis."
-  } else if (kt > 0.5) {
-    "Distribusi lebih runcing dibandingkan distribusi normal (leptokurtic)."
-  } else {
-    "Distribusi lebih datar dibandingkan distribusi normal (platykurtic)."
-  }
-  
-  qq_msg <- if (abs(sk) < 0.5 && abs(kt) < 0.5) {
-    "Q-Q plot menunjukkan titik relatif mengikuti garis diagonal."
-  } else {
-    "Q-Q plot menunjukkan deviasi yang cukup jelas dari garis diagonal."
-  }
-  
-  list(
-    sk_msg = sk_msg,
-    kt_msg = kt_msg,
-    qq_msg = qq_msg
-  )
-}
-
 
 evaluate_normality <- function(x, alpha = 0.05) {
   
@@ -288,7 +308,7 @@ evaluate_normality <- function(x, alpha = 0.05) {
     ))
   }
   
-  if (n < 30) {
+  if (n>=3 && n < 30) {
     test_name <- "Shapiro-Wilk"
     p_value <- tryCatch(
       shapiro.test(x)$p.value,
@@ -349,6 +369,27 @@ interpret_skew_vis <- function(x) {
 # =================================================================
 
 server <- function(input, output, session) {
+  
+  output$theme_switcher <- renderUI({
+    radioButtons(
+      "theme_mode",
+      label = "Mode Tampilan",
+      choices = c("🌞 Terang", "🌙 Gelap"),
+      inline = TRUE
+    )
+  })
+  
+  observeEvent(input$go_desc, {
+    updateTabItems(session, "tabs", "desc")
+  })
+  
+  observeEvent(input$go_visual, {
+    updateTabItems(session, "tabs", "visual")
+  })
+  
+  observeEvent(input$go_formal, {
+    updateTabItems(session, "tabs", "formal")
+  })
   
   # 1. LOAD DATA
   raw_data <- reactive({
@@ -415,36 +456,29 @@ server <- function(input, output, session) {
   })
   
   output$normality_gauge <- renderUI({
-    res <- final_test_result()
-    note <- normality_note(res$test_name, res$n)
+    x <- selected_data(); req(x)
+    res <- evaluate_normality(x, input$alpha)
     
-    if (res$decision == "TIDAK_VALID") {
-      HTML(paste0(
-        "<h4>Normalitas (Uji Formal)</h4>",
-        "<p><b>", res$test_name, "</b></p>",
-        "<p style='color:#E67E22;'>", res$warning, "</p>",
-        "<p>Jumlah data (N): ", res$n, "</p>"
-      ))
-      
+    if (res$decision == "GAGAL_TOLAK_H0") {
+      HTML(
+        "<div style='border-left:5px solid #00A388; padding:12px; background:#F7FDFC;'>
+        <b>✔ Status Normalitas:</b> Data mendekati distribusi normal
+      </div>"
+      )
+    } else if (res$decision == "TOLAK_H0") {
+      HTML(
+        "<div style='border-left:5px solid #E74C3C; padding:12px; background:#FDF2F2;'>
+        <b>✖ Status Normalitas:</b> Data tidak berdistribusi normal
+      </div>"
+      )
     } else {
-      keputusan <- if (res$decision == "GAGAL_TOLAK_H0")
-        "<b style='color:#2ECC71;'>NORMAL (Gagal Tolak H₀)</b>"
-      else
-        "<b style='color:#E74C3C;'>TIDAK NORMAL (Tolak H₀)</b>"
-      
-      HTML(paste0(
-        "<h4>Normalitas (Uji Formal)</h4>",
-        "<p>Uji yang digunakan: <b>", res$test_name, "</b></p>",
-        "<p>p-value: <b>", formatC(res$p_value, format='f', digits=5), "</b></p>",
-        "<p>Keputusan: ", keputusan, "</p>",
-        "<p>Jumlah data (N): ", res$n, "</p>",
-        if (!is.null(note))
-          paste0("<hr><p style='font-size:12px; color:#6c757d;'>", note, "</p>")
-        else ""
-      ))
+      HTML(
+        "<div style='border-left:5px solid #F1C40F; padding:12px; background:#FFFBEA;'>
+        <b>⚠ Status Normalitas:</b> Uji formal tidak konklusif
+      </div>"
+      )
     }
   })
-  
   
   # PERBAIKAN 1: Display Alpha di Tab Formal
   output$alpha_display <- renderUI({
@@ -644,6 +678,43 @@ server <- function(input, output, session) {
   # 7. tests
   # =====================
   # Logic Uji Goodness-of-Fit Chi-Square
+  
+  interpret_visual_summary <- function(x) {
+    
+    if (length(x) < 3 || all(is.na(x))) {
+      return(list(
+        sk_msg = "Data belum cukup untuk interpretasi bentuk distribusi.",
+        kt_msg = ""
+      ))
+    }
+    
+    sk <- moments::skewness(x, na.rm = TRUE)
+    kt <- moments::kurtosis(x, na.rm = TRUE) - 3
+    
+    sk_msg <- if (!is.na(sk) && abs(sk) <= 0.5) {
+      "Distribusi relatif simetris."
+    } else if (!is.na(sk) && sk > 0.5) {
+      "Distribusi condong ke kanan (positive skew)."
+    } else {
+      "Distribusi condong ke kiri (negative skew)."
+    }
+    
+    kt_msg <- if (!is.na(kt) && abs(kt) <= 0.5) {
+      "Keruncingan mendekati distribusi normal."
+    } else if (!is.na(kt) && kt > 0.5) {
+      "Distribusi lebih runcing dari normal (leptokurtic)."
+    } else {
+      "Distribusi lebih datar dari normal (platykurtic)."
+    }
+    
+    list(
+      sk = sk,
+      kt = kt,
+      sk_msg = sk_msg,
+      kt_msg = kt_msg
+    )
+  }
+  
   group_by_sturges <- function(x) {
     k <- ceiling(1 + log2(length(x)))
     hist(x, breaks = k, plot = FALSE)
@@ -1076,40 +1147,52 @@ server <- function(input, output, session) {
   
   output$final_conclusion <- renderUI({
     x <- selected_data(); req(x)
-    
-    res <- evaluate_normality(x, input$alpha)
+    res <- final_test_result(); req(res)
     vis <- interpret_visual_summary(x)
     
-    keputusan_text <- if (res$decision == "GAGAL_TOLAK_H0") {
-      "<b style='color:#00A388;'>mendekati distribusi normal</b>"
-    } else if (res$decision == "TOLAK_H0") {
-      "<b style='color:#E74C3C;'>tidak mengikuti distribusi normal</b>"
-    } else {
-      "<b>tidak cukup data untuk kesimpulan statistik</b>"
-    }
+    normal <- res$decision == "GAGAL_TOLAK_H0"
+    color <- ifelse(normal, "#00A388", "#E74C3C")
     
     HTML(paste0(
-      "<div style='padding:15px; background:#F9FBFC; border-radius:8px;'>",
+      "<div style='padding:15px; background:#F9FBFC; border-radius:8px;
+                border-left:5px solid ", color, ";'>",
       
       "<h4>📌 Kesimpulan Statistik</h4>",
-      "<p>Uji formal (<b>", res$test_name, "</b>) menunjukkan bahwa data ",
-      keputusan_text, ".</p>",
+      "<p><b>Uji yang digunakan:</b> ", res$test_name, "</p>",
+      "<p><b>P-value:</b> ", round(res$p_value, 5), "</p>",
+      "<p><b>Keputusan:</b> ",
+      ifelse(normal,
+             "<b style='color:#00A388;'>NORMAL (Gagal Tolak H₀)</b>",
+             "<b style='color:#E74C3C;'>TIDAK NORMAL (Tolak H₀)</b>"
+      ),
+      "</p>",
       
-      "<h4>📊 Interpretasi Visual</h4>",
+      if (!is.null(res$warning)) {
+        paste0(
+          "<div style='margin-top:10px; color:#856404;
+                    background:#fff3cd; padding:10px;
+                    border-radius:5px;'>",
+          "⚠️ ", res$warning,
+          "</div>"
+        )
+      } else "",
+      
+      "<h4 style='margin-top:15px;'>📊 Interpretasi Visual</h4>",
       "<ul>",
       "<li>", vis$sk_msg, "</li>",
       "<li>", vis$kt_msg, "</li>",
-      "<li>", vis$qq_msg, "</li>",
       "</ul>",
       
-      "<p style='font-size:12px; color:#6c757d;'><i>",
-      "Catatan: Pada ukuran sampel besar, uji formal sangat sensitif. ",
-      "Gunakan visualisasi sebagai penyeimbang interpretasi.",
-      "</i></p>",
+      "<p style='font-size:12px; color:#6c757d;'>
+     Catatan: Uji formal sangat sensitif pada ukuran sampel besar.
+     Visualisasi digunakan sebagai pendukung interpretasi.
+     </p>",
       
       "</div>"
     ))
   })
+  
+  
   output$download_report <- downloadHandler(
     filename = function() {
       paste0("normality_report_", Sys.Date(), ".html")
@@ -1152,13 +1235,13 @@ server <- function(input, output, session) {
       
       res <- evaluate_normality(x, alpha)
       
-      final_text <- if (res$decision == "APPROX_NORMAL")
+      final_text <- if (res$decision == "GAGAL_TOLAK_H0")
         "Distribusi data mendekati normal."
-      else if (res$decision == "NOT_NORMAL")
+      else if (res$decision == "TOLAK_H0")
         "Distribusi data menunjukkan penyimpangan dari normalitas."
       else
         "Data tidak cukup untuk dianalisis."
-      final_normal <- if(!is.null(res$decision) && res$decision == "APPROX_NORMAL") TRUE else FALSE
+      final_normal <- if(!is.null(res$decision) && res$decision == "GAGAL_TOLAK_H0") TRUE else FALSE
       
       
       html <- paste0(
