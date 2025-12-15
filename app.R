@@ -967,6 +967,10 @@ server <- function(input, output, session) {
     content = function(file) {
       
       x <- selected_data()
+      if(length(x) < 3) {
+        showNotification("Data tidak cukup untuk analisis normalitas.", type = "error")
+        return(NULL)
+      }
       n <- length(x)
       alpha <- input$alpha
       
@@ -1004,6 +1008,7 @@ server <- function(input, output, session) {
         "Distribusi data menunjukkan penyimpangan dari normalitas."
       else
         "Data tidak cukup untuk dianalisis."
+      final_normal <- if(!is.null(res$decision) && res$decision == "APPROX_NORMAL") TRUE else FALSE
       
       
       html <- paste0(
