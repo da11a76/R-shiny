@@ -275,11 +275,8 @@ ui <- dashboardPage(
       tabItem("final",
               tags$h2("Kesimpulan Akhir Normalitas", class="tab-title-accent"),
               fluidRow(
-                box(title=tags$span(icon("microscope"), "Normalitas"),
-                    width = 4, 
-                    uiOutput("normality_gauge")),
                 box(title=tags$span(icon("comments"), " Kesimpulan"),
-                    width = 8, 
+                    width = 10, 
                     uiOutput("final_conclusion"))
               ),
               fluidRow(
@@ -441,31 +438,6 @@ server <- function(input, output, session) {
     cats <- names(df)[sapply(df, function(x) is.factor(x) || is.character(x))]
     if (length(cats) == 0) return(NULL)
     selectInput("group_var", "Pilih variabel grouping (opsional)", choices = c("None", cats))
-  })
-  
-  output$normality_gauge <- renderUI({
-    x <- selected_data(); req(x)
-    res <- evaluate_normality(x, input$alpha)
-    
-    if (res$decision == "GAGAL_TOLAK_H0") {
-      HTML(
-        "<div style='border-left:5px solid #00A388; padding:12px; background:#F7FDFC;'>
-        <b>✔ Status Normalitas:</b> Data mendekati distribusi normal
-      </div>"
-      )
-    } else if (res$decision == "TOLAK_H0") {
-      HTML(
-        "<div style='border-left:5px solid #E74C3C; padding:12px; background:#FDF2F2;'>
-        <b>✖ Status Normalitas:</b> Data tidak berdistribusi normal
-      </div>"
-      )
-    } else {
-      HTML(
-        "<div style='border-left:5px solid #F1C40F; padding:12px; background:#FFFBEA;'>
-        <b>⚠ Status Normalitas:</b> Uji formal tidak konklusif
-      </div>"
-      )
-    }
   })
   
   # PERBAIKAN 1: Display Alpha di Tab Formal
