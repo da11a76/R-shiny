@@ -108,14 +108,17 @@ ui <- dashboardPage(
               fluidRow(
                 box(
                   width = 4,
+                  style = "min-height: 150px;",
                   actionButton("go_desc", "📂 Unggah & Deskripsi Data", class = "btn-success", width = "100%")
                 ),
                 box(
                   width = 4,
+                  style = "min-height: 150px;",
                   actionButton("go_visual", "📈 Visualisasi Distribusi", class = "btn-info", width = "100%")
                 ),
                 box(
                   width = 4,
+                  style = "min-height: 150px;",
                   actionButton("go_formal", "✅ Uji Formal Normalitas", class = "btn-primary", width = "100%")
                 )
               )
@@ -263,10 +266,6 @@ ui <- dashboardPage(
                     width = 6, plotlyOutput("hist_groups")),
                 box(title=tags$span(icon("grip-lines"), " Q-Q Plot per Group"),
                     width = 6, plotlyOutput("qq_groups"))
-              ),
-              fluidRow(
-                box(title=tags$span(icon("table"), " Uji Shapiro-Wilk per Group"),
-                    width = 12, tableOutput("group_test_table"))
               )
       ),
       
@@ -276,6 +275,9 @@ ui <- dashboardPage(
       tabItem("final",
               tags$h2("Kesimpulan Akhir Normalitas", class="tab-title-accent"),
               fluidRow(
+                box(title=tags$span(icon("microscope"), "Normalitas"),
+                    width = 4, 
+                    uiOutput("normality_gauge")),
                 box(title=tags$span(icon("comments"), " Kesimpulan"),
                     width = 8, 
                     uiOutput("final_conclusion"))
@@ -336,8 +338,6 @@ evaluate_normality <- function(x, alpha = 0.05) {
   )
 }
 
-
-
 interpret_skew_vis <- function(x) {
   sk <- skewness(x)
   kt <- kurtosis(x) - 3
@@ -366,15 +366,6 @@ interpret_skew_vis <- function(x) {
 # =================================================================
 
 server <- function(input, output, session) {
-  
-  output$theme_switcher <- renderUI({
-    radioButtons(
-      "theme_mode",
-      label = "Mode Tampilan",
-      choices = c("🌞 Terang", "🌙 Gelap"),
-      inline = TRUE
-    )
-  })
   
   observeEvent(input$go_desc, {
     updateTabItems(session, "tabs", "desc")
@@ -452,6 +443,30 @@ server <- function(input, output, session) {
     selectInput("group_var", "Pilih variabel grouping (opsional)", choices = c("None", cats))
   })
   
+  output$normality_gauge <- renderUI({
+    x <- selected_data(); req(x)
+    res <- evaluate_normality(x, input$alpha)
+    
+    if (res$decision == "GAGAL_TOLAK_H0") {
+      HTML(
+        "<div style='border-left:5px solid #00A388; padding:12px; background:#F7FDFC;'>
+        <b>✔ Status Normalitas:</b> Data mendekati distribusi normal
+      </div>"
+      )
+    } else if (res$decision == "TOLAK_H0") {
+      HTML(
+        "<div style='border-left:5px solid #E74C3C; padding:12px; background:#FDF2F2;'>
+        <b>✖ Status Normalitas:</b> Data tidak berdistribusi normal
+      </div>"
+      )
+    } else {
+      HTML(
+        "<div style='border-left:5px solid #F1C40F; padding:12px; background:#FFFBEA;'>
+        <b>⚠ Status Normalitas:</b> Uji formal tidak konklusif
+      </div>"
+      )
+    }
+  })
   
   # PERBAIKAN 1: Display Alpha di Tab Formal
   output$alpha_display <- renderUI({
@@ -885,7 +900,7 @@ server <- function(input, output, session) {
     } else if (N >= 30 && N <= 100) {
       return(list(
         status = "Sampel Besar (30 < N ≤ 100)",
-        recommendation = "Uji yang Direkomendasikan: Kolmogorov-Smirnov dan Jarque-Bera, dan Chi-square GoF.",
+        recommendation = "Uji yang Direkomendasikan: Shapiro-Wilk (masih baik), Lilliefors/Kolmogorov-Smirnov dan Jarque-Bera (jika n≥20).",
         icon = "fas fa-balance-scale"
       ))
     } else if (N > 100) {
@@ -1035,28 +1050,6 @@ server <- function(input, output, session) {
     ggplotly(p) %>% config(displayModeBar = FALSE)
   })
   
-  output$group_test_table <- renderTable({
-    req(input$group_var, input$group_var != "None")
-    df <- raw_data(); req(df)
-    
-    df[[input$group_var]] <- as.factor(df[[input$group_var]])
-    
-    group_data <- split(df[[input$var]], df[[input$group_var]])
-    
-    result <- data.frame(
-      Group = names(group_data),
-      N = sapply(group_data, function(x) length(na.omit(as.numeric(x)))),
-      Shapiro_p = sapply(group_data, function(x) {
-        xx <- na.omit(as.numeric(x))
-        if (length(xx) >= 3 && length(xx) < 30) shapiro.test(xx)$p.value else NA
-      }),
-      stringsAsFactors = FALSE
-    )
-    result$Decision <- ifelse(result$N < 3, "N/A", ifelse(result$Shapiro_p < input$alpha, "NON-NORMAL", "NORMAL"))
-    
-    return(result)
-  }, digits = 6, striped = TRUE, hover = TRUE)
-  
   # =====================
   final_test_result <- reactive({
     x <- selected_data()
@@ -1188,62 +1181,11 @@ server <- function(input, output, session) {
         Max = max(x)
       )
       
-      # ===============================
-      # NORMALITY TEST SELECTION BY n
-      # ===============================
-      
-      sh <- li <- jb <- ks <- chisq <- NA
-      
-      # Small sample (n ≤ 30)
-      if (n <= 30) {
-        sh <- shapiro.test(x)$p.value
-        li <- if (n >= 6) lillie.test(x)$p.value else NA
-      }
-      
-      # Medium sample (30 < n ≤ 100)
-      if (n > 30 && n <= 100) {
-        # ===============================
-        # MANUAL JARQUE-BERA (NO BINS)
-        # ===============================
-        
-        jb <- NA
-        
-        if (n > 30) {
-          jb <- tryCatch({
-            S <- moments::skewness(x)
-            K <- moments::kurtosis(x)
-            JB_stat <- (n / 6) * (S^2 + ((K - 3)^2 / 4))
-            pchisq(JB_stat, df = 2, lower.tail = FALSE)
-          }, error = function(e) NA)
-        }
-        
-        ks <- tryCatch(
-          ks.test(x, "pnorm", mean(x), sd(x))$p.value,
-          error = function(e) NA
-        )
-        
-        bins <- floor(sqrt(n))
-        chisq <- tryCatch({
-          observed <- table(cut(x, bins))
-          expected <- rep(length(x) / length(observed), length(observed))
-          chisq.test(observed, p = expected / sum(expected))$p.value
-        }, error = function(e) NA)
-      }
-      
-      # Large sample (n > 100)
-      if (n > 100) {
-        jb <- tryCatch(
-          tseries::jarque.test(x)$p.value,
-          error = function(e) NA
-        )
-        
-        bins <- floor(sqrt(n))
-        chisq <- tryCatch({
-          observed <- table(cut(x, bins))
-          expected <- rep(length(x) / length(observed), length(observed))
-          chisq.test(observed, p = expected / sum(expected))$p.value
-        }, error = function(e) NA)
-      }
+      sh <- if (n >= 3 && n < 30) shapiro.test(x)$p.value else NA
+      li <- if (n >= 6 && n < 30) lillie.test(x)$p.value else NA
+      jb <- if (n >= 20) {
+        tryCatch(tseries::jarque.test(x)$p.value, error = function(e) NA)
+      } else NA
       
       fmt_p <- function(p) {
         if (is.na(p)) "NA"
@@ -1267,38 +1209,6 @@ server <- function(input, output, session) {
         "Data tidak cukup untuk dianalisis."
       final_normal <- if(!is.null(res$decision) && res$decision == "GAGAL_TOLAK_H0") TRUE else FALSE
       
-      tests_html <- ""
-      
-      # n ≤ 30
-      if (n <= 30) {
-        tests_html <- paste0(
-          "<ul>",
-          "<li>Shapiro-Wilk p-value: ", fmt_p(sh), " → <b>", keputusan(sh), "</b></li>",
-          "<li>Lilliefors p-value: ", fmt_p(li), " → <b>", keputusan(li), "</b></li>",
-          "</ul>"
-        )
-      }
-      
-      # 30 < n ≤ 100
-      if (n > 30 && n <= 100) {
-        tests_html <- paste0(
-          "<ul>",
-          "<li>Jarque-Bera p-value: ", fmt_p(jb), " → <b>", keputusan(jb), "</b></li>",
-          "<li>Kolmogorov–Smirnov p-value: ", fmt_p(ks), " → <b>", keputusan(ks), "</b></li>",
-          "<li>Chi-square GoF p-value: ", fmt_p(chisq), " → <b>", keputusan(chisq), "</b></li>",
-          "</ul>"
-        )
-      }
-      
-      # n > 100
-      if (n > 100) {
-        tests_html <- paste0(
-          "<ul>",
-          "<li>Jarque-Bera p-value: ", fmt_p(jb), " → <b>", keputusan(jb), "</b></li>",
-          "<li>Chi-square GoF p-value: ", fmt_p(chisq), " → <b>", keputusan(chisq), "</b></li>",
-          "</ul>"
-        )
-      }
       
       html <- paste0(
         "<!DOCTYPE html>
@@ -1334,8 +1244,11 @@ server <- function(input, output, session) {
       </table>
 
       <h3>Normality Tests</h3>
-", tests_html, "
-
+      <ul>
+        <li>Shapiro-Wilk p-value: ", fmt_p(sh), " → <b>", keputusan(sh), "</b></li>
+        <li>Lilliefors p-value: ", fmt_p(li), " → <b>", keputusan(li), "</b></li>
+        <li>Jarque-Bera p-value: ", fmt_p(jb), " → <b>", keputusan(jb), "</b></li>
+      </ul>
 
       <h3>Final Conclusion</h3>
       <p>",
