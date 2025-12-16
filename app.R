@@ -456,27 +456,27 @@ server <- function(input, output, session) {
   })
   
   output$normality_gauge <- renderUI({
-    x <- selected_data(); req(x)
-    res <- evaluate_normality(x, input$alpha)
+    res <- final_test_result()
+    req(res)
     
     if (res$decision == "GAGAL_TOLAK_H0") {
-      HTML(
-        "<div style='border-left:5px solid #00A388; padding:12px; background:#F7FDFC;'>
+      HTML("
+      <div style='border-left:5px solid #00A388; padding:12px; background:#F7FDFC;'>
         <b>✔ Status Normalitas:</b> Data mendekati distribusi normal
-      </div>"
-      )
+      </div>
+    ")
     } else if (res$decision == "TOLAK_H0") {
-      HTML(
-        "<div style='border-left:5px solid #E74C3C; padding:12px; background:#FDF2F2;'>
+      HTML("
+      <div style='border-left:5px solid #E74C3C; padding:12px; background:#FDF2F2;'>
         <b>✖ Status Normalitas:</b> Data tidak berdistribusi normal
-      </div>"
-      )
+      </div>
+    ")
     } else {
-      HTML(
-        "<div style='border-left:5px solid #F1C40F; padding:12px; background:#FFFBEA;'>
-        <b>⚠ Status Normalitas:</b> Uji formal tidak konklusif
-      </div>"
-      )
+      HTML("
+      <div style='border-left:5px solid #F1C40F; padding:12px; background:#FFFBEA;'>
+        <b>⚠ Status Normalitas:</b> Uji formal tidak dapat disimpulkan
+      </div>
+    ")
     }
   })
   
