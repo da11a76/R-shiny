@@ -912,7 +912,7 @@ server <- function(input, output, session) {
     } else if (N >= 30 && N <= 100) {
       return(list(
         status = "Sampel Besar (30 < N ≤ 100)",
-        recommendation = "Uji yang Direkomendasikan: Shapiro-Wilk (masih baik), Lilliefors/Kolmogorov-Smirnov dan Jarque-Bera (jika n≥20).",
+        recommendation = "Uji yang Direkomendasikan: Kolmogorov-Smirnov dan Jarque-Bera, dan Chi-square GoF.",
         icon = "fas fa-balance-scale"
       ))
     } else if (N > 100) {
@@ -1215,11 +1215,62 @@ server <- function(input, output, session) {
         Max = max(x)
       )
       
-      sh <- if (n >= 3 && n < 30) shapiro.test(x)$p.value else NA
-      li <- if (n >= 6 && n < 30) lillie.test(x)$p.value else NA
-      jb <- if (n >= 20) {
-        tryCatch(tseries::jarque.test(x)$p.value, error = function(e) NA)
-      } else NA
+      # ===============================
+      # NORMALITY TEST SELECTION BY n
+      # ===============================
+      
+      sh <- li <- jb <- ks <- chisq <- NA
+      
+      # Small sample (n ≤ 30)
+      if (n <= 30) {
+        sh <- shapiro.test(x)$p.value
+        li <- if (n >= 6) lillie.test(x)$p.value else NA
+      }
+      
+      # Medium sample (30 < n ≤ 100)
+      if (n > 30 && n <= 100) {
+        # ===============================
+        # MANUAL JARQUE-BERA (NO BINS)
+        # ===============================
+        
+        jb <- NA
+        
+        if (n > 30) {
+          jb <- tryCatch({
+            S <- moments::skewness(x)
+            K <- moments::kurtosis(x)
+            JB_stat <- (n / 6) * (S^2 + ((K - 3)^2 / 4))
+            pchisq(JB_stat, df = 2, lower.tail = FALSE)
+          }, error = function(e) NA)
+        }
+        
+        ks <- tryCatch(
+          ks.test(x, "pnorm", mean(x), sd(x))$p.value,
+          error = function(e) NA
+        )
+        
+        bins <- floor(sqrt(n))
+        chisq <- tryCatch({
+          observed <- table(cut(x, bins))
+          expected <- rep(length(x) / length(observed), length(observed))
+          chisq.test(observed, p = expected / sum(expected))$p.value
+        }, error = function(e) NA)
+      }
+      
+      # Large sample (n > 100)
+      if (n > 100) {
+        jb <- tryCatch(
+          tseries::jarque.test(x)$p.value,
+          error = function(e) NA
+        )
+        
+        bins <- floor(sqrt(n))
+        chisq <- tryCatch({
+          observed <- table(cut(x, bins))
+          expected <- rep(length(x) / length(observed), length(observed))
+          chisq.test(observed, p = expected / sum(expected))$p.value
+        }, error = function(e) NA)
+      }
       
       fmt_p <- function(p) {
         if (is.na(p)) "NA"
@@ -1243,6 +1294,38 @@ server <- function(input, output, session) {
         "Data tidak cukup untuk dianalisis."
       final_normal <- if(!is.null(res$decision) && res$decision == "GAGAL_TOLAK_H0") TRUE else FALSE
       
+      tests_html <- ""
+      
+      # n ≤ 30
+      if (n <= 30) {
+        tests_html <- paste0(
+          "<ul>",
+          "<li>Shapiro-Wilk p-value: ", fmt_p(sh), " → <b>", keputusan(sh), "</b></li>",
+          "<li>Lilliefors p-value: ", fmt_p(li), " → <b>", keputusan(li), "</b></li>",
+          "</ul>"
+        )
+      }
+      
+      # 30 < n ≤ 100
+      if (n > 30 && n <= 100) {
+        tests_html <- paste0(
+          "<ul>",
+          "<li>Jarque-Bera p-value: ", fmt_p(jb), " → <b>", keputusan(jb), "</b></li>",
+          "<li>Kolmogorov–Smirnov p-value: ", fmt_p(ks), " → <b>", keputusan(ks), "</b></li>",
+          "<li>Chi-square GoF p-value: ", fmt_p(chisq), " → <b>", keputusan(chisq), "</b></li>",
+          "</ul>"
+        )
+      }
+      
+      # n > 100
+      if (n > 100) {
+        tests_html <- paste0(
+          "<ul>",
+          "<li>Jarque-Bera p-value: ", fmt_p(jb), " → <b>", keputusan(jb), "</b></li>",
+          "<li>Chi-square GoF p-value: ", fmt_p(chisq), " → <b>", keputusan(chisq), "</b></li>",
+          "</ul>"
+        )
+      }
       
       html <- paste0(
         "<!DOCTYPE html>
@@ -1278,11 +1361,8 @@ server <- function(input, output, session) {
       </table>
 
       <h3>Normality Tests</h3>
-      <ul>
-        <li>Shapiro-Wilk p-value: ", fmt_p(sh), " → <b>", keputusan(sh), "</b></li>
-        <li>Lilliefors p-value: ", fmt_p(li), " → <b>", keputusan(li), "</b></li>
-        <li>Jarque-Bera p-value: ", fmt_p(jb), " → <b>", keputusan(jb), "</b></li>
-      </ul>
+", tests_html, "
+
 
       <h3>Final Conclusion</h3>
       <p>",
