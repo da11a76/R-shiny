@@ -47,10 +47,6 @@ ui <- dashboardPage(
   dashboardHeader(
     title = tags$span("🔬 Normality Lab", class = "title-font-header"),
     tags$li(class = "dropdown", style = "padding: 8px; color: #444;", 
-            # Tombol untuk mengganti tema
-            actionButton("toggle_theme_manual", "Ganti Tema", icon = icon("palette"), 
-                         class = "btn-secondary btn-sm", 
-                         style = paste0("background-color:", SECONDARY_COLOR, "; border-color:", SECONDARY_COLOR))
     )
   ),
   
@@ -168,11 +164,11 @@ ui <- dashboardPage(
               # PINTASAN DI SINI (sebaris, kiri dan kanan)
               fluidRow(
                 box(width = 6, 
-                    actionButton("go_visual_from_desc", "📈 Visualisasi Distribusi", 
-                                 class = "btn-info", width = "100%", icon = icon("arrow-right"))),
+                    actionButton("go_visual", "📈 Visualisasi Distribusi", 
+                                 class = "btn-success", width = "100%")),
                 box(width = 6,
-                    actionButton("go_formal_from_desc", "✅ Uji Formal Normalitas",
-                                 class = "btn-primary", width = "100%", icon = icon("arrow-right")))
+                    actionButton("go_formal", "✅ Uji Formal Normalitas",
+                                 class = "btn-success", width = "100%"))
               ),
               
               hr(),
@@ -222,7 +218,7 @@ ui <- dashboardPage(
               ),
               
               fluidRow(
-                box(width = 12, tags$p(class="text-muted", "Bisa lanjut ke menu berikutnya di sidebar."))
+                box(width = 12, tags$p(class="text-muted", "Next With Sidebar"))
               )
       ),
       
@@ -517,25 +513,39 @@ server <- function(input, output, session) {
     
     # Interpretasi Simetri (Mean vs Median)
     if (abs(mean(x) - median(x)) < threshold) {
-      simetri_msg <- "<span style='color:#00A388;'>Mean ≈ Median → Distribusi **Simetris**</span>"
+      simetri_msg <- "<span style='color:#00A388;'>Mean ≈ Median → Distribusi Simetris</span>"
     } else if (mean(x) > median(x)) {
-      simetri_msg <- "<span style='color:#E74C3C;'>Mean > Median → Indikasi **Skewness Positif**</span>"
+      simetri_msg <- "<span style='color:#E74C3C;'>Mean > Median → Indikasi Skewness Positif</span>"
     } else {
-      simetri_msg <- "<span style='color:#E74C3C;'>Mean < Median → Indikasi **Skewness Negatif**</span>"
+      simetri_msg <- "<span style='color:#E74C3C;'>Mean < Median → Indikasi Skewness Negatif</span>"
     }
     
     # Interpretasi Skewness dan Kurtosis (Rules of Thumb)
-    sk_msg <- if (abs(sk) > 0.5) "Skewness (Abs > 0.5) **tinggi**." else "Skewness (Abs ≤ 0.5) **rendah**."
-    kt_msg <- if (abs(kt_ex) > 0.5) "Kurtosis (Abs > 0.5) **ekstrem**." else "Kurtosis (Abs ≤ 0.5) **wajar**."
-    
+    sk_msg <- if(abs(sk)==0){
+      "Simetri"
+    }  
+      else if (abs(sk) < 0.5) {
+      "rendah (mendekati simetri)"
+    } else if (abs(sk) < 1) {
+      "sedang"
+    } else {
+      "Kuat"
+    }
+    kt_msg <- if (abs(kt_ex) < 0.5) {
+      "Kurtosis mendekati normal (mesokurtik)."
+    } else if (kt_ex >= 0.5) {
+      "Distribusi leptokurtik (puncak runcing, ekor berat)."
+    } else {
+      "Distribusi platykurtik (puncak datar, ekor ringan)."
+    }
     # Gabungan
     HTML(paste0(
       "<div style='background-color: #F7F7F7; padding: 10px; border-radius: 5px; border-left: 3px solid #2E86C1;'>",
       "<h4>Kesimpulan Deskriptif</h4>",
       "<ul>",
       "<li>", simetri_msg, "</li>",
-      "<li>**", sk_msg, "**</li>",
-      "<li>**", kt_msg, "**</li>",
+      "<li>", sk_msg, "</li>",
+      "<li>", kt_msg, "</li>",
       "</ul>",
       "</div>"
     ))
@@ -723,7 +733,7 @@ server <- function(input, output, session) {
   
   sample_category <- reactive({
     n <- length(selected_data())
-    if (n < 30) "Sampel Kecil (N < 30)" else if (n>=30 && n<100) "Sampel Besar (N <= 100)" else "Sampel Sangat Besar (N > 100)"
+    if (n < 30) "Sampel Kecil (n < 30)" else if (n>=30 && n<100) "Sampel Besar (n <= 100)" else "Sampel Sangat Besar (n > 100)"
   })
 
   
@@ -840,19 +850,19 @@ server <- function(input, output, session) {
       ))
     } else if (N < 30) {
       return(list(
-        status = "Sampel Kecil (N < 30)",
+        status = "Sampel Kecil (n < 30)",
         recommendation = "Uji Paling Kuat: Shapiro-Wilk dan Lilliefors. Visualisasikan dengan Q-Q Plot.",
         icon = "fas fa-leaf"
       ))
     } else if (N >= 30 && N <= 100) {
       return(list(
-        status = "Sampel Besar (30 < N ≤ 100)",
+        status = "Sampel Besar (30 < n ≤ 100)",
         recommendation = "Uji yang Direkomendasikan: Shapiro-Wilk (masih baik), Lilliefors/Kolmogorov-Smirnov dan Jarque-Bera (jika n≥20).",
         icon = "fas fa-balance-scale"
       ))
     } else if (N > 100) {
       return(list(
-        status = "Sampel sangat besar  (N > 100)",
+        status = "Sampel sangat besar  (n > 100)",
         recommendation = "Uji yang Direkomendasikan: Jarque-Bera atau Chi-square Goodness-of-Fit. Waspada: Normalitas sering ditolak pada n besar.",
         icon = "fas fa-city"
       ))
@@ -868,7 +878,7 @@ server <- function(input, output, session) {
     HTML(paste0(
       "<div style='background-color: #ECF0F1; padding: 15px; border-radius: 8px; border-left: 5px solid #00A388;'>",
       "<h4><i class='", rec$icon, "'></i> Status Data & Rekomendasi</h4>",
-      "<p style='margin-bottom: 5px;'>Jumlah Data (N): <span style='font-size:1.2em; font-weight:700;'>", N, "</span></p>",
+      "<p style='margin-bottom: 5px;'>Jumlah Data (n): <span style='font-size:1.2em; font-weight:700;'>", N , "</span></p>",
       "<p style='margin-bottom: 10px;'>Kelompok Sampel: <span style='font-weight:600;'>", rec$status, "</span></p>",
       "Rekomendasi Uji: ", rec$recommendation,
       "</div>"
@@ -1026,10 +1036,7 @@ server <- function(input, output, session) {
     if (grepl("Kolmogorov", test_name)) {
       warning <- "Uji Kolmogorov–Smirnov kurang ideal jika parameter distribusi (mean & SD) diestimasi dari data."
     }
-    
-    if (grepl("Shapiro", test_name) && n > 100) {
-      warning <- "Shapiro–Wilk sangat sensitif pada sampel besar. Visualisasi perlu dipertimbangkan."
-    }
+ 
     
     list(
       n = n,
@@ -1128,12 +1135,52 @@ server <- function(input, output, session) {
         Max = max(x)
       )
       
-      sh <- if (n >= 3 && n < 30) shapiro.test(x)$p.value else NA
-      li <- if (n >= 6 && n < 30) lillie.test(x)$p.value else NA
-      jb <- if (n >= 20) {
-        tryCatch(tseries::jarque.test(x)$p.value, error = function(e) NA)
-      } else NA
+      # ===============================
+      # NORMALITY TEST SELECTION BY n
+      # ===============================
       
+      sh <- li <- jb <- ks <- chisq <- NA
+      
+      # Small sample (n ≤ 30)
+      if (n <= 30) {
+        sh <- shapiro.test(x)$p.value
+        li <- if (n >= 6) lillie.test(x)$p.value else NA
+      }
+      
+      # Medium sample (30 < n ≤ 100)
+      if (n > 30 && n <= 100) {
+        jb <- tryCatch(
+          tseries::jarque.test(x)$p.value,
+          error = function(e) NA
+        )
+        
+        ks <- tryCatch(
+          ks.test(x, "pnorm", mean(x), sd(x))$p.value,
+          error = function(e) NA
+        )
+        
+        bins <- floor(sqrt(n))
+        chisq <- tryCatch({
+          observed <- table(cut(x, bins))
+          expected <- rep(length(x) / length(observed), length(observed))
+          chisq.test(observed, p = expected / sum(expected))$p.value
+        }, error = function(e) NA)
+      }
+      
+      # Large sample (n > 100)
+      if (n > 100) {
+        jb <- tryCatch(
+          tseries::jarque.test(x)$p.value,
+          error = function(e) NA
+        )
+        
+        bins <- floor(sqrt(n))
+        chisq <- tryCatch({
+          observed <- table(cut(x, bins))
+          expected <- rep(length(x) / length(observed), length(observed))
+          chisq.test(observed, p = expected / sum(expected))$p.value
+        }, error = function(e) NA)
+      }
       fmt_p <- function(p) {
         if (is.na(p)) "NA"
         else round(p, 5)
@@ -1144,7 +1191,38 @@ server <- function(input, output, session) {
         else if (p > alpha) "NORMAL (Gagal Tolak H₀)"
         else "TIDAK NORMAL (Tolak H₀)"
       }
+      tests_html <- ""
       
+      # n ≤ 30
+      if (n <= 30) {
+        tests_html <- paste0(
+          "<ul>",
+          "<li>Shapiro-Wilk p-value: ", fmt_p(sh), " → <b>", keputusan(sh), "</b></li>",
+          "<li>Lilliefors p-value: ", fmt_p(li), " → <b>", keputusan(li), "</b></li>",
+          "</ul>"
+        )
+      }
+      
+      # 30 < n ≤ 100
+      if (n > 30 && n <= 100) {
+        tests_html <- paste0(
+          "<ul>",
+          "<li>Jarque-Bera p-value: ", fmt_p(jb), " → <b>", keputusan(jb), "</b></li>",
+          "<li>Kolmogorov–Smirnov p-value: ", fmt_p(ks), " → <b>", keputusan(ks), "</b></li>",
+          "<li>Chi-square GoF p-value: ", fmt_p(chisq), " → <b>", keputusan(chisq), "</b></li>",
+          "</ul>"
+        )
+      }
+      
+      # n > 100
+      if (n > 100) {
+        tests_html <- paste0(
+          "<ul>",
+          "<li>Jarque-Bera p-value: ", fmt_p(jb), " → <b>", keputusan(jb), "</b></li>",
+          "<li>Chi-square GoF p-value: ", fmt_p(chisq), " → <b>", keputusan(chisq), "</b></li>",
+          "</ul>"
+        )
+      }
       
       res <- evaluate_normality(x, alpha)
       
@@ -1155,7 +1233,6 @@ server <- function(input, output, session) {
       else
         "Data tidak cukup untuk dianalisis."
       final_normal <- if(!is.null(res$decision) && res$decision == "GAGAL_TOLAK_H0") TRUE else FALSE
-      
       
       html <- paste0(
         "<!DOCTYPE html>
@@ -1175,7 +1252,7 @@ server <- function(input, output, session) {
 
       <h2>Normality Analysis Report</h2>
 
-      <p><b>Sample Size (N):</b> ", n, "</p>
+      <p><b>Sample Size (n):</b> ", n, "</p>
       <p><b>Alpha:</b> ", alpha, "</p>
 
       <h3>Descriptive Statistics</h3>
@@ -1190,12 +1267,9 @@ server <- function(input, output, session) {
         </tr>
       </table>
 
-      <h3>Normality Tests</h3>
-      <ul>
-        <li>Shapiro-Wilk p-value: ", fmt_p(sh), " → <b>", keputusan(sh), "</b></li>
-        <li>Lilliefors p-value: ", fmt_p(li), " → <b>", keputusan(li), "</b></li>
-        <li>Jarque-Bera p-value: ", fmt_p(jb), " → <b>", keputusan(jb), "</b></li>
-      </ul>
+    <h3>Normality Tests</h3>
+    ", tests_html, "
+
 
       <h3>Final Conclusion</h3>
       <p>",
