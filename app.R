@@ -5,37 +5,41 @@ library(bslib)
 library(readxl)
 library(dplyr)
 library(ggplot2)
-library(moments) # Untuk skewness dan kurtosis
-library(nortest) # Untuk lillie.test
-library(tseries) # Untuk jarque.test
+library(moments) 
+library(tseries) 
 library(tidyverse)
-# Pastikan Anda telah menginstal semua library di atas.
-
-# =====================
-# 1. THEME & FONT (Teal & Emas)
-# =====================
+library(fontawesome) 
+library(nortest)
+PRIMARY_COLOR <- "#00A388"
+SECONDARY_COLOR <- "#2F4858"
+ACCENT_COLOR <- "#FFB600"
 
 light_theme <- bs_theme(
   version = 5,
   bootswatch = "flatly",
-  primary = "#00A388",
-  secondary = "#2F4858",
+  primary = PRIMARY_COLOR,
+  secondary = SECONDARY_COLOR,
   success = "#2ECC71",
   info = "#3498DB",
   base_font = font_google("Inter"),
-  heading_font = font_google("Playfair Display")
+  heading_font = font_google("Playfair Display", wght = "700")
 )
 
 dark_theme <- bs_theme(
   version = 5,
   bootswatch = "darkly",
-  primary = "#00A388",
-  secondary = "#2F4858",
+  primary = PRIMARY_COLOR,
+  secondary = ACCENT_COLOR, 
   success = "#2ECC71",
   info = "#3498DB",
   base_font = font_google("Inter"),
-  heading_font = font_google("Playfair Display")
+  heading_font = font_google("Playfair Display", wght = "700")
 )
+
+
+# =====================
+# 2. USER INTERFACE (UI)
+# =====================
 
 ui <- dashboardPage(
   
@@ -43,43 +47,55 @@ ui <- dashboardPage(
   dashboardHeader(
     title = tags$span("🔬 Normality Lab", class = "title-font-header"),
     tags$li(class = "dropdown", style = "padding: 8px; color: #444;", 
-            tags$b("Analisis Distribusi Normal"))
+            # Tombol untuk mengganti tema
+            actionButton("toggle_theme_manual", "Ganti Tema", icon = icon("palette"), 
+                         class = "btn-secondary btn-sm", 
+                         style = paste0("background-color:", SECONDARY_COLOR, "; border-color:", SECONDARY_COLOR))
+    )
   ),
   
   # SIDEBAR
   dashboardSidebar(
     tags$head(
-      tags$style(HTML("
+      tags$style(HTML(paste0("
                 /* Warna Sidebar Baru */
-                .main-sidebar { background-color: #2F4858 !important; } 
-                .sidebar-menu li.active a { border-left: 5px solid #00A388 !important; }
-                .logo { background-color: #2F4858 !important; }
+                .main-sidebar { background-color: ", SECONDARY_COLOR, " !important; } 
+                .sidebar-menu li.active a { border-left: 5px solid ", PRIMARY_COLOR, " !important; }
+                .logo { background-color: ", SECONDARY_COLOR, " !important; }
 
                 /* Estetika Font dan Box */
-                .content-wrapper { background: #F0FDF5 !important; }
+                .content-wrapper, .right-side { background: #F0FDF5 !important; }
                 .box { border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
-                .box-header h3.box-title { color: #00A388; font-weight: 600; }
-                .icon-decor { font-size: 5em; color: #FFB600; opacity: 0.15; position: absolute; z-index: 0; pointer-events: none; }
-                .d1 { bottom: -10px; right: -10px; }
-                .d2 { top: -10px; left: -10px; }
-                .tab-title-accent { color: #2F4858; font-family: 'Playfair Display'; font-weight: 700; border-bottom: 2px solid #00A388; padding-bottom: 5px; margin-bottom: 20px; }
-            "))
+                .box-header h3.box-title { color: ", PRIMARY_COLOR, "; font-weight: 600; }
+                
+                .tab-title-accent { color: ", SECONDARY_COLOR, "; font-family: 'Playfair Display'; font-weight: 700; border-bottom: 2px solid ", PRIMARY_COLOR, "; padding-bottom: 5px; margin-bottom: 20px; }
+
+                /* Style untuk Box 'Tentang Aplikasi' */
+                #about-box { min-height: 250px; padding: 25px; position: relative; overflow: hidden; }
+                #about-box .box-header { margin-bottom: 15px; }
+                
+                /* Teks lebih besar di About Box */
+                .about-text-large { font-size: 1.15em; line-height: 1.6; }
+                
+                /* Hiasan Latar Belakang Home Lebih Ramai */
+                .home-icon-bg { font-size: 150px; color: ", PRIMARY_COLOR, "; opacity: 0.05; position: absolute; top: 10px; right: 10px; transform: rotate(-10deg); z-index: 1; }
+                .home-icon-bg-2 { font-size: 80px; color: ", ACCENT_COLOR, "; opacity: 0.08; position: absolute; bottom: 10%; left: 10%; transform: rotate(15deg); z-index: 1; }
+                .home-icon-bg-3 { font-size: 90px; color: ", SECONDARY_COLOR, "; opacity: 0.05; position: absolute; top: 10%; left: 40%; z-index: 1; }
+            ")))
     ),
     sidebarMenu(id = "tabs",
-      menuItem("🏠 Home", tabName = "home"),
-      menuItem("📊 Unggah & Deskripsi Data", tabName = "desc"),
-      menuItem("📈 Visualisasi Distribusi", tabName = "visual"),
-      menuItem("✅ Uji Formal Normalitas", tabName = "formal"), 
-      menuItem("🎯 Skewness & Kurtosis", tabName = "skk"),
-      menuItem("👥 Analisis Grouping", tabName = "groups"),
-      menuItem("⭐ Kesimpulan Final", tabName = "final")
+                menuItem("🏠 Home", tabName = "home"),
+                menuItem("📊 Unggah & Deskripsi Data", tabName = "desc"),
+                menuItem("📈 Visualisasi Distribusi", tabName = "visual"),
+                menuItem("✅ Uji Formal Normalitas", tabName = "formal"), 
+                menuItem("🎯 Skewness & Kurtosis", tabName = "skk"),
+                menuItem("👥 Analisis Grouping", tabName = "groups"),
+                menuItem("⭐ Kesimpulan Final", tabName = "final")
     )
   ),
-  
-  # BODY
   dashboardBody(
     
-    theme = bs_theme(version = 5, bootswatch = "flatly"),
+    theme = light_theme, 
     
     tabItems(
       
@@ -89,44 +105,43 @@ ui <- dashboardPage(
       tabItem("home",
               tags$h2("🔬 Normality Lab", class="tab-title-accent"),
               
+              fluidRow(
+                valueBoxOutput("vb_status_data", width = 4),
+                valueBoxOutput("vb_sample_n", width = 4),
+                valueBoxOutput("vb_alpha_level", width = 4)
+              ),
+              
               box(
+                id = "about-box",
                 width = 12,
                 title = "Tentang Aplikasi",
-                tags$p(
-                  "Normality Lab adalah aplikasi Shiny untuk mengevaluasi asumsi ",
-                  strong("distribusi normal"),
-                  " menggunakan pendekatan visual, statistik deskriptif, ",
-                  "dan uji formal (Shapiro-Wilk, Lilliefors, Jarque-Bera, KS, Chi-square)."
+                tags$i(class = "home-icon-bg fas fa-chart-bar"),
+                tags$i(class = "home-icon-bg-2 fas fa-flask"),
+                tags$i(class = "home-icon-bg-3 fas fa-balance-scale"),
+                
+                tags$div(class = "about-text-large",
+                         tags$p(
+                           "Normality Lab adalah aplikasi Shiny untuk mengevaluasi asumsi ",
+                           strong("distribusi normal"),
+                           " menggunakan pendekatan visual, statistik deskriptif, dan uji formal. Tujuan utama adalah mempermudah identifikasi normalitas data."
+                         ),
+                         tags$ul(
+                           tags$li("Menyesuaikan uji dengan ukuran sampel (n < 30: Shapiro-Wilk; n > 30: Jarque-Bera)."),
+                           tags$li("Menampilkan interpretasi statistik & visual secara komprehensif."),
+                           tags$li("Dirancang untuk analisis akademik & praktis.")
+                         )
                 ),
-                tags$ul(
-                  tags$li("Menyesuaikan uji dengan ukuran sampel"),
-                  tags$li("Menampilkan interpretasi statistik & visual"),
-                  tags$li("Dirancang untuk analisis akademik & praktis")
-                )
+                tags$div(style = "height: 40px;")
               ),
               
               fluidRow(
-                box(
-                  width = 4,
-                  style = "min-height: 150px;",
-                  actionButton("go_desc", "📂 Unggah & Deskripsi Data", class = "btn-success", width = "100%")
-                ),
-                box(
-                  width = 4,
-                  style = "min-height: 150px;",
-                  actionButton("go_visual", "📈 Visualisasi Distribusi", class = "btn-info", width = "100%")
-                ),
-                box(
-                  width = 4,
-                  style = "min-height: 150px;",
-                  actionButton("go_formal", "✅ Uji Formal Normalitas", class = "btn-primary", width = "100%")
-                )
+                box(width = 12, actionButton("go_desc", "📂 Mulai Analisis: Unggah & Deskripsi Data", class = "btn-success", width = "100%"))
               )
       ),
       
       
       # =====================
-      # 2. DESKRIPSI DATA
+      # 2. DESKRIPSI DATA (Pintasan diatur sebaris)
       # =====================
       tabItem("desc",
               tags$h2("Unggah & Deskripsi Data", class="tab-title-accent"),
@@ -134,7 +149,7 @@ ui <- dashboardPage(
               fluidRow(
                 box(
                   title = tags$span(icon("upload"), " Unggah dan Pilih Variabel"),
-                  width = 6,
+                  width = 6, 
                   fileInput("file_data", "Pilih file CSV / Excel", accept = c(".csv", ".xlsx", ".xls")),
                   uiOutput("select_variable"),
                   uiOutput("select_group")
@@ -142,7 +157,7 @@ ui <- dashboardPage(
                 
                 box(
                   title = tags$span(icon("sliders-h"), " Parameter Analisis"),
-                  width = 6,
+                  width = 6, 
                   sliderInput("alpha", "Tingkat Signifikansi (Alpha)", 0.01, 0.1, 0.05, step = 0.005),
                   tags$p("Alpha digunakan sebagai batas keputusan pada uji formal normalitas.")
                 )
@@ -150,15 +165,30 @@ ui <- dashboardPage(
               
               hr(),
               
+              # PINTASAN DI SINI (sebaris, kiri dan kanan)
+              fluidRow(
+                box(width = 6, 
+                    actionButton("go_visual_from_desc", "📈 Visualisasi Distribusi", 
+                                 class = "btn-info", width = "100%", icon = icon("arrow-right"))),
+                box(width = 6,
+                    actionButton("go_formal_from_desc", "✅ Uji Formal Normalitas",
+                                 class = "btn-primary", width = "100%", icon = icon("arrow-right")))
+              ),
+              
+              hr(),
+              
               fluidRow(
                 box(
                   title=tags$span(icon("table"), " Preview Data (10 Baris Pertama)"),
-                  width = 7,
-                  tableOutput("data_preview")
+                  width = 8, 
+                  # Fitur scroll horizontal
+                  div(style = "overflow-x: auto;", 
+                      tableOutput("data_preview")
+                  )
                 ),
                 box(
                   title=tags$span(icon("calculator"), " Statistik Deskriptif"),
-                  width = 5,
+                  width = 4,
                   tableOutput("summary_stats"),
                   uiOutput("centrality_note")
                 )
@@ -166,7 +196,7 @@ ui <- dashboardPage(
       ),
       
       # =====================
-      # 3. VISUALISASI DISTRIBUSI
+      # 3. VISUALISASI DISTRIBUSI 
       # =====================
       tabItem("visual",
               tags$h2("Visualisasi Distribusi", class="tab-title-accent"),
@@ -189,52 +219,38 @@ ui <- dashboardPage(
                     width = 6, plotlyOutput("qq_plot", height = "350px")),
                 box(title=tags$span(icon("chart-area"), " ECDF vs Normal CDF"),
                     width = 6, plotlyOutput("ecdf_plot", height = "350px"))
+              ),
+              
+              fluidRow(
+                box(width = 12, tags$p(class="text-muted", "Bisa lanjut ke menu berikutnya di sidebar."))
               )
       ),
       
       # =====================
-      # 4. UJI FORMAL NORMALITAS
+      # 4. Sisa Tab 
       # =====================
-      tabItem("formal",
+      tabItem("formal", 
               tags$h2("Uji Formal Normalitas", class="tab-title-accent"),
               uiOutput("sample_info"),
               hr(),
               fluidRow(
-                box(
-                  title = tags$span(icon("vial"), " Pengaturan Uji"),
-                  width = 4, tags$i(class="icon-decor fas fa-flask d1"),
-                  uiOutput("test_selector")
-                  ,
-                  tags$p("H₀: Data Populasi mengikuti distribusi normal."),
-                  tags$p("H₁: Data Populasi tidak mengikuti distribusi normal."),
-                  
-                  # START PERBAIKAN: Mengganti input$alpha dengan uiOutput
-                  uiOutput("alpha_display")
-                  # END PERBAIKAN
-                ),
-                
-                # BOX BARU: Ringkasan Data & Rekomendasi
-                box(
-                  title = tags$span(icon("info-circle"), " Ringkasan Data & Rekomendasi"),
-                  width = 8, tags$i(class="icon-decor fas fa-lightbulb d2"),
-                  uiOutput("test_data_summary")
-                )
+                box(title = tags$span(icon("vial"), " Pengaturan Uji"),
+                    width = 4, tags$i(class="icon-decor fas fa-flask d1"), 
+                    uiOutput("test_selector"), 
+                    tags$p("H₀: Data Populasi mengikuti distribusi normal."),
+                    tags$p("H₁: Data Populasi tidak mengikuti distribusi normal."),
+                    uiOutput("alpha_display")),
+                box(title = tags$span(icon("info-circle"), " Ringkasan Data & Rekomendasi"),
+                    width = 8, tags$i(class="icon-decor fas fa-lightbulb d2"), uiOutput("test_data_summary"))
               ),
               fluidRow(
-                box(
-                  title = tags$span(icon("table"), " Hasil Uji Statistik"),
-                  width = 12, tags$i(class="icon-decor fas fa-microscope d2"),
-                  div(style="overflow-x: auto;", tableOutput("test_results_table")), # OUTPUT BARU
-                  hr(),
-                  uiOutput("ks_warning"),
-                  uiOutput("test_interpretation") # OUTPUT BARU
-                )
+                box(title = tags$span(icon("table"), " Hasil Uji Statistik"),
+                    width = 12, 
+                    div(style="overflow-x: auto;", tableOutput("test_results_table")), 
+                    uiOutput("test_interpretation"))
               )
       ),
       
-      # =====================
-      # 5. SKEWNESS & KURTOSIS
-      # =====================
       tabItem("skk",
               tags$h2("Analisis Skewness dan Kurtosis", class="tab-title-accent"),
               fluidRow(
@@ -588,35 +604,7 @@ server <- function(input, output, session) {
   })
   
   # =====================
-  # 6. metrics
-  # =====================
-  output$deviation_strip <- renderPlot({
-    x <- selected_data(); req(x)
-    qq <- qqnorm(x, plot.it = FALSE)
-    par(mar = c(4, 4, 1, 1)) 
-    plot(abs(qq$x - qq$y), type = "h", lwd = 3, col = "#3498DB",
-         xlab = "Index", ylab = "|Deviation|", main = "")
-  })
   
-  output$max_qq_dev <- renderText({
-    x <- selected_data(); req(x)
-    qq <- qqnorm(x, plot.it = FALSE)
-    round(max(abs(qq$x - qq$y)), 6)
-  })
-  
-  output$area_density_diff <- renderText({
-    x <- selected_data(); req(x)
-    dens <- density(x)
-    f <- dnorm(dens$x, mean(x), sd(x))
-    round(sum(abs(dens$y - f)) * mean(diff(dens$x)), 8)
-  })
-  
-  output$ecdf_max_diff <- renderText({
-    x <- selected_data(); req(x)
-    ec <- ecdf(x)
-    xs <- seq(min(x), max(x), length.out = 200)
-    round(max(abs(ec(xs) - pnorm(xs, mean(x), sd(x)))), 8)
-  })
   
   output$sk_kurt_distance <- renderText({
     x <- selected_data(); req(x)
@@ -737,20 +725,7 @@ server <- function(input, output, session) {
     n <- length(selected_data())
     if (n < 30) "Sampel Kecil (N < 30)" else if (n>=30 && n<100) "Sampel Besar (N <= 100)" else "Sampel Sangat Besar (N > 100)"
   })
-  
-  output$sample_info <- renderUI({
-    x <- selected_data(); req(x)
-    n <- length(x)
-    cat <- sample_category()
-    
-    HTML(paste0(
-      "<div style='background:#F7F9FC; padding:12px; border-left:5px solid #3C8DBC;'>",
-      "<h4>📊 Ringkasan Data</h4>",
-      "<p><b>Jumlah Data (N):</b> ", n, "</p>",
-      "<p><b>Kategori Sampel:</b> ", cat, "</p>",
-      "</div>"
-    ))
-  })
+
   
   output$test_selector <- renderUI({
     n <- sample_size()
