@@ -935,10 +935,6 @@ server <- function(input, output, session) {
       "</div>"
     ))
   })
-  
-  
-  
-  output$raw_test_output <- renderPrint({ run_tests() })
  
   output$sk_kurt_plot <- renderPlotly({
     x <- selected_data(); req(x)
@@ -965,8 +961,6 @@ server <- function(input, output, session) {
     HTML(paste0("Skewness: <b>", sk, "</b><br>Kurtosis Fisher: <b>", kt_fish, "</b>"))
   })
   
-  # =====================
-  # 9. group comparison
   # =====================
   output$hist_groups <- renderPlotly({
     req(input$group_var, input$group_var != "None")
@@ -1034,22 +1028,6 @@ server <- function(input, output, session) {
     )
   })
   
-  
-  output$score_breakdown <- renderTable({
-    x <- selected_data(); req(x)
-    safe_p <- function(f, x) tryCatch(f(x)$p.value, error = function(e) NA)
-    
-    data.frame(
-      Component = c("Shapiro p-value", "Lilliefors p-value", "Jarque-Bera p-value", "ECDF Max Diff (K-S Stat)"),
-      Value = c(
-        if(length(x) >= 3 && length(x) < 30) safe_p(shapiro.test, x) else NA,
-        if(length(x) >= 6) safe_p(lillie.test, x) else NA,
-        if(length(x) >= 20) safe_p(tseries::jarque.test, x) else NA,
-        round(max(abs(ecdf(x)(x) - pnorm(x, mean(x), sd(x)))), 6)
-      ),
-      stringsAsFactors = FALSE
-    )
-  }, digits = 8, striped = TRUE, hover = TRUE)
   
   output$final_conclusion <- renderUI({
     x <- selected_data(); req(x)
@@ -1120,10 +1098,6 @@ server <- function(input, output, session) {
         Min = min(x),
         Max = max(x)
       )
-      
-      # ===============================
-      # NORMALITY TEST SELECTION BY n
-      # ===============================
       
       sh <- li <- jb <- ks <- chisq <- NA
       
@@ -1283,15 +1257,6 @@ server <- function(input, output, session) {
     }
   )
   
-  output$session_log <- renderPrint({
-    list(
-      Uploaded = !is.null(input$file_data),
-      Variable_Selected = if (!is.null(input$var)) input$var else "None",
-      N_Observations = length(selected_data()),
-      Alpha = input$alpha,
-      Timestamp = Sys.time()
-    )
-  })
 }
 
 shinyApp(ui, server)
