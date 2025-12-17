@@ -229,8 +229,8 @@ ui <- dashboardPage(
                 box(title = tags$span(icon("table"), " Hasil Uji Statistik"),
                     width = 12, 
                     div(style="overflow-x: auto;", tableOutput("test_results_table")), 
-                    uiOutput("test_interpretation"))
-              )
+                    uiOutput("test_interpretation")
+              ))
       ),
       
       tabItem("skk",
@@ -333,32 +333,6 @@ evaluate_normality <- function(x, alpha = 0.05) {
   )
 }
 
-interpret_skew_vis <- function(x) {
-  sk <- skewness(x)
-  kt <- kurtosis(x) - 3
-  
-  sk_msg <- if (abs(sk) < 0.5) {
-    "Distribusi relatif simetris (skewness kecil)."
-  } else if (sk > 0) {
-    "Distribusi condong ke kanan (positive skew)."
-  } else {
-    "Distribusi condong ke kiri (negative skew)."
-  }
-  
-  kt_msg <- if (abs(kt) < 0.5) {
-    "Ketajaman distribusi mendekati normal."
-  } else if (kt > 0) {
-    "Distribusi lebih runcing dari normal (leptokurtic)."
-  } else {
-    "Distribusi lebih datar dari normal (platykurtic)."
-  }
-  
-  list(sk = sk, kt = kt, sk_msg = sk_msg, kt_msg = kt_msg)
-}
-
-# =================================================================
-# 2. SERVER: LOGIKA LENGKAP DAN PERBAIKAN Q-Q PLOT
-# =================================================================
 
 server <- function(input, output, session) {
   
@@ -395,30 +369,6 @@ server <- function(input, output, session) {
     req(!is.null(df))
     return(as.data.frame(df))
   })
-  normality_note <- function(test_name, n) {
-    
-    if (test_name == "Shapiro-Wilk") {
-      if (n > 100) {
-        return("Catatan: Shapiro–Wilk sangat sensitif pada ukuran sampel besar. Penyimpangan kecil dari normalitas dapat terdeteksi signifikan.")
-      } else {
-        return("Catatan: Shapiro–Wilk sesuai untuk sampel kecil hingga menengah.")
-      }
-    }
-    
-    if (test_name == "Lilliefors") {
-      return("Catatan: Lilliefors cukup stabil untuk ukuran sampel menengah dan tidak mengasumsikan parameter distribusi diketahui.")
-    }
-    
-    if (test_name == "Jarque-Bera") {
-      if (n > 200) {
-        return("Catatan: Pada ukuran sampel besar, uji Jarque–Bera sangat sensitif. Hasil signifikan bisa muncul meskipun deviasi dari normalitas relatif kecil.")
-      } else {
-        return("Catatan: Jarque–Bera berbasis skewness dan kurtosis, cocok untuk evaluasi bentuk distribusi secara global.")
-      }
-    }
-    
-    return(NULL)
-  }
   
   # 2. UI selectors
   output$select_variable <- renderUI({
@@ -463,8 +413,6 @@ server <- function(input, output, session) {
     length(selected_data())
   })
   
-  # =====================
-  # 4. summary outputs
   # =====================
   output$data_preview <- renderTable({
     df <- raw_data(); req(df)
@@ -599,9 +547,6 @@ server <- function(input, output, session) {
     ggplotly(p, tooltip = c("x", "ECDF", "Normal")) %>% config(displayModeBar = FALSE)
   })
   
-  # =====================
-  
-  
   output$sk_kurt_distance <- renderText({
     x <- selected_data(); req(x)
     round(sqrt(skewness(x)^2 + (kurtosis(x)-3)^2), 6) 
@@ -659,10 +604,6 @@ server <- function(input, output, session) {
     )
   }
   
-  group_by_sturges <- function(x) {
-    k <- ceiling(1 + log2(length(x)))
-    hist(x, breaks = k, plot = FALSE)
-  }
   chi_sq_test <- function(x) {
     # Pembagian data ke dalam 5-10 bins (sesuai aturan N/k >= 5)
     N <- length(x)
@@ -717,12 +658,6 @@ server <- function(input, output, session) {
     )
   }
   
-  sample_category <- reactive({
-    n <- length(selected_data())
-    if (n < 30) "Sampel Kecil (n < 30)" else if (n>=30 && n<100) "Sampel Besar (n <= 100)" else "Sampel Sangat Besar (n > 100)"
-  })
-
-  
   output$test_selector <- renderUI({
     n <- sample_size()
     req(n)
@@ -746,21 +681,7 @@ server <- function(input, output, session) {
       choices = choices
     )
   })
-  
-  safe_jarque <- function(x) {
-    x <- as.numeric(x)
-    x <- x[!is.na(x)]
-    
-    # Syarat minimal
-    if (length(x) < 20) return(NULL)
-    if (sd(x) == 0) return(NULL)
-    
-    tryCatch(
-      tseries::jarque.test(x),
-      error = function(e) NULL
-    )
-  }
-  
+
   
   run_tests <- reactive({
     x <- selected_data()
@@ -870,20 +791,7 @@ server <- function(input, output, session) {
       "</div>"
     ))
   })
-  output$ks_warning <- renderUI({
-    req(input$selected_test)
-    
-    if (input$selected_test == "ks") {
-      div(
-        style = "color: #b30000; background-color: #fff3f3; 
-               padding: 10px; border-radius: 5px;",
-        strong("⚠️ Peringatan Uji Kolmogorov–Smirnov"),
-        p("Uji KS sensitif terhadap estimasi parameter dan ukuran sampel.")
-      )
-    }
-  })
-  
-  # PERBAIKAN 3: Tabel Hasil Uji Formal
+
   output$test_results_table <- renderTable({
     res <- run_tests()
     req(res)
@@ -1256,7 +1164,6 @@ server <- function(input, output, session) {
       write.csv(df, file, row.names = FALSE)
     }
   )
-  
 }
 
 shinyApp(ui, server)
