@@ -38,16 +38,6 @@ light_theme <- bs_theme(
   heading_font = font_google("Playfair Display", wght = "700")
 )
 
-dark_theme <- bs_theme(
-  version = 5,
-  bootswatch = "darkly",
-  primary = PRIMARY_COLOR,
-  secondary = ACCENT_COLOR, 
-  success = "#2ECC71",
-  info = "#3498DB",
-  base_font = font_google("Inter"),
-  heading_font = font_google("Playfair Display", wght = "700")
-)
 ```
 User interface
 ```{r}
@@ -74,7 +64,7 @@ ui <- dashboardPage(
                 .box { border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
                 .box-header h3.box-title { color: ", PRIMARY_COLOR, "; font-weight: 600; }
                 
-                .tab-title-accent { color: ", SECONDARY_COLOR, "; font-family: 'Playfair Display'; font-weight: 700; border-bottom: 2px solid ", PRIMARY_COLOR, "; padding-bottom: 5px; margin-bottom: 20px; }
+                .tab-title-accent { color: ", SECONDARY_COLOR, "; font-family: 'Playfair Display'; font-weight:                  700; border-bottom: 2px solid ", PRIMARY_COLOR, "; padding-bottom: 5px; margin-bottom: 20px; }
 
                 /* Style untuk Box 'Tentang Aplikasi' */
                 #about-box { min-height: 250px; padding: 25px; position: relative; overflow: hidden; }
@@ -146,9 +136,9 @@ ui <- dashboardPage(
       ),
       
       
-      # =====================
+      # ===========================================
       # 2. DESKRIPSI DATA (Pintasan diatur sebaris)
-      # =====================
+      # ===========================================
       tabItem("desc",
               tags$h2("Unggah & Deskripsi Data", class="tab-title-accent"),
               
@@ -211,7 +201,7 @@ ui <- dashboardPage(
                     width = 12,
                     sliderInput("bins","Jumlah Bins Histogram",10,100,30),
                     checkboxInput("show_density","Tampilkan Density Plot di Histogram",FALSE),
-                    checkboxInput("overlay_normal","Overlay Kurva Normal",TRUE)
+                    checkboxInput("overlay_normal","Overlay Kurva Normal",FALSE)
                 )
               ),
               fluidRow(

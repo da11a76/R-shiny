@@ -7,8 +7,6 @@ library(dplyr)
 library(ggplot2)
 library(moments) 
 library(tseries) 
-library(tidyverse)
-library(fontawesome) 
 library(nortest)
 PRIMARY_COLOR <- "#00A388"
 SECONDARY_COLOR <- "#2F4858"
@@ -24,18 +22,6 @@ light_theme <- bs_theme(
   base_font = font_google("Inter"),
   heading_font = font_google("Playfair Display", wght = "700")
 )
-
-dark_theme <- bs_theme(
-  version = 5,
-  bootswatch = "darkly",
-  primary = PRIMARY_COLOR,
-  secondary = ACCENT_COLOR, 
-  success = "#2ECC71",
-  info = "#3498DB",
-  base_font = font_google("Inter"),
-  heading_font = font_google("Playfair Display", wght = "700")
-)
-
 
 # =====================
 # 2. USER INTERFACE (UI)
@@ -122,7 +108,7 @@ ui <- dashboardPage(
                            " menggunakan pendekatan visual, statistik deskriptif, dan uji formal. Tujuan utama adalah mempermudah identifikasi normalitas data."
                          ),
                          tags$ul(
-                           tags$li("Menyesuaikan uji dengan ukuran sampel (n < 30: Shapiro-Wilk; n > 30: Jarque-Bera)."),
+                           tags$li("Menyesuaikan uji dengan ukuran sampel (n < 30: Shapiro-Wilk; 30 < n <= 200: Jarque-Bera)."),
                            tags$li("Menampilkan interpretasi statistik & visual secara komprehensif."),
                            tags$li("Dirancang untuk analisis akademik & praktis.")
                          )
