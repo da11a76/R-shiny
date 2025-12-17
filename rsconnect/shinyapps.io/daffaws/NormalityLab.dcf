@@ -1,0 +1,13 @@
+name: NormalityLab
+title: NormalityLab
+username: daffaws
+account: daffaws
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 16323819
+bundleId: 11332463
+url: https://daffaws.shinyapps.io/NormalityLab/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .RData
