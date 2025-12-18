@@ -288,6 +288,88 @@ ui <- dashboardPage(
   )
 )
 
+
+jarque_bera_manual <- function(x) {
+  x <- as.numeric(x)
+  x <- x[!is.na(x)]
+  
+  n <- length(x)
+  if (n < 20) return(NULL)
+  if (sd(x) == 0) return(NULL)
+  
+  m <- mean(x)
+  s <- sd(x)
+  
+  skewness <- mean((x - m)^3) / s^3
+  kurtosis <- mean((x - m)^4) / s^4
+  
+  JB <- n / 6 * (skewness^2 + (kurtosis - 3)^2 / 4)
+  p_value <- 1 - pchisq(JB, df = 2)
+  
+  structure(
+    list(
+      statistic = JB,
+      p.value = p_value,
+      method = "Jarque-Bera Test (Manual)",
+      parameter = 2
+    ),
+    class = "htest"
+  )
+}
+
+chi_sq_test <- function(x) {
+  # Pembagian data ke dalam 5-10 bins (sesuai aturan N/k >= 5)
+  N <- length(x)
+  k <- max(5, floor(N / 50)) # Aturan sederhana untuk jumlah bins
+  k <- min(k, 15) # Batas maksimal bins
+  
+  # Menghitung frekuensi observasi dan frekuensi harapan
+  hist_info <- hist(x, breaks = k, plot = FALSE)
+  observed_freq <- hist_info$counts
+  
+  # Menghitung probabilitas (P(a < X < b)) untuk setiap bin di bawah Normal
+  probabilities <- diff(pnorm(hist_info$breaks, mean(x), sd(x)))
+  expected_freq <- probabilities * N
+  
+  # Menggabungkan bins jika frekuensi harapan terlalu kecil (< 5)
+  while (any(expected_freq < 5) && length(expected_freq) > 2) {
+    idx_small <- which.min(expected_freq)
+    if (idx_small == length(expected_freq)) {
+      # Gabung bin terakhir dengan bin sebelumnya
+      expected_freq[idx_small - 1] <- expected_freq[idx_small - 1] + expected_freq[idx_small]
+      observed_freq[idx_small - 1] <- observed_freq[idx_small - 1] + observed_freq[idx_small]
+      expected_freq <- expected_freq[-idx_small]
+      observed_freq <- observed_freq[-idx_small]
+    } else {
+      # Gabung bin kecil dengan bin setelahnya
+      expected_freq[idx_small + 1] <- expected_freq[idx_small + 1] + expected_freq[idx_small]
+      observed_freq[idx_small + 1] <- observed_freq[idx_small + 1] + observed_freq[idx_small]
+      expected_freq <- expected_freq[-idx_small]
+      observed_freq <- observed_freq[-idx_small]
+    }
+  }
+  
+  # Jika masih ada bin < 5 setelah penggabungan, uji tidak dapat diandalkan
+  if (any(expected_freq < 5)) {
+    return(NULL)
+  }
+  
+  # Derajat kebebasan = jumlah bins - 1 (estimasi mean) - 1 (estimasi sd) - 1
+  # df = length(expected_freq) - 3 (jika mean & sd diestimasi)
+  df_chi <- length(expected_freq) - 3
+  if (df_chi < 1) return(NULL) # Pastikan df > 0
+  
+  # Hitung statistik Chi-Square
+  chi_sq_stat <- sum((observed_freq - expected_freq)^2 / expected_freq)
+  p_val <- pchisq(chi_sq_stat, df = df_chi, lower.tail = FALSE)
+  
+  list(
+    statistic = c(`X-squared` = chi_sq_stat),
+    p.value = p_val,
+    method = "Chi-squared Goodness-of-Fit Test",
+    parameter = c(df = df_chi, `N bins` = length(expected_freq))
+  )
+}
 evaluate_normality <- function(x, alpha = 0.05) {
   
   x <- x[!is.na(x)]
@@ -309,12 +391,15 @@ evaluate_normality <- function(x, alpha = 0.05) {
       error = function(e) NA
     )
   } else {
-    test_name <- "Jarque-Bera"
-    p_value <- tryCatch(
-      tseries::jarque.test(x)$p.value,
-      error = function(e) NA
+    jb <- tryCatch(
+      jarque_bera_manual(x),
+      error = function(e) NULL
     )
+    
+    test_name <- "Jarque-Bera (Manual)"
+    p_value <- if (!is.null(jb)) jb$p.value else NA
   }
+  
   
   # Keputusan statistik murni
   if (is.na(p_value)) {
@@ -552,21 +637,6 @@ server <- function(input, output, session) {
     round(sqrt(skewness(x)^2 + (kurtosis(x)-3)^2), 6) 
   })
   
-  output$deviation_table <- renderTable({
-    x <- selected_data(); req(x)
-    qq <- qqnorm(x, plot.it = FALSE)
-    data.frame(
-      Index = seq_along(qq$x),
-      Sample_Quantile = round(qq$x, 6),
-      Theoretical = round(qq$y, 6),
-      Deviation = round(abs(qq$x - qq$y), 6)
-    )
-  }, rownames = FALSE, striped = TRUE, hover = TRUE)
-  
-  # =====================
-  # 7. tests
-  # =====================
-  # Logic Uji Goodness-of-Fit Chi-Square
   
   interpret_visual_summary <- function(x) {
     
@@ -604,59 +674,7 @@ server <- function(input, output, session) {
     )
   }
   
-  chi_sq_test <- function(x) {
-    # Pembagian data ke dalam 5-10 bins (sesuai aturan N/k >= 5)
-    N <- length(x)
-    k <- max(5, floor(N / 50)) # Aturan sederhana untuk jumlah bins
-    k <- min(k, 15) # Batas maksimal bins
-    
-    # Menghitung frekuensi observasi dan frekuensi harapan
-    hist_info <- hist(x, breaks = k, plot = FALSE)
-    observed_freq <- hist_info$counts
-    
-    # Menghitung probabilitas (P(a < X < b)) untuk setiap bin di bawah Normal
-    probabilities <- diff(pnorm(hist_info$breaks, mean(x), sd(x)))
-    expected_freq <- probabilities * N
-    
-    # Menggabungkan bins jika frekuensi harapan terlalu kecil (< 5)
-    while (any(expected_freq < 5) && length(expected_freq) > 2) {
-      idx_small <- which.min(expected_freq)
-      if (idx_small == length(expected_freq)) {
-        # Gabung bin terakhir dengan bin sebelumnya
-        expected_freq[idx_small - 1] <- expected_freq[idx_small - 1] + expected_freq[idx_small]
-        observed_freq[idx_small - 1] <- observed_freq[idx_small - 1] + observed_freq[idx_small]
-        expected_freq <- expected_freq[-idx_small]
-        observed_freq <- observed_freq[-idx_small]
-      } else {
-        # Gabung bin kecil dengan bin setelahnya
-        expected_freq[idx_small + 1] <- expected_freq[idx_small + 1] + expected_freq[idx_small]
-        observed_freq[idx_small + 1] <- observed_freq[idx_small + 1] + observed_freq[idx_small]
-        expected_freq <- expected_freq[-idx_small]
-        observed_freq <- observed_freq[-idx_small]
-      }
-    }
-    
-    # Jika masih ada bin < 5 setelah penggabungan, uji tidak dapat diandalkan
-    if (any(expected_freq < 5)) {
-      return(NULL)
-    }
-    
-    # Derajat kebebasan = jumlah bins - 1 (estimasi mean) - 1 (estimasi sd) - 1
-    # df = length(expected_freq) - 3 (jika mean & sd diestimasi)
-    df_chi <- length(expected_freq) - 3
-    if (df_chi < 1) return(NULL) # Pastikan df > 0
-    
-    # Hitung statistik Chi-Square
-    chi_sq_stat <- sum((observed_freq - expected_freq)^2 / expected_freq)
-    p_val <- pchisq(chi_sq_stat, df = df_chi, lower.tail = FALSE)
-    
-    list(
-      statistic = c(`X-squared` = chi_sq_stat),
-      p.value = p_val,
-      method = "Chi-squared Goodness-of-Fit Test",
-      parameter = c(df = df_chi, `N bins` = length(expected_freq))
-    )
-  }
+  
   
   output$test_selector <- renderUI({
     n <- sample_size()
@@ -696,34 +714,7 @@ server <- function(input, output, session) {
     if (test == "lillie") {
       return(lillie.test(x))
     }
-    
-    jarque_bera_manual <- function(x) {
-      x <- as.numeric(x)
-      x <- x[!is.na(x)]
-      
-      n <- length(x)
-      if (n < 20) return(NULL)
-      if (sd(x) == 0) return(NULL)
-      
-      m <- mean(x)
-      s <- sd(x)
-      
-      skewness <- mean((x - m)^3) / s^3
-      kurtosis <- mean((x - m)^4) / s^4
-      
-      JB <- n / 6 * (skewness^2 + (kurtosis - 3)^2 / 4)
-      p_value <- 1 - pchisq(JB, df = 2)
-      
-      structure(
-        list(
-          statistic = JB,
-          p.value = p_value,
-          method = "Jarque-Bera Test (Manual)",
-          parameter = 2
-        ),
-        class = "htest"
-      )
-    }
+
     
     if (test == "jb") {
       res <- jarque_bera_manual(x)
@@ -1018,9 +1009,10 @@ server <- function(input, output, session) {
       # Medium sample (30 < n ≤ 100)
       if (n > 30 && n <= 100) {
         jb <- tryCatch(
-          tseries::jarque.test(x)$p.value,
+          jarque_bera_manual(x)$p_value,
           error = function(e) NA
         )
+        
         
         ks <- tryCatch(
           ks.test(x, "pnorm", mean(x), sd(x))$p.value,
@@ -1038,9 +1030,10 @@ server <- function(input, output, session) {
       # Large sample (n > 100)
       if (n > 100) {
         jb <- tryCatch(
-          tseries::jarque.test(x)$p.value,
+          jarque_bera_manual(x)$p_value,
           error = function(e) NA
         )
+        
         
         bins <- floor(sqrt(n))
         chisq <- tryCatch({
