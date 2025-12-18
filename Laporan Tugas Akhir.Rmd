@@ -1247,7 +1247,7 @@ output$download_report <- downloadHandler(
       write.csv(df, file, row.names = FALSE)
     }
   )
-}
+
 #Penggerak UI dan Server
 shinyApp(ui, server) 
 
