@@ -187,7 +187,7 @@ ui <- dashboardPage(
                     width = 12,
                     sliderInput("bins","Jumlah Bins Histogram",10,100,30),
                     checkboxInput("show_density","Tampilkan Density Plot di Histogram",FALSE),
-                    checkboxInput("overlay_normal","Overlay Kurva Normal",TRUE)
+                    checkboxInput("overlay_normal","Overlay Kurva Normal",FALSE)
                 )
               ),
               fluidRow(
@@ -573,7 +573,7 @@ server <- function(input, output, session) {
     if (length(x) < 3 || all(is.na(x))) {
       return(list(
         sk_msg = "Data belum cukup untuk interpretasi bentuk distribusi.",
-        kt_msg = ""
+        kt_msg = "Data belum cukup untuk interpretasi bentuk distribusi."
       ))
     }
     

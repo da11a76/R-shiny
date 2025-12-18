@@ -5,10 +5,56 @@ date: "2025-12-17"
 output: pdf_document
 ---
 
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+# **Bab 1. Pendahuluan**
+
+## 1.1 Latar Belakang {#sec-}
+
+Uji kenormalan merupakan salah satu tahapan penting dalam analisis statistik inferensia, khususnya pada metode statistik parametrik. Kesalahan dalam menentukan apakah data berdistribusi normal atau tidak dapat menyebabkan pemilihan metode analisis yang tidak tepat dan berdampak pada kesimpulan penelitian.
+
+Dalam praktik analisis data, pengujian normalitas biasanya hanya dilakukan menggunakan satu uji statistik formal tanpa mempertimbangkan karakteristik data secara menyeluruh, seperti ukuran sampel dan bentuk distribusi. Pendekatan tersebut dapat menghasilkan interpretasi yang kurang tepat, terutama ketika hasil uji statistik dipengaruhi oleh sensitivitas terhadap ukuran sampel.
+
+Berdasarkan kondisi tersebut, dikembangkan aplikasi **Normality Lab** berbasis **R Shiny** yang mengintegrasikan statistik deskriptif, visualisasi distribusi, dan uji kenormalan formal dalam satu lingkungan analisis yang interaktif. Aplikasi ini ditujukan bagi pengguna yang telah memiliki pemahaman dasar statistik sehingga dapat digunakan secara langsung tanpa penyediaan panduan penggunaan khusus. Dengan demikian, aplikasi **Normality Lab** diharapkan mampu membantu pengguna dalam mengevaluasi kenormalan data secara cepat, sistematis, dan menyeluruh.
+
+## 1.2 Tujuan
+
+Tujuan pembangunan aplikasi **Normality Lab** adalah sebagai berikut:
+
+1.  Menyediakan aplikasi berbasis web untuk pengujian normalitas data numerik.
+2.  Menggabungkan statistik deskriptif, visualisasi, dan uji normalitas formal dalam satu aplikasi.
+3.  Menyesuaikan pemilihan uji normalitas berdasarkan ukuran sampel data.
+4.  Memberikan interpretasi hasil uji normalitas yang mudah dipahami pengguna.
+
+# Bab 2. Pembahasan
+
+## 2.1 Tahapan Pembangunan Aplikasi
+
+### **1. Tahap Perencanaan**
+
+Kelompok menentukan tujuan pembuatan aplikasi, dari situ kelompok berdiskusi terkait aplikasi seperti apa yang ingin dibuat, fitur-fitur utama yang akan dibuat, serta pembagian tugas anggota kelompok
+
+### 2. Tahap Perancangan Aplikasi
+
+### 3. Tahap Penerapan UI
+
+### 4. Tahap Penerapan Pengolahan Data
+
+### 5. Tahap Penerapan Analisis Statistik
+
+### 6. Tahap Visualisasi
+
+### 7. Tahap Interpretasi
+
+### 8. Tahap Pengujian dan Perbaikan
+
+### 9. Tahap Deployment
+
+## 2.2 Hasil Knit Program R-Shiny
+
+### 
 
 ```{r}
 library(shiny)
@@ -39,7 +85,9 @@ light_theme <- bs_theme(
 )
 
 ```
+
 User interface
+
 ```{r}
 ui <- dashboardPage(
   
@@ -304,6 +352,7 @@ ui <- dashboardPage(
 ```
 
 Helper function
+
 ```{r}
 evaluate_normality <- function(x, alpha = 0.05) {
   
@@ -353,6 +402,7 @@ evaluate_normality <- function(x, alpha = 0.05) {
 ```
 
 Server
+
 ```{r}
 server <- function(input, output, session) {
   
@@ -1187,8 +1237,9 @@ server <- function(input, output, session) {
 }
 
 ```
+
 Fungsi Katalis kode
+
 ```{r}
 shinyApp(ui, server)
 ```
-
