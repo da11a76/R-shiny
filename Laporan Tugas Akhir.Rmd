@@ -1,11 +1,12 @@
 ---
 title: "Laporan Tugas Akhir Normality Lab"
-author: "Kelompok 6
-Wahdana Djunaedi 
-Hafizh zaki rais
-Muhammad Daffa Alimuddin Pratama "
+author: 
+  - "Kelompok 6: Wahdana Djunaedi, Hafizh Zaki Rais, Muhammad Daffa Alimuddin Pratama"
+  - "Dosen Pengampu: Christiana Anggraeni Putri, SST., M.Si."
 date: "2025-12-17"
-output: pdf_document
+output:
+  word_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -53,7 +54,7 @@ library(moments)        # Statistik momen: skewness dan kurtosis
 library(tseries)        # Uji statistik time series (Jarque-Bera test, dll)
 library(tidyverse)      # Kumpulan paket data science (dplyr, tidyr, readr,ggplot2, dsb)
 library(fontawesome)    # Ikon Font Awesome untuk UI Shiny
-library(nortest)        # Uji normalitas (Lilliefors, Anderson-Darling, dll)
+library(nortest)        # Uji normalitas (Lilliefors)
 
 PRIMARY_COLOR   <- "#00A388"   # Warna utama tema
 SECONDARY_COLOR <- "#2F4858"   # Warna sekunder tema
@@ -247,13 +248,13 @@ ui <- dashboardPage(
             ")))
     ),
     sidebarMenu(id = "tabs",
-                menuItem(" Home", tabName = "home"),
-                menuItem(" Unggah & Deskripsi Data", tabName = "desc"),
-                menuItem(" Visualisasi Distribusi", tabName = "visual"),
+                menuItem("Home", tabName = "home"),
+                menuItem("Unggah & Deskripsi Data", tabName = "desc"),
+                menuItem("Visualisasi Distribusi", tabName = "visual"),
                 menuItem("Uji Formal Normalitas", tabName = "formal"), 
-                menuItem(" Skewness & Kurtosis", tabName = "skk"),
-                menuItem(" Analisis Grouping", tabName = "groups"),
-                menuItem(" Kesimpulan Final", tabName = "final")
+                menuItem("Skewness & Kurtosis", tabName = "skk"),
+                menuItem("Analisis Grouping", tabName = "groups"),
+                menuItem("Kesimpulan Final", tabName = "final")
     )
   ),
 
@@ -562,7 +563,7 @@ server <- function(input, output, session) {
     } else if (N >= 30 && N <= 100) {
       return(list(
         status = "Sampel Besar (30 < n <= 100)",
-        recommendation = "Uji yang Direkomendasikan: Shapiro-Wilk (masih baik), Lilliefors/Kolmogorov-Smirnov dan Jarque-Bera (jika n≥20).",
+        recommendation = "Uji yang Direkomendasikan: Shapiro-Wilk (masih baik), Lilliefors/Kolmogorov-Smirnov dan Jarque-Bera (jika n>=20).",
         icon = "fas fa-balance-scale"
       ))
     } else if (N > 100) {
@@ -703,8 +704,8 @@ output$summary_stats <- renderTable({
     
     keputusan <- ifelse(
       res$p.value > input$alpha,
-      "NORMAL (Gagal Tolak H₀)",
-      "TIDAK NORMAL (Tolak H₀)"
+      "NORMAL (Gagal Tolak H0)",
+      "TIDAK NORMAL (Tolak H0)"
     )
     
     data.frame(
@@ -713,8 +714,8 @@ output$summary_stats <- renderTable({
       P_Value = formatC(res$p.value, format = "f", digits = 5),
       Keputusan = ifelse(
         res$p.value > input$alpha,
-        "NORMAL (Gagal Tolak H₀)",
-        "TIDAK NORMAL (Tolak H₀)"
+        "NORMAL (Gagal Tolak H0)",
+        "TIDAK NORMAL (Tolak H0)"
       )
     )
   }, rownames = FALSE)
@@ -1029,8 +1030,8 @@ interpret_visual_summary <- function(x) {
       "<p><b>P-value:</b> ", round(res$p_value, 5), "</p>",
       "<p><b>Keputusan:</b> ",
       ifelse(normal,
-             "<b style='color:#00A388;'>NORMAL (Gagal Tolak H₀)</b>",
-             "<b style='color:#E74C3C;'>TIDAK NORMAL (Tolak H₀)</b>"
+             "<b style='color:#00A388;'>NORMAL (Gagal Tolak H0)</b>",
+             "<b style='color:#E74C3C;'>TIDAK NORMAL (Tolak H0)</b>"
       ),
       "</p>",
       
@@ -1039,7 +1040,7 @@ interpret_visual_summary <- function(x) {
           "<div style='margin-top:10px; color:#856404;
                     background:#fff3cd; padding:10px;
                     border-radius:5px;'>",
-          "⚠ ", res$warning,
+          "! ", res$warning,
           "</div>"
         )
       } else "",
@@ -1060,8 +1061,11 @@ interpret_visual_summary <- function(x) {
   })
 
 ```
+
 ### 9. Tahap Pembangunan Output Offline(HTML dan CSV)
-Fungsi di sini berguna untuk memberikan laporan test secara  offline dalam format HTML dengan fungsi di bawah ini pengguna dapat mengunduh file yang berisi uji normalitas dan statistik deskriptifnya. Apabila pengguna kehilangan file awal, pengguna dapat mengunduh lagi file yang masih tersimpan di aplikasi
+
+Fungsi di sini berguna untuk memberikan laporan test secara offline dalam format HTML dengan fungsi di bawah ini pengguna dapat mengunduh file yang berisi uji normalitas dan statistik deskriptifnya. Apabila pengguna kehilangan file awal, pengguna dapat mengunduh lagi file yang masih tersimpan di aplikasi
+
 ```{r}
 #Fungsi untuk mengunduh Laporan Uji formal dengan JB yang digunakan apabila sampel >30 dan Shapiro wilks apabila sampel <30 dan lebih dari 3
 output$download_report <- downloadHandler(
@@ -1100,13 +1104,11 @@ output$download_report <- downloadHandler(
         jarque_bera_manual(x)$p.value,
         error = function(e) NA
           )
-
         
         ks <- tryCatch(
           ks.test(x, "pnorm", mean(x), sd(x))$p.value,
           error = function(e) NA
         )
-        
         
         chisq <- tryCatch({
           bins <- floor(sqrt(n))
@@ -1123,7 +1125,6 @@ output$download_report <- downloadHandler(
         error = function(e) NA
       )
 
-        
         bins <- floor(sqrt(n))
         chisq <- tryCatch({
           observed <- table(cut(x, bins))
@@ -1131,6 +1132,7 @@ output$download_report <- downloadHandler(
           chisq.test(observed, p = expected / sum(expected))$p.value
         }, error = function(e) NA)
       }
+      
       fmt_p <- function(p) {
         if (is.na(p)) "NA"
         else round(p, 5)
@@ -1138,8 +1140,8 @@ output$download_report <- downloadHandler(
       
       keputusan <- function(p) {
         if (is.na(p)) "N/A"
-        else if (p > alpha) "NORMAL (Gagal Tolak H₀)"
-        else "TIDAK NORMAL (Tolak H₀)"
+        else if (p > alpha) "NORMAL (Gagal Tolak H0)"
+        else "TIDAK NORMAL (Tolak H0)"
       }
       tests_html <- ""
       
@@ -1252,6 +1254,7 @@ output$download_report <- downloadHandler(
 shinyApp(ui, server) 
 
 ```
+
 ### 9. Tahap Pengujian dan Perbaikan
 
 Tahap pengujian dilakukan untuk memastikan aplikasi berjalan dengan baik pada berbagai kondisi data, seperti:
@@ -1262,16 +1265,8 @@ Tahap pengujian dilakukan untuk memastikan aplikasi berjalan dengan baik pada be
 
 -   Data dengan nilai ekstrem atau outlier
 
-**Berdasarkan hasil pengujian, dilakukan perbaikan pada validasi input, stabilitas reaktif, serta kejelasan interpretasi hasil agar aplikasi lebih andal dan minim kesalahan.**
-Pada tahap ini kelompok kami memperbaiki logika-logika yang kurang sesuai dan berpotensi menimbulkan error. untuk tahap yang perlu diperbaiki/sangat sering error adalah :
-1. Download report 
-pada tahap ini penulisan logika ditulis ulang untuk menyertakan uji yang ada dengan menggunakan fungsi evaluate_normality untuk mendapat keputusan final
-2. Kesimpulan Final 
-memperbaiki kode yang error karena setiap uji memiliki kondisi sampel masing-masing dan kelemahan masing masing sehingga kami menyertakan *Peringatan* agar bisa dipahami kekuatan dan kelemahan uji formal yang digunakan
-3. Perbaikan UI dan tata letak
-Penambahan seperti pintasan di bagian UI yang sebelumnya tidak ada juga merupakan upgrade dari tahap Pengujian dan Perbaikan
+**Berdasarkan hasil pengujian, dilakukan perbaikan pada validasi input, stabilitas reaktif, serta kejelasan interpretasi hasil agar aplikasi lebih andal dan minim kesalahan.** Pada tahap ini kelompok kami memperbaiki logika-logika yang kurang sesuai dan berpotensi menimbulkan error. untuk tahap yang perlu diperbaiki/sangat sering error adalah : 1. Download report pada tahap ini penulisan logika ditulis ulang untuk menyertakan uji yang ada dengan menggunakan fungsi evaluate_normality untuk mendapat keputusan final 2. Kesimpulan Final memperbaiki kode yang error karena setiap uji memiliki kondisi sampel masing-masing dan kelemahan masing masing sehingga kami menyertakan *Peringatan* agar bisa dipahami kekuatan dan kelemahan uji formal yang digunakan 3. Perbaikan UI dan tata letak Penambahan seperti pintasan di bagian UI yang sebelumnya tidak ada juga merupakan upgrade dari tahap Pengujian dan Perbaikan
 
 ### 10. Tahap Deployment
 
 Tahap akhir adalah deployment aplikasi sehingga dapat diakses oleh pengguna. Menggunakan shinyapps.io aplikasi mendapatkan alamat web tersendiri
-
