@@ -1,0 +1,1472 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Laporan Tugas Akhir Normality Lab},
+  pdfauthor={Kelompok 6 Wahdana Djunaedi Hafizh zaki rais Muhammad Daffa Alimuddin Pratama},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Laporan Tugas Akhir Normality Lab}
+\author{Kelompok 6 Wahdana Djunaedi Hafizh zaki rais Muhammad Daffa
+Alimuddin Pratama}
+\date{2025-12-17}
+
+\begin{document}
+\maketitle
+
+\section{Bab 1. Pendahuluan}\label{bab-1.-pendahuluan}
+
+\subsection{1.1 Latar Belakang}\label{sec-}
+
+Uji kenormalan merupakan salah satu tahapan penting dalam analisis
+statistik inferensia, khususnya pada metode statistik parametrik.
+Kesalahan dalam menentukan apakah data berdistribusi normal atau tidak
+dapat menyebabkan pemilihan metode analisis yang tidak tepat dan
+berdampak pada kesimpulan penelitian.
+
+Dalam praktik analisis data, pengujian normalitas biasanya hanya
+dilakukan menggunakan satu uji statistik formal tanpa mempertimbangkan
+karakteristik data secara menyeluruh, seperti ukuran sampel dan bentuk
+distribusi. Pendekatan tersebut dapat menghasilkan interpretasi yang
+kurang tepat, terutama ketika hasil uji statistik dipengaruhi oleh
+sensitivitas terhadap ukuran sampel.
+
+Berdasarkan kondisi tersebut, dikembangkan aplikasi \emph{Normality Lab}
+berbasis \emph{R Shiny} yang mengintegrasikan statistik deskriptif,
+visualisasi distribusi, dan uji kenormalan formal dalam satu lingkungan
+analisis yang interaktif. Aplikasi ini ditujukan bagi pengguna yang
+telah memiliki pemahaman dasar statistik sehingga dapat digunakan secara
+langsung tanpa penyediaan panduan penggunaan khusus. Dengan demikian,
+aplikasi \emph{Normality Lab} diharapkan mampu membantu pengguna dalam
+mengevaluasi kenormalan data secara cepat, sistematis, dan menyeluruh.
+
+\subsection{1.2 Tujuan}\label{tujuan}
+
+Tujuan pembangunan aplikasi \emph{Normality Lab} adalah sebagai berikut:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Menyediakan aplikasi berbasis web untuk pengujian normalitas data
+  numerik.
+\item
+  Menggabungkan statistik deskriptif, visualisasi, dan uji normalitas
+  formal dalam satu aplikasi.
+\item
+  Menyesuaikan pemilihan uji normalitas berdasarkan ukuran sampel data.
+\item
+  Memberikan interpretasi hasil uji normalitas yang mudah dipahami
+  pengguna.
+\end{enumerate}
+
+\section{Bab 2. Pembahasan}\label{bab-2.-pembahasan}
+
+\subsection{2.1 Tahapan Pembangunan
+Aplikasi}\label{tahapan-pembangunan-aplikasi}
+
+\subsubsection{\texorpdfstring{\emph{1. Tahap
+Perencanaan}}{1. Tahap Perencanaan}}\label{tahap-perencanaan}
+
+Kelompok menentukan tujuan pembuatan aplikasi, dari situ kelompok
+berdiskusi terkait aplikasi seperti apa yang ingin dibuat, fitur-fitur
+utama yang akan dibuat, serta pembagian tugas anggota kelompok
+
+\subsubsection{2. Tahap Perancangan
+Aplikasi}\label{tahap-perancangan-aplikasi}
+
+Aplikasi terdiri dari 6 tab yaitu : 1. Home 2. Unggah dan deskripsi data
+3. Visualisasi distribusi 4. Uji Formal Normalitas 5. Analisis Grouping
+6. Kesimpulan Final Tab diisi Oleh fungsi fungsi yang sesuai dengan
+kebutuhan yang ada di server. berikut library yang dipakai, dan helper
+function yang akan digunakan di server LIBRARY \& HELPER FUNCTION
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(shiny)          }\CommentTok{\# Framework utama untuk membuat aplikasi web interaktif}
+\FunctionTok{library}\NormalTok{(shinydashboard) }\CommentTok{\# Layout dashboard (sidebar, header, box) ala admin panel}
+\FunctionTok{library}\NormalTok{(plotly)         }\CommentTok{\# Grafik interaktif (zoom, hover, tooltip)}
+\FunctionTok{library}\NormalTok{(bslib)          }\CommentTok{\# Kustomisasi tema Bootstrap (warna, font, mode light/dark)}
+\FunctionTok{library}\NormalTok{(readxl)         }\CommentTok{\# Membaca file Excel (.xls, .xlsx)}
+\FunctionTok{library}\NormalTok{(moments)        }\CommentTok{\# Statistik momen: skewness dan kurtosis}
+\FunctionTok{library}\NormalTok{(tseries)        }\CommentTok{\# Uji statistik time series (Jarque{-}Bera test, dll)}
+\FunctionTok{library}\NormalTok{(tidyverse)      }\CommentTok{\# Kumpulan paket data science (dplyr, tidyr, readr,ggplot2, dsb)}
+\FunctionTok{library}\NormalTok{(fontawesome)    }\CommentTok{\# Ikon Font Awesome untuk UI Shiny}
+\FunctionTok{library}\NormalTok{(nortest)        }\CommentTok{\# Uji normalitas (Lilliefors, Anderson{-}Darling, dll)}
+
+\NormalTok{PRIMARY\_COLOR   }\OtherTok{\textless{}{-}} \StringTok{"\#00A388"}   \CommentTok{\# Warna utama tema}
+\NormalTok{SECONDARY\_COLOR }\OtherTok{\textless{}{-}} \StringTok{"\#2F4858"}   \CommentTok{\# Warna sekunder tema}
+\NormalTok{ACCENT\_COLOR    }\OtherTok{\textless{}{-}} \StringTok{"\#FFB600"}   \CommentTok{\# Warna aksen/highlight}
+
+\CommentTok{\# Tema UI Shiny}
+\NormalTok{light\_theme }\OtherTok{\textless{}{-}} \FunctionTok{bs\_theme}\NormalTok{(     }
+  \AttributeTok{version =} \DecValTok{5}\NormalTok{,              }
+  \AttributeTok{bootswatch =} \StringTok{"flatly"}\NormalTok{,      }
+  \AttributeTok{primary =}\NormalTok{ PRIMARY\_COLOR,     }
+  \AttributeTok{secondary =}\NormalTok{ SECONDARY\_COLOR, }
+  \AttributeTok{success =} \StringTok{"\#2ECC71"}\NormalTok{,         }
+  \AttributeTok{info =} \StringTok{"\#3498DB"}\NormalTok{,           }
+  \AttributeTok{base\_font =} \FunctionTok{font\_google}\NormalTok{(}\StringTok{"Inter"}\NormalTok{),                }
+  \AttributeTok{heading\_font =} \FunctionTok{font\_google}\NormalTok{(}\StringTok{"Playfair Display"}\NormalTok{, }\AttributeTok{wght =} \StringTok{"700"}\NormalTok{) }
+\NormalTok{)}
+\CommentTok{\# HELPER FUNCTION DI SERVER}
+\CommentTok{\# Fungsi uji normalitas untuk Report/Laporan dalam bentuk HTML}
+\NormalTok{evaluate\_normality }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(x, }\AttributeTok{alpha =} \FloatTok{0.05}\NormalTok{) \{   }
+  
+\NormalTok{  x }\OtherTok{\textless{}{-}}\NormalTok{ x[}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(x)]                             }
+\NormalTok{  n }\OtherTok{\textless{}{-}} \FunctionTok{length}\NormalTok{(x)                              }
+  
+  \ControlFlowTok{if}\NormalTok{ (n }\SpecialCharTok{\textless{}} \DecValTok{3}\NormalTok{) \{                                    }
+    \FunctionTok{return}\NormalTok{(}\FunctionTok{list}\NormalTok{(}
+      \AttributeTok{n =}\NormalTok{ n,}
+      \AttributeTok{test\_name =} \ConstantTok{NA}\NormalTok{,}
+      \AttributeTok{p\_value =} \ConstantTok{NA}\NormalTok{,}
+      \AttributeTok{decision =} \StringTok{"DATA\_TIDAK\_CUKUP"}
+\NormalTok{    ))}
+\NormalTok{  \}}
+  
+  \ControlFlowTok{if}\NormalTok{ (n }\SpecialCharTok{\textgreater{}=} \DecValTok{3} \SpecialCharTok{\&\&}\NormalTok{ n }\SpecialCharTok{\textless{}} \DecValTok{30}\NormalTok{) \{                       }
+\NormalTok{    test\_name }\OtherTok{\textless{}{-}} \StringTok{"Shapiro{-}Wilk"}
+\NormalTok{    p\_value }\OtherTok{\textless{}{-}} \FunctionTok{tryCatch}\NormalTok{(}
+      \FunctionTok{shapiro.test}\NormalTok{(x)}\SpecialCharTok{$}\NormalTok{p.value,                  }
+      \AttributeTok{error =} \ControlFlowTok{function}\NormalTok{(e) }\ConstantTok{NA}
+\NormalTok{    )}
+\NormalTok{  \} }\ControlFlowTok{else}\NormalTok{ \{}
+\NormalTok{  jb }\OtherTok{\textless{}{-}} \FunctionTok{tryCatch}\NormalTok{(}
+    \FunctionTok{jarque\_bera\_manual}\NormalTok{(x),}
+    \AttributeTok{error =} \ControlFlowTok{function}\NormalTok{(e) }\ConstantTok{NULL}
+\NormalTok{  )}
+  
+\NormalTok{  test\_name }\OtherTok{\textless{}{-}} \StringTok{"Jarque{-}Bera (Manual)"}
+\NormalTok{  p\_value }\OtherTok{\textless{}{-}} \ControlFlowTok{if}\NormalTok{ (}\SpecialCharTok{!}\FunctionTok{is.null}\NormalTok{(jb)) jb}\SpecialCharTok{$}\NormalTok{p.value }\ControlFlowTok{else} \ConstantTok{NA}
+\NormalTok{\}}
+  
+  \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{is.na}\NormalTok{(p\_value)) \{                           }
+\NormalTok{    decision }\OtherTok{\textless{}{-}} \StringTok{"UJI\_GAGAL"}
+\NormalTok{  \} }\ControlFlowTok{else} \ControlFlowTok{if}\NormalTok{ (p\_value }\SpecialCharTok{\textgreater{}}\NormalTok{ alpha) \{                   }
+\NormalTok{    decision }\OtherTok{\textless{}{-}} \StringTok{"GAGAL\_TOLAK\_H0"}
+\NormalTok{  \} }\ControlFlowTok{else}\NormalTok{ \{                                      }
+\NormalTok{    decision }\OtherTok{\textless{}{-}} \StringTok{"TOLAK\_H0"}
+\NormalTok{  \}}
+  
+  \FunctionTok{list}\NormalTok{(}
+    \AttributeTok{n =}\NormalTok{ n,                                        }
+    \AttributeTok{test\_name =}\NormalTok{ test\_name,                      }
+    \AttributeTok{p\_value =}\NormalTok{ p\_value,                        }
+    \AttributeTok{decision =}\NormalTok{ decision                           }
+\NormalTok{  )}
+\NormalTok{\}}
+\CommentTok{\#Fungsi chi square test(GoF)}
+\NormalTok{  chi\_sq\_test }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(x) \{}
+    \CommentTok{\# Pembagian data ke dalam 5{-}10 bins (sesuai aturan N/k \textgreater{}= 5)}
+\NormalTok{    N }\OtherTok{\textless{}{-}} \FunctionTok{length}\NormalTok{(x)}
+\NormalTok{    k }\OtherTok{\textless{}{-}} \FunctionTok{max}\NormalTok{(}\DecValTok{5}\NormalTok{, }\FunctionTok{floor}\NormalTok{(N }\SpecialCharTok{/} \DecValTok{50}\NormalTok{)) }\CommentTok{\# Aturan sederhana untuk jumlah bins}
+\NormalTok{    k }\OtherTok{\textless{}{-}} \FunctionTok{min}\NormalTok{(k, }\DecValTok{15}\NormalTok{) }\CommentTok{\# Batas maksimal bins}
+    
+    \CommentTok{\# Menghitung frekuensi observasi dan frekuensi harapan}
+\NormalTok{    hist\_info }\OtherTok{\textless{}{-}} \FunctionTok{hist}\NormalTok{(x, }\AttributeTok{breaks =}\NormalTok{ k, }\AttributeTok{plot =} \ConstantTok{FALSE}\NormalTok{)}
+\NormalTok{    observed\_freq }\OtherTok{\textless{}{-}}\NormalTok{ hist\_info}\SpecialCharTok{$}\NormalTok{counts}
+    
+    \CommentTok{\# Menghitung probabilitas (P(a \textless{} X \textless{} b)) untuk setiap bin di bawah Normal}
+\NormalTok{    probabilities }\OtherTok{\textless{}{-}} \FunctionTok{diff}\NormalTok{(}\FunctionTok{pnorm}\NormalTok{(hist\_info}\SpecialCharTok{$}\NormalTok{breaks, }\FunctionTok{mean}\NormalTok{(x), }\FunctionTok{sd}\NormalTok{(x)))}
+\NormalTok{    expected\_freq }\OtherTok{\textless{}{-}}\NormalTok{ probabilities }\SpecialCharTok{*}\NormalTok{ N}
+    
+    \CommentTok{\# Menggabungkan bins jika frekuensi harapan terlalu kecil (\textless{} 5)}
+    \ControlFlowTok{while}\NormalTok{ (}\FunctionTok{any}\NormalTok{(expected\_freq }\SpecialCharTok{\textless{}} \DecValTok{5}\NormalTok{) }\SpecialCharTok{\&\&} \FunctionTok{length}\NormalTok{(expected\_freq) }\SpecialCharTok{\textgreater{}} \DecValTok{2}\NormalTok{) \{}
+\NormalTok{      idx\_small }\OtherTok{\textless{}{-}} \FunctionTok{which.min}\NormalTok{(expected\_freq)}
+      \ControlFlowTok{if}\NormalTok{ (idx\_small }\SpecialCharTok{==} \FunctionTok{length}\NormalTok{(expected\_freq)) \{}
+        \CommentTok{\# Gabung bin terakhir dengan bin sebelumnya}
+\NormalTok{        expected\_freq[idx\_small }\SpecialCharTok{{-}} \DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ expected\_freq[idx\_small }\SpecialCharTok{{-}} \DecValTok{1}\NormalTok{] }\SpecialCharTok{+}\NormalTok{ expected\_freq[idx\_small]}
+\NormalTok{        observed\_freq[idx\_small }\SpecialCharTok{{-}} \DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ observed\_freq[idx\_small }\SpecialCharTok{{-}} \DecValTok{1}\NormalTok{] }\SpecialCharTok{+}\NormalTok{ observed\_freq[idx\_small]}
+\NormalTok{        expected\_freq }\OtherTok{\textless{}{-}}\NormalTok{ expected\_freq[}\SpecialCharTok{{-}}\NormalTok{idx\_small]}
+\NormalTok{        observed\_freq }\OtherTok{\textless{}{-}}\NormalTok{ observed\_freq[}\SpecialCharTok{{-}}\NormalTok{idx\_small]}
+\NormalTok{      \} }\ControlFlowTok{else}\NormalTok{ \{}
+        \CommentTok{\# Gabung bin kecil dengan bin setelahnya}
+\NormalTok{        expected\_freq[idx\_small }\SpecialCharTok{+} \DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ expected\_freq[idx\_small }\SpecialCharTok{+} \DecValTok{1}\NormalTok{] }\SpecialCharTok{+}\NormalTok{ expected\_freq[idx\_small]}
+\NormalTok{        observed\_freq[idx\_small }\SpecialCharTok{+} \DecValTok{1}\NormalTok{] }\OtherTok{\textless{}{-}}\NormalTok{ observed\_freq[idx\_small }\SpecialCharTok{+} \DecValTok{1}\NormalTok{] }\SpecialCharTok{+}\NormalTok{ observed\_freq[idx\_small]}
+\NormalTok{        expected\_freq }\OtherTok{\textless{}{-}}\NormalTok{ expected\_freq[}\SpecialCharTok{{-}}\NormalTok{idx\_small]}
+\NormalTok{        observed\_freq }\OtherTok{\textless{}{-}}\NormalTok{ observed\_freq[}\SpecialCharTok{{-}}\NormalTok{idx\_small]}
+\NormalTok{      \}}
+\NormalTok{    \}}
+    
+    \CommentTok{\# Jika masih ada bin \textless{} 5 setelah penggabungan, uji tidak dapat diandalkan}
+    \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{any}\NormalTok{(expected\_freq }\SpecialCharTok{\textless{}} \DecValTok{5}\NormalTok{)) \{}
+      \FunctionTok{return}\NormalTok{(}\ConstantTok{NULL}\NormalTok{)}
+\NormalTok{    \}}
+    
+    \CommentTok{\# Derajat kebebasan = jumlah bins {-} 1 (estimasi mean) {-} 1 (estimasi sd) {-} 1}
+    \CommentTok{\# df = length(expected\_freq) {-} 3 (jika mean \& sd diestimasi)}
+\NormalTok{    df\_chi }\OtherTok{\textless{}{-}} \FunctionTok{length}\NormalTok{(expected\_freq) }\SpecialCharTok{{-}} \DecValTok{3}
+    \ControlFlowTok{if}\NormalTok{ (df\_chi }\SpecialCharTok{\textless{}} \DecValTok{1}\NormalTok{) }\FunctionTok{return}\NormalTok{(}\ConstantTok{NULL}\NormalTok{) }\CommentTok{\# Pastikan df \textgreater{} 0}
+        \CommentTok{\# Hitung statistik Chi{-}Square}
+\NormalTok{    chi\_sq\_stat }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{((observed\_freq }\SpecialCharTok{{-}}\NormalTok{ expected\_freq)}\SpecialCharTok{\^{}}\DecValTok{2} \SpecialCharTok{/}\NormalTok{ expected\_freq)}
+\NormalTok{    p\_val }\OtherTok{\textless{}{-}} \FunctionTok{pchisq}\NormalTok{(chi\_sq\_stat, }\AttributeTok{df =}\NormalTok{ df\_chi, }\AttributeTok{lower.tail =} \ConstantTok{FALSE}\NormalTok{)}
+    
+    \FunctionTok{list}\NormalTok{(}
+      \AttributeTok{statistic =} \FunctionTok{c}\NormalTok{(}\StringTok{\textasciigrave{}}\AttributeTok{X{-}squared}\StringTok{\textasciigrave{}} \OtherTok{=}\NormalTok{ chi\_sq\_stat),}
+      \AttributeTok{p.value =}\NormalTok{ p\_val,}
+      \AttributeTok{method =} \StringTok{"Chi{-}squared Goodness{-}of{-}Fit Test"}\NormalTok{,}
+      \AttributeTok{parameter =} \FunctionTok{c}\NormalTok{(}\AttributeTok{df =}\NormalTok{ df\_chi, }\StringTok{\textasciigrave{}}\AttributeTok{N bins}\StringTok{\textasciigrave{}} \OtherTok{=} \FunctionTok{length}\NormalTok{(expected\_freq))}
+\NormalTok{    )}
+\NormalTok{  \}}
+  
+    \CommentTok{\#Hitung Statistik Jarque Bera  }
+\NormalTok{    jarque\_bera\_manual }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(x) \{}
+\NormalTok{      x }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(x)}
+\NormalTok{      x }\OtherTok{\textless{}{-}}\NormalTok{ x[}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(x)]}
+      
+\NormalTok{      n }\OtherTok{\textless{}{-}} \FunctionTok{length}\NormalTok{(x)}
+      \ControlFlowTok{if}\NormalTok{ (n }\SpecialCharTok{\textless{}} \DecValTok{20}\NormalTok{) }\FunctionTok{return}\NormalTok{(}\ConstantTok{NULL}\NormalTok{)}
+      \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{sd}\NormalTok{(x) }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\FunctionTok{return}\NormalTok{(}\ConstantTok{NULL}\NormalTok{)}
+      
+\NormalTok{      m }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{(x)}
+\NormalTok{      s }\OtherTok{\textless{}{-}} \FunctionTok{sd}\NormalTok{(x)}
+      
+\NormalTok{      skewness }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{((x }\SpecialCharTok{{-}}\NormalTok{ m)}\SpecialCharTok{\^{}}\DecValTok{3}\NormalTok{) }\SpecialCharTok{/}\NormalTok{ s}\SpecialCharTok{\^{}}\DecValTok{3}
+\NormalTok{      kurtosis }\OtherTok{\textless{}{-}} \FunctionTok{mean}\NormalTok{((x }\SpecialCharTok{{-}}\NormalTok{ m)}\SpecialCharTok{\^{}}\DecValTok{4}\NormalTok{) }\SpecialCharTok{/}\NormalTok{ s}\SpecialCharTok{\^{}}\DecValTok{4}
+      
+\NormalTok{      JB }\OtherTok{\textless{}{-}}\NormalTok{ n }\SpecialCharTok{/} \DecValTok{6} \SpecialCharTok{*}\NormalTok{ (skewness}\SpecialCharTok{\^{}}\DecValTok{2} \SpecialCharTok{+}\NormalTok{ (kurtosis }\SpecialCharTok{{-}} \DecValTok{3}\NormalTok{)}\SpecialCharTok{\^{}}\DecValTok{2} \SpecialCharTok{/} \DecValTok{4}\NormalTok{)}
+\NormalTok{      p\_value }\OtherTok{\textless{}{-}} \DecValTok{1} \SpecialCharTok{{-}} \FunctionTok{pchisq}\NormalTok{(JB, }\AttributeTok{df =} \DecValTok{2}\NormalTok{)}
+      
+      \FunctionTok{structure}\NormalTok{(}
+        \FunctionTok{list}\NormalTok{(}
+          \AttributeTok{statistic =}\NormalTok{ JB,}
+          \AttributeTok{p.value =}\NormalTok{ p\_value,}
+          \AttributeTok{method =} \StringTok{"Jarque{-}Bera Test (Manual)"}\NormalTok{,}
+          \AttributeTok{parameter =} \DecValTok{2}
+\NormalTok{        ),}
+        \AttributeTok{class =} \StringTok{"htest"}
+\NormalTok{      )}
+\NormalTok{    \}}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{3. Tahap Penerapan UI}\label{tahap-penerapan-ui}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Header dan Sidebar Header merupakan judul di atas aplikasi, sementara
+  Sidebar adalah menu navigasi yang terletak di samping kiri.
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ui }\OtherTok{\textless{}{-}} \FunctionTok{dashboardPage}\NormalTok{(}
+  
+  \CommentTok{\# HEADER}
+  \FunctionTok{dashboardHeader}\NormalTok{(}
+    \AttributeTok{title =}\NormalTok{ tags}\SpecialCharTok{$}\FunctionTok{span}\NormalTok{(}\StringTok{" Normality Lab"}\NormalTok{, }\AttributeTok{class =} \StringTok{"title{-}font{-}header"}\NormalTok{),}
+\NormalTok{    tags}\SpecialCharTok{$}\FunctionTok{li}\NormalTok{(}\AttributeTok{class =} \StringTok{"dropdown"}\NormalTok{, }\AttributeTok{style =} \StringTok{"padding: 8px; color: \#444;"}\NormalTok{, }
+\NormalTok{    )}
+\NormalTok{  ),}
+  
+  \CommentTok{\# SIDEBAR}
+  \FunctionTok{dashboardSidebar}\NormalTok{(}
+\NormalTok{    tags}\SpecialCharTok{$}\FunctionTok{head}\NormalTok{(}
+\NormalTok{      tags}\SpecialCharTok{$}\FunctionTok{style}\NormalTok{(}\FunctionTok{HTML}\NormalTok{(}\FunctionTok{paste0}\NormalTok{(}\StringTok{"}
+\StringTok{                /* Warna Sidebar Baru */}
+\StringTok{                .main{-}sidebar \{ background{-}color: "}\NormalTok{, SECONDARY\_COLOR, }\StringTok{" !important; \} }
+\StringTok{                .sidebar{-}menu li.active a \{ border{-}left: 5px solid "}\NormalTok{, PRIMARY\_COLOR, }\StringTok{" !important; \}}
+\StringTok{                .logo \{ background{-}color: "}\NormalTok{, SECONDARY\_COLOR, }\StringTok{" !important; \}}
+
+\StringTok{                /* Estetika Font dan Box */}
+\StringTok{                .content{-}wrapper, .right{-}side \{ background: \#F0FDF5 !important; \}}
+\StringTok{                .box \{ border{-}radius: 10px; box{-}shadow: 0 5px 15px rgba(0,0,0,0.08); \}}
+\StringTok{                .box{-}header h3.box{-}title \{ color: "}\NormalTok{, PRIMARY\_COLOR, }\StringTok{"; font{-}weight: 600; \}}
+\StringTok{                }
+\StringTok{                .tab{-}title{-}accent \{ color: "}\NormalTok{, SECONDARY\_COLOR, }\StringTok{"; font{-}family: \textquotesingle{}Playfair Display\textquotesingle{}; font{-}weight:                  700; border{-}bottom: 2px solid "}\NormalTok{, PRIMARY\_COLOR, }\StringTok{"; padding{-}bottom: 5px; margin{-}bottom: 20px; \}}
+
+\StringTok{                /* Style untuk Box \textquotesingle{}Tentang Aplikasi\textquotesingle{} */}
+\StringTok{                \#about{-}box \{ min{-}height: 250px; padding: 25px; position: relative; overflow: hidden; \}}
+\StringTok{                \#about{-}box .box{-}header \{ margin{-}bottom: 15px; \}}
+\StringTok{                }
+\StringTok{                /* Teks lebih besar di About Box */}
+\StringTok{                .about{-}text{-}large \{ font{-}size: 1.15em; line{-}height: 1.6; \}}
+\StringTok{                }
+\StringTok{                /* Hiasan Latar Belakang Home Lebih Ramai */}
+\StringTok{                .home{-}icon{-}bg \{ font{-}size: 150px; color: "}\NormalTok{, PRIMARY\_COLOR, }\StringTok{"; opacity: 0.05; position: absolute; top: 10px; right: 10px; transform: rotate({-}10deg); z{-}index: 1; \}}
+\StringTok{                .home{-}icon{-}bg{-}2 \{ font{-}size: 80px; color: "}\NormalTok{, ACCENT\_COLOR, }\StringTok{"; opacity: 0.08; position: absolute; bottom: 10\%; left: 10\%; transform: rotate(15deg); z{-}index: 1; \}}
+\StringTok{                .home{-}icon{-}bg{-}3 \{ font{-}size: 90px; color: "}\NormalTok{, SECONDARY\_COLOR, }\StringTok{"; opacity: 0.05; position: absolute; top: 10\%; left: 40\%; z{-}index: 1; \}}
+\StringTok{            "}\NormalTok{)))}
+\NormalTok{    ),}
+    \FunctionTok{sidebarMenu}\NormalTok{(}\AttributeTok{id =} \StringTok{"tabs"}\NormalTok{,}
+                \FunctionTok{menuItem}\NormalTok{(}\StringTok{" Home"}\NormalTok{, }\AttributeTok{tabName =} \StringTok{"home"}\NormalTok{),}
+                \FunctionTok{menuItem}\NormalTok{(}\StringTok{" Unggah \& Deskripsi Data"}\NormalTok{, }\AttributeTok{tabName =} \StringTok{"desc"}\NormalTok{),}
+                \FunctionTok{menuItem}\NormalTok{(}\StringTok{" Visualisasi Distribusi"}\NormalTok{, }\AttributeTok{tabName =} \StringTok{"visual"}\NormalTok{),}
+                \FunctionTok{menuItem}\NormalTok{(}\StringTok{"Uji Formal Normalitas"}\NormalTok{, }\AttributeTok{tabName =} \StringTok{"formal"}\NormalTok{), }
+                \FunctionTok{menuItem}\NormalTok{(}\StringTok{" Skewness \& Kurtosis"}\NormalTok{, }\AttributeTok{tabName =} \StringTok{"skk"}\NormalTok{),}
+                \FunctionTok{menuItem}\NormalTok{(}\StringTok{" Analisis Grouping"}\NormalTok{, }\AttributeTok{tabName =} \StringTok{"groups"}\NormalTok{),}
+                \FunctionTok{menuItem}\NormalTok{(}\StringTok{" Kesimpulan Final"}\NormalTok{, }\AttributeTok{tabName =} \StringTok{"final"}\NormalTok{)}
+\NormalTok{    )}
+\NormalTok{  ),}
+
+\CommentTok{\#2.  DashboardBody Dashboar Body merupakan isi dari setiap tab yang ada di dalam sidebar. Baris kode ini bertugas untuk menampilkan perhitungan/operasi yang ada di server baik dari visualisasi, uji formal, dan kesimpulan.}
+
+\FunctionTok{dashboardBody}\NormalTok{(}
+    
+    \AttributeTok{theme =}\NormalTok{ light\_theme, }
+    
+    \FunctionTok{tabItems}\NormalTok{(}
+      \CommentTok{\# Beranda: pengantar aplikasi \& tombol mulai analisis}
+      \FunctionTok{tabItem}\NormalTok{(}\StringTok{"home"}\NormalTok{,   }
+\NormalTok{              tags}\SpecialCharTok{$}\FunctionTok{h2}\NormalTok{(}\StringTok{" Normality Lab"}\NormalTok{, }\AttributeTok{class=}\StringTok{"tab{-}title{-}accent"}\NormalTok{),}
+              
+              \FunctionTok{box}\NormalTok{(}
+                \AttributeTok{id =} \StringTok{"about{-}box"}\NormalTok{,}
+                \AttributeTok{width =} \DecValTok{12}\NormalTok{,}
+                \AttributeTok{title =} \StringTok{"Tentang Aplikasi"}\NormalTok{,}
+\NormalTok{                tags}\SpecialCharTok{$}\FunctionTok{i}\NormalTok{(}\AttributeTok{class =} \StringTok{"home{-}icon{-}bg fas fa{-}chart{-}bar"}\NormalTok{),}
+\NormalTok{                tags}\SpecialCharTok{$}\FunctionTok{i}\NormalTok{(}\AttributeTok{class =} \StringTok{"home{-}icon{-}bg{-}2 fas fa{-}flask"}\NormalTok{),}
+\NormalTok{                tags}\SpecialCharTok{$}\FunctionTok{i}\NormalTok{(}\AttributeTok{class =} \StringTok{"home{-}icon{-}bg{-}3 fas fa{-}balance{-}scale"}\NormalTok{),}
+                
+\NormalTok{                tags}\SpecialCharTok{$}\FunctionTok{div}\NormalTok{(}\AttributeTok{class =} \StringTok{"about{-}text{-}large"}\NormalTok{,}
+\NormalTok{                         tags}\SpecialCharTok{$}\FunctionTok{p}\NormalTok{(}
+                           \StringTok{"Normality Lab adalah aplikasi Shiny untuk mengevaluasi asumsi "}\NormalTok{,}
+                           \FunctionTok{strong}\NormalTok{(}\StringTok{"distribusi normal"}\NormalTok{),}
+                           \StringTok{" menggunakan pendekatan visual, statistik deskriptif, dan uji formal. Tujuan utama adalah mempermudah identifikasi normalitas data."}
+\NormalTok{                         ),}
+\NormalTok{                         tags}\SpecialCharTok{$}\FunctionTok{ul}\NormalTok{(}
+\NormalTok{                           tags}\SpecialCharTok{$}\FunctionTok{li}\NormalTok{(}\StringTok{"Menyesuaikan uji dengan ukuran sampel (n \textless{} 30: Shapiro{-}Wilk; 30 \textless{} n \textless{}= 200: Jarque{-}Bera)."}\NormalTok{),}
+\NormalTok{                           tags}\SpecialCharTok{$}\FunctionTok{li}\NormalTok{(}\StringTok{"Menampilkan interpretasi statistik \& visual secara komprehensif."}\NormalTok{),}
+\NormalTok{                           tags}\SpecialCharTok{$}\FunctionTok{li}\NormalTok{(}\StringTok{"Dirancang untuk analisis akademik \& praktis."}\NormalTok{)}
+\NormalTok{                         )}
+\NormalTok{                ),}
+\NormalTok{                tags}\SpecialCharTok{$}\FunctionTok{div}\NormalTok{(}\AttributeTok{style =} \StringTok{"height: 40px;"}\NormalTok{)}
+\NormalTok{              ),}
+              
+              \FunctionTok{fluidRow}\NormalTok{(}
+                \FunctionTok{box}\NormalTok{(}\AttributeTok{width =} \DecValTok{12}\NormalTok{, }\FunctionTok{actionButton}\NormalTok{(}\StringTok{"go\_desc"}\NormalTok{, }\StringTok{" Mulai Analisis: Unggah \& Deskripsi Data"}\NormalTok{, }\AttributeTok{class =} \StringTok{"btn{-}success"}\NormalTok{, }\AttributeTok{width =} \StringTok{"100\%"}\NormalTok{))}
+\NormalTok{              )}
+\NormalTok{      ),}
+      \CommentTok{\# Unggah data, pilih variabel, dan statistik deskriptif awal  }
+      \FunctionTok{tabItem}\NormalTok{(}\StringTok{"desc"}\NormalTok{,       }
+\NormalTok{              tags}\SpecialCharTok{$}\FunctionTok{h2}\NormalTok{(}\StringTok{"Unggah \& Deskripsi Data"}\NormalTok{, }\AttributeTok{class=}\StringTok{"tab{-}title{-}accent"}\NormalTok{),}
+              
+              \FunctionTok{fluidRow}\NormalTok{(}
+                \FunctionTok{box}\NormalTok{(}
+                  \AttributeTok{title =}\NormalTok{ tags}\SpecialCharTok{$}\FunctionTok{span}\NormalTok{(}\FunctionTok{icon}\NormalTok{(}\StringTok{"upload"}\NormalTok{), }\StringTok{" Unggah dan Pilih Variabel"}\NormalTok{),}
+                  \AttributeTok{width =} \DecValTok{6}\NormalTok{, }
+                  \FunctionTok{fileInput}\NormalTok{(}\StringTok{"file\_data"}\NormalTok{, }\StringTok{"Pilih file CSV / Excel"}\NormalTok{, }\AttributeTok{accept =} \FunctionTok{c}\NormalTok{(}\StringTok{".csv"}\NormalTok{, }\StringTok{".xlsx"}\NormalTok{, }\StringTok{".xls"}\NormalTok{)),}
+                  \FunctionTok{uiOutput}\NormalTok{(}\StringTok{"select\_variable"}\NormalTok{),}
+                  \FunctionTok{uiOutput}\NormalTok{(}\StringTok{"select\_group"}\NormalTok{)}
+\NormalTok{                ),}
+                
+                \FunctionTok{box}\NormalTok{(}
+                  \AttributeTok{title =}\NormalTok{ tags}\SpecialCharTok{$}\FunctionTok{span}\NormalTok{(}\FunctionTok{icon}\NormalTok{(}\StringTok{"sliders{-}h"}\NormalTok{), }\StringTok{" Parameter Analisis"}\NormalTok{),}
+                  \AttributeTok{width =} \DecValTok{6}\NormalTok{, }
+                  \FunctionTok{sliderInput}\NormalTok{(}\StringTok{"alpha"}\NormalTok{, }\StringTok{"Tingkat Signifikansi (Alpha)"}\NormalTok{, }\FloatTok{0.01}\NormalTok{, }\FloatTok{0.1}\NormalTok{, }\FloatTok{0.05}\NormalTok{, }\AttributeTok{step =} \FloatTok{0.005}\NormalTok{),}
+\NormalTok{                  tags}\SpecialCharTok{$}\FunctionTok{p}\NormalTok{(}\StringTok{"Alpha digunakan sebagai batas keputusan pada uji formal normalitas."}\NormalTok{)}
+\NormalTok{                )}
+\NormalTok{              ),}
+              
+              \FunctionTok{hr}\NormalTok{(),}
+              
+              \CommentTok{\#Pintasan}
+              \FunctionTok{fluidRow}\NormalTok{(}
+                \FunctionTok{box}\NormalTok{(}\AttributeTok{width =} \DecValTok{6}\NormalTok{, }
+                    \FunctionTok{actionButton}\NormalTok{(}\StringTok{"go\_visual"}\NormalTok{, }\StringTok{" Visualisasi Distribusi"}\NormalTok{, }
+                                 \AttributeTok{class =} \StringTok{"btn{-}success"}\NormalTok{, }\AttributeTok{width =} \StringTok{"100\%"}\NormalTok{)),}
+                \FunctionTok{box}\NormalTok{(}\AttributeTok{width =} \DecValTok{6}\NormalTok{,}
+                    \FunctionTok{actionButton}\NormalTok{(}\StringTok{"go\_formal"}\NormalTok{, }\StringTok{"Uji Formal Normalitas"}\NormalTok{,}
+                                 \AttributeTok{class =} \StringTok{"btn{-}success"}\NormalTok{, }\AttributeTok{width =} \StringTok{"100\%"}\NormalTok{))}
+\NormalTok{              ),}
+              
+              \FunctionTok{hr}\NormalTok{(),}
+              
+              \FunctionTok{fluidRow}\NormalTok{(}
+                \FunctionTok{box}\NormalTok{(}
+                  \AttributeTok{title=}\NormalTok{tags}\SpecialCharTok{$}\FunctionTok{span}\NormalTok{(}\FunctionTok{icon}\NormalTok{(}\StringTok{"table"}\NormalTok{), }\StringTok{" Preview Data (10 Baris Pertama)"}\NormalTok{),}
+                  \AttributeTok{width =} \DecValTok{8}\NormalTok{, }
+                  \CommentTok{\# Fitur scroll horizontal}
+                  \FunctionTok{div}\NormalTok{(}\AttributeTok{style =} \StringTok{"overflow{-}x: auto;"}\NormalTok{, }
+                      \FunctionTok{tableOutput}\NormalTok{(}\StringTok{"data\_preview"}\NormalTok{)}
+\NormalTok{                  )}
+\NormalTok{                ),}
+                \FunctionTok{box}\NormalTok{(}
+                  \AttributeTok{title=}\NormalTok{tags}\SpecialCharTok{$}\FunctionTok{span}\NormalTok{(}\FunctionTok{icon}\NormalTok{(}\StringTok{"calculator"}\NormalTok{), }\StringTok{" Statistik Deskriptif"}\NormalTok{),}
+                  \AttributeTok{width =} \DecValTok{4}\NormalTok{,}
+                  \FunctionTok{tableOutput}\NormalTok{(}\StringTok{"summary\_stats"}\NormalTok{),}
+                  \FunctionTok{uiOutput}\NormalTok{(}\StringTok{"centrality\_note"}\NormalTok{)}
+\NormalTok{                )}
+\NormalTok{              )}
+\NormalTok{      ),}
+      
+      \CommentTok{\# Visualisasi distribusi: histogram, density, QQ, ECDF}
+      
+      \FunctionTok{tabItem}\NormalTok{(}\StringTok{"visual"}\NormalTok{,}
+\NormalTok{              tags}\SpecialCharTok{$}\FunctionTok{h2}\NormalTok{(}\StringTok{"Visualisasi Distribusi"}\NormalTok{, }\AttributeTok{class=}\StringTok{"tab{-}title{-}accent"}\NormalTok{),}
+              \FunctionTok{fluidRow}\NormalTok{(}
+                \FunctionTok{box}\NormalTok{(}\AttributeTok{title=}\NormalTok{tags}\SpecialCharTok{$}\FunctionTok{span}\NormalTok{(}\FunctionTok{icon}\NormalTok{(}\StringTok{"sliders{-}h"}\NormalTok{), }\StringTok{" Opsi Plot"}\NormalTok{),}
+                    \AttributeTok{width =} \DecValTok{12}\NormalTok{,}
+                    \FunctionTok{sliderInput}\NormalTok{(}\StringTok{"bins"}\NormalTok{,}\StringTok{"Jumlah Bins Histogram"}\NormalTok{,}\DecValTok{10}\NormalTok{,}\DecValTok{100}\NormalTok{,}\DecValTok{30}\NormalTok{),}
+                    \FunctionTok{checkboxInput}\NormalTok{(}\StringTok{"show\_density"}\NormalTok{,}\StringTok{"Tampilkan Density Plot di Histogram"}\NormalTok{,}\ConstantTok{FALSE}\NormalTok{),}
+                    \FunctionTok{checkboxInput}\NormalTok{(}\StringTok{"overlay\_normal"}\NormalTok{,}\StringTok{"Overlay Kurva Normal"}\NormalTok{,}\ConstantTok{FALSE}\NormalTok{)}
+\NormalTok{                )}
+\NormalTok{              ),}
+              \FunctionTok{fluidRow}\NormalTok{(}
+                \FunctionTok{box}\NormalTok{(}\AttributeTok{title=}\NormalTok{tags}\SpecialCharTok{$}\FunctionTok{span}\NormalTok{(}\FunctionTok{icon}\NormalTok{(}\StringTok{"chart{-}bar"}\NormalTok{), }\StringTok{" Histogram"}\NormalTok{),}
+                    \AttributeTok{width =} \DecValTok{6}\NormalTok{, }\FunctionTok{plotlyOutput}\NormalTok{(}\StringTok{"hist\_plot"}\NormalTok{, }\AttributeTok{height =} \StringTok{"350px"}\NormalTok{)),}
+                \FunctionTok{box}\NormalTok{(}\AttributeTok{title=}\NormalTok{tags}\SpecialCharTok{$}\FunctionTok{span}\NormalTok{(}\FunctionTok{icon}\NormalTok{(}\StringTok{"chart{-}line"}\NormalTok{), }\StringTok{" Density Plot"}\NormalTok{),}
+                    \AttributeTok{width =} \DecValTok{6}\NormalTok{, }\FunctionTok{plotlyOutput}\NormalTok{(}\StringTok{"density\_plot"}\NormalTok{, }\AttributeTok{height =} \StringTok{"350px"}\NormalTok{))}
+\NormalTok{              ),}
+              \FunctionTok{fluidRow}\NormalTok{(}
+                \FunctionTok{box}\NormalTok{(}\AttributeTok{title=}\NormalTok{tags}\SpecialCharTok{$}\FunctionTok{span}\NormalTok{(}\FunctionTok{icon}\NormalTok{(}\StringTok{"grip{-}lines"}\NormalTok{), }\StringTok{" Q{-}Q Plot"}\NormalTok{),}
+                    \AttributeTok{width =} \DecValTok{6}\NormalTok{, }\FunctionTok{plotlyOutput}\NormalTok{(}\StringTok{"qq\_plot"}\NormalTok{, }\AttributeTok{height =} \StringTok{"350px"}\NormalTok{)),}
+                \FunctionTok{box}\NormalTok{(}\AttributeTok{title=}\NormalTok{tags}\SpecialCharTok{$}\FunctionTok{span}\NormalTok{(}\FunctionTok{icon}\NormalTok{(}\StringTok{"chart{-}area"}\NormalTok{), }\StringTok{" ECDF vs Normal CDF"}\NormalTok{),}
+                    \AttributeTok{width =} \DecValTok{6}\NormalTok{, }\FunctionTok{plotlyOutput}\NormalTok{(}\StringTok{"ecdf\_plot"}\NormalTok{, }\AttributeTok{height =} \StringTok{"350px"}\NormalTok{))}
+\NormalTok{              ),}
+              
+              \FunctionTok{fluidRow}\NormalTok{(}
+                \FunctionTok{box}\NormalTok{(}\AttributeTok{width =} \DecValTok{12}\NormalTok{, tags}\SpecialCharTok{$}\FunctionTok{p}\NormalTok{(}\AttributeTok{class=}\StringTok{"text{-}muted"}\NormalTok{, }\StringTok{"Next With Sidebar"}\NormalTok{))}
+\NormalTok{              )}
+\NormalTok{      ),}
+      
+      \CommentTok{\# Uji formal normalitas \& interpretasi statistik}
+      
+      \FunctionTok{tabItem}\NormalTok{(}\StringTok{"formal"}\NormalTok{, }
+\NormalTok{              tags}\SpecialCharTok{$}\FunctionTok{h2}\NormalTok{(}\StringTok{"Uji Formal Normalitas"}\NormalTok{, }\AttributeTok{class=}\StringTok{"tab{-}title{-}accent"}\NormalTok{),}
+              \FunctionTok{uiOutput}\NormalTok{(}\StringTok{"sample\_info"}\NormalTok{),}
+              \FunctionTok{hr}\NormalTok{(),}
+              \FunctionTok{fluidRow}\NormalTok{(}
+                \FunctionTok{box}\NormalTok{(}\AttributeTok{title =}\NormalTok{ tags}\SpecialCharTok{$}\FunctionTok{span}\NormalTok{(}\FunctionTok{icon}\NormalTok{(}\StringTok{"vial"}\NormalTok{), }\StringTok{" Pengaturan Uji"}\NormalTok{),}
+                    \AttributeTok{width =} \DecValTok{4}\NormalTok{, tags}\SpecialCharTok{$}\FunctionTok{i}\NormalTok{(}\AttributeTok{class=}\StringTok{"icon{-}decor fas fa{-}flask d1"}\NormalTok{), }
+                    \FunctionTok{uiOutput}\NormalTok{(}\StringTok{"test\_selector"}\NormalTok{), }
+\NormalTok{                    tags}\SpecialCharTok{$}\FunctionTok{p}\NormalTok{(}\StringTok{"H0: Data Populasi mengikuti distribusi normal."}\NormalTok{),}
+\NormalTok{                    tags}\SpecialCharTok{$}\FunctionTok{p}\NormalTok{(}\StringTok{"H1: Data Populasi tidak mengikuti distribusi normal."}\NormalTok{),}
+                    \FunctionTok{uiOutput}\NormalTok{(}\StringTok{"alpha\_display"}\NormalTok{)),}
+                \FunctionTok{box}\NormalTok{(}\AttributeTok{title =}\NormalTok{ tags}\SpecialCharTok{$}\FunctionTok{span}\NormalTok{(}\FunctionTok{icon}\NormalTok{(}\StringTok{"info{-}circle"}\NormalTok{), }\StringTok{" Ringkasan Data \& Rekomendasi"}\NormalTok{),}
+                    \AttributeTok{width =} \DecValTok{8}\NormalTok{, tags}\SpecialCharTok{$}\FunctionTok{i}\NormalTok{(}\AttributeTok{class=}\StringTok{"icon{-}decor fas fa{-}lightbulb d2"}\NormalTok{), }\FunctionTok{uiOutput}\NormalTok{(}\StringTok{"test\_data\_summary"}\NormalTok{))}
+\NormalTok{              ),}
+              \FunctionTok{fluidRow}\NormalTok{(}
+                \FunctionTok{box}\NormalTok{(}\AttributeTok{title =}\NormalTok{ tags}\SpecialCharTok{$}\FunctionTok{span}\NormalTok{(}\FunctionTok{icon}\NormalTok{(}\StringTok{"table"}\NormalTok{), }\StringTok{" Hasil Uji Statistik"}\NormalTok{),}
+                    \AttributeTok{width =} \DecValTok{12}\NormalTok{, }
+                    \FunctionTok{div}\NormalTok{(}\AttributeTok{style=}\StringTok{"overflow{-}x: auto;"}\NormalTok{, }\FunctionTok{tableOutput}\NormalTok{(}\StringTok{"test\_results\_table"}\NormalTok{)), }
+                    \FunctionTok{uiOutput}\NormalTok{(}\StringTok{"test\_interpretation"}\NormalTok{))}
+\NormalTok{              )}
+\NormalTok{      ),}
+      
+      \CommentTok{\# Analisis skewness–kurtosis dan jarak dari normal}
+      \FunctionTok{tabItem}\NormalTok{(}\StringTok{"skk"}\NormalTok{,}
+\NormalTok{              tags}\SpecialCharTok{$}\FunctionTok{h2}\NormalTok{(}\StringTok{"Analisis Skewness dan Kurtosis"}\NormalTok{, }\AttributeTok{class=}\StringTok{"tab{-}title{-}accent"}\NormalTok{),}
+              \FunctionTok{fluidRow}\NormalTok{(}
+                \FunctionTok{box}\NormalTok{(}
+                  \AttributeTok{title =}\NormalTok{ tags}\SpecialCharTok{$}\FunctionTok{span}\NormalTok{(}\FunctionTok{icon}\NormalTok{(}\StringTok{"chart{-}scatter"}\NormalTok{), }\StringTok{" Plot Skewness vs Kurtosis"}\NormalTok{),}
+                  \AttributeTok{width =} \DecValTok{8}\NormalTok{, tags}\SpecialCharTok{$}\FunctionTok{i}\NormalTok{(}\AttributeTok{class=}\StringTok{"icon{-}decor fas fa{-}dot{-}circle d1"}\NormalTok{),}
+\NormalTok{                  tags}\SpecialCharTok{$}\FunctionTok{p}\NormalTok{(}\StringTok{"Normalitas didekati saat Skewness medekati 0 dan Kurtosis mendekati 3 (Kurtosis Fisher mendekati 0)"}\NormalTok{),}
+                  \FunctionTok{plotlyOutput}\NormalTok{(}\StringTok{"sk\_kurt\_plot"}\NormalTok{, }\AttributeTok{height =} \StringTok{"400px"}\NormalTok{)}
+\NormalTok{                ),}
+                \FunctionTok{box}\NormalTok{(}
+                  \AttributeTok{title =}\NormalTok{ tags}\SpecialCharTok{$}\FunctionTok{span}\NormalTok{(}\FunctionTok{icon}\NormalTok{(}\StringTok{"tag"}\NormalTok{), }\StringTok{" Nilai Metrik"}\NormalTok{),}
+                  \AttributeTok{width =} \DecValTok{4}\NormalTok{, tags}\SpecialCharTok{$}\FunctionTok{i}\NormalTok{(}\AttributeTok{class=}\StringTok{"icon{-}decor fas fa{-}calculator d2"}\NormalTok{),}
+                  \FunctionTok{uiOutput}\NormalTok{(}\StringTok{"skk\_notes"}\NormalTok{),}
+                  \FunctionTok{hr}\NormalTok{(),}
+\NormalTok{                  tags}\SpecialCharTok{$}\FunctionTok{b}\NormalTok{(}\StringTok{"Jarak dari Normal (0, 0):"}\NormalTok{),}
+                  \FunctionTok{textOutput}\NormalTok{(}\StringTok{"sk\_kurt\_distance"}\NormalTok{)}
+\NormalTok{                )}
+\NormalTok{              )}
+\NormalTok{      ),}
+      
+      \CommentTok{\# Perbandingan normalitas berdasarkan variabel grouping}
+      \FunctionTok{tabItem}\NormalTok{(}\StringTok{"groups"}\NormalTok{,}
+\NormalTok{              tags}\SpecialCharTok{$}\FunctionTok{h2}\NormalTok{(}\StringTok{"Analisis Normalitas Berdasarkan Grouping"}\NormalTok{, }\AttributeTok{class=}\StringTok{"tab{-}title{-}accent"}\NormalTok{),}
+\NormalTok{              tags}\SpecialCharTok{$}\FunctionTok{p}\NormalTok{(}\StringTok{"Analisis ini membandingkan distribusi variabel yang dipilih di antara kategori{-}kategori variabel grouping."}\NormalTok{),}
+              \FunctionTok{fluidRow}\NormalTok{(}
+                \FunctionTok{box}\NormalTok{(}\AttributeTok{title=}\NormalTok{tags}\SpecialCharTok{$}\FunctionTok{span}\NormalTok{(}\FunctionTok{icon}\NormalTok{(}\StringTok{"chart{-}bar"}\NormalTok{), }\StringTok{" Histogram per Group"}\NormalTok{),}
+                    \AttributeTok{width =} \DecValTok{6}\NormalTok{, }\FunctionTok{plotlyOutput}\NormalTok{(}\StringTok{"hist\_groups"}\NormalTok{)),}
+                \FunctionTok{box}\NormalTok{(}\AttributeTok{title=}\NormalTok{tags}\SpecialCharTok{$}\FunctionTok{span}\NormalTok{(}\FunctionTok{icon}\NormalTok{(}\StringTok{"grip{-}lines"}\NormalTok{), }\StringTok{" Q{-}Q Plot per Group"}\NormalTok{),}
+                    \AttributeTok{width =} \DecValTok{6}\NormalTok{, }\FunctionTok{plotlyOutput}\NormalTok{(}\StringTok{"qq\_groups"}\NormalTok{))}
+\NormalTok{              )}
+\NormalTok{      ),}
+      
+      
+      \CommentTok{\# Kesimpulan akhir dan opsi unduh laporan/data}
+      
+      \FunctionTok{tabItem}\NormalTok{(}\StringTok{"final"}\NormalTok{,}
+\NormalTok{              tags}\SpecialCharTok{$}\FunctionTok{h2}\NormalTok{(}\StringTok{"Kesimpulan Akhir Normalitas"}\NormalTok{, }\AttributeTok{class=}\StringTok{"tab{-}title{-}accent"}\NormalTok{),}
+              \FunctionTok{fluidRow}\NormalTok{(}
+                \FunctionTok{box}\NormalTok{(}\AttributeTok{title=}\NormalTok{tags}\SpecialCharTok{$}\FunctionTok{span}\NormalTok{(}\FunctionTok{icon}\NormalTok{(}\StringTok{"comments"}\NormalTok{), }\StringTok{" Kesimpulan"}\NormalTok{),}
+                    \AttributeTok{width =} \DecValTok{10}\NormalTok{, }
+                    \FunctionTok{uiOutput}\NormalTok{(}\StringTok{"final\_conclusion"}\NormalTok{))}
+\NormalTok{              ),}
+              \FunctionTok{fluidRow}\NormalTok{(}
+                \FunctionTok{box}\NormalTok{(}\AttributeTok{title=}\NormalTok{tags}\SpecialCharTok{$}\FunctionTok{span}\NormalTok{(}\FunctionTok{icon}\NormalTok{(}\StringTok{"download"}\NormalTok{), }\StringTok{" Unduh"}\NormalTok{),}
+                    \AttributeTok{width =} \DecValTok{6}\NormalTok{, }
+                    \FunctionTok{downloadButton}\NormalTok{(}\StringTok{"download\_report"}\NormalTok{, }\StringTok{"Unduh Laporan HTML Sederhana"}\NormalTok{),}
+                    \FunctionTok{downloadButton}\NormalTok{(}\StringTok{"download\_data"}\NormalTok{, }\StringTok{"Unduh Data Mentah (.csv)"}\NormalTok{))}
+\NormalTok{              )}
+\NormalTok{      )}
+\NormalTok{    )}
+\NormalTok{  ))}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{4. Tahap Penerapan Pengolahan
+Data}\label{tahap-penerapan-pengolahan-data}
+
+Tahap pengolahan data bertujuan untuk memastikan data yang diunggah bisa
+dianalisis dalam kondisi yang layak secara statistik (data harus
+numerik). Data yang diunggah pengguna terlebih dahulu diproses dengan
+tahapan berikut:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{server }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(input, output, session) \{}
+  \CommentTok{\#Navigasi Tombol}
+  \FunctionTok{observeEvent}\NormalTok{(input}\SpecialCharTok{$}\NormalTok{go\_desc, \{}
+    \FunctionTok{updateTabItems}\NormalTok{(session, }\StringTok{"tabs"}\NormalTok{, }\StringTok{"desc"}\NormalTok{)}
+\NormalTok{  \})}
+  
+  \FunctionTok{observeEvent}\NormalTok{(input}\SpecialCharTok{$}\NormalTok{go\_visual, \{}
+    \FunctionTok{updateTabItems}\NormalTok{(session, }\StringTok{"tabs"}\NormalTok{, }\StringTok{"visual"}\NormalTok{)}
+\NormalTok{  \})}
+  
+  \FunctionTok{observeEvent}\NormalTok{(input}\SpecialCharTok{$}\NormalTok{go\_formal, \{}
+    \FunctionTok{updateTabItems}\NormalTok{(session, }\StringTok{"tabs"}\NormalTok{, }\StringTok{"formal"}\NormalTok{)}
+\NormalTok{  \})}
+  \CommentTok{\#Fungsi Load Data}
+\NormalTok{  raw\_data }\OtherTok{\textless{}{-}} \FunctionTok{reactive}\NormalTok{(\{}
+    \FunctionTok{req}\NormalTok{(input}\SpecialCharTok{$}\NormalTok{file\_data)}
+    
+\NormalTok{    ext }\OtherTok{\textless{}{-}}\NormalTok{ tools}\SpecialCharTok{::}\FunctionTok{file\_ext}\NormalTok{(input}\SpecialCharTok{$}\NormalTok{file\_data}\SpecialCharTok{$}\NormalTok{name)}
+\NormalTok{    df }\OtherTok{\textless{}{-}} \FunctionTok{tryCatch}\NormalTok{(\{}
+      \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{tolower}\NormalTok{(ext) }\SpecialCharTok{==} \StringTok{"csv"}\NormalTok{) \{}
+        \FunctionTok{read.csv}\NormalTok{(input}\SpecialCharTok{$}\NormalTok{file\_data}\SpecialCharTok{$}\NormalTok{datapath, }\AttributeTok{stringsAsFactors =} \ConstantTok{FALSE}\NormalTok{)}
+\NormalTok{      \} }\ControlFlowTok{else} \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{tolower}\NormalTok{(ext) }\SpecialCharTok{\%in\%} \FunctionTok{c}\NormalTok{(}\StringTok{"xlsx"}\NormalTok{, }\StringTok{"xls"}\NormalTok{)) \{}
+\NormalTok{        readxl}\SpecialCharTok{::}\FunctionTok{read\_excel}\NormalTok{(input}\SpecialCharTok{$}\NormalTok{file\_data}\SpecialCharTok{$}\NormalTok{datapath)}
+\NormalTok{      \} }\ControlFlowTok{else}\NormalTok{ \{}
+        \ConstantTok{NULL}
+\NormalTok{      \}}
+\NormalTok{    \}, }\AttributeTok{error =} \ControlFlowTok{function}\NormalTok{(e) \{}
+      \FunctionTok{showNotification}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"Error membaca file:"}\NormalTok{, e}\SpecialCharTok{$}\NormalTok{message), }\AttributeTok{type =} \StringTok{"error"}\NormalTok{)}
+      \ConstantTok{NULL}
+\NormalTok{    \})}
+    
+    \FunctionTok{req}\NormalTok{(}\SpecialCharTok{!}\FunctionTok{is.null}\NormalTok{(df))}
+    \FunctionTok{return}\NormalTok{(}\FunctionTok{as.data.frame}\NormalTok{(df))}
+\NormalTok{  \})}
+  
+  \CommentTok{\#Memilih Variabel yang ada di dokumen}
+\NormalTok{  output}\SpecialCharTok{$}\NormalTok{select\_variable }\OtherTok{\textless{}{-}} \FunctionTok{renderUI}\NormalTok{(\{}
+\NormalTok{    df }\OtherTok{\textless{}{-}} \FunctionTok{raw\_data}\NormalTok{()}
+\NormalTok{    nums }\OtherTok{\textless{}{-}} \FunctionTok{names}\NormalTok{(df)[}\FunctionTok{sapply}\NormalTok{(df, is.numeric)]}
+    \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{length}\NormalTok{(nums) }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) \{}
+      \FunctionTok{return}\NormalTok{(tags}\SpecialCharTok{$}\FunctionTok{em}\NormalTok{(}\StringTok{"Tidak ada variabel numerik di dataset."}\NormalTok{))}
+\NormalTok{    \}}
+    \FunctionTok{selectInput}\NormalTok{(}\StringTok{"var"}\NormalTok{, }\StringTok{"Pilih variabel numerik"}\NormalTok{, nums)}
+\NormalTok{  \})}
+  
+  \CommentTok{\#Memilih Variabel Grouping Kualitatif untuk analisis distribusi per kelompok}
+\NormalTok{  output}\SpecialCharTok{$}\NormalTok{select\_group }\OtherTok{\textless{}{-}} \FunctionTok{renderUI}\NormalTok{(\{}
+\NormalTok{    df }\OtherTok{\textless{}{-}} \FunctionTok{raw\_data}\NormalTok{()}
+    \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{is.null}\NormalTok{(df)) }\FunctionTok{return}\NormalTok{(}\ConstantTok{NULL}\NormalTok{)}
+\NormalTok{    cats }\OtherTok{\textless{}{-}} \FunctionTok{names}\NormalTok{(df)[}\FunctionTok{sapply}\NormalTok{(df, }\ControlFlowTok{function}\NormalTok{(x) }\FunctionTok{is.factor}\NormalTok{(x) }\SpecialCharTok{||} \FunctionTok{is.character}\NormalTok{(x))]}
+    \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{length}\NormalTok{(cats) }\SpecialCharTok{==} \DecValTok{0}\NormalTok{) }\FunctionTok{return}\NormalTok{(}\ConstantTok{NULL}\NormalTok{)}
+    \FunctionTok{selectInput}\NormalTok{(}\StringTok{"group\_var"}\NormalTok{, }\StringTok{"Pilih variabel grouping (opsional)"}\NormalTok{, }\AttributeTok{choices =} \FunctionTok{c}\NormalTok{(}\StringTok{"None"}\NormalTok{, cats))}
+\NormalTok{  \})}
+  \CommentTok{\#Memilih alpha}
+\NormalTok{  output}\SpecialCharTok{$}\NormalTok{alpha\_display }\OtherTok{\textless{}{-}} \FunctionTok{renderUI}\NormalTok{(\{}
+    \FunctionTok{req}\NormalTok{(input}\SpecialCharTok{$}\NormalTok{alpha)}
+\NormalTok{    tags}\SpecialCharTok{$}\FunctionTok{em}\NormalTok{(}\FunctionTok{paste0}\NormalTok{(}\StringTok{"Batas penolakan (Alpha): "}\NormalTok{, input}\SpecialCharTok{$}\NormalTok{alpha))}
+\NormalTok{  \})}
+  \CommentTok{\#Input data yang ada di dokumen}
+\NormalTok{    selected\_data }\OtherTok{\textless{}{-}} \FunctionTok{reactive}\NormalTok{(\{}
+    \FunctionTok{req}\NormalTok{(input}\SpecialCharTok{$}\NormalTok{var)}
+\NormalTok{    df }\OtherTok{\textless{}{-}} \FunctionTok{raw\_data}\NormalTok{() }
+    \FunctionTok{req}\NormalTok{(}\SpecialCharTok{!}\FunctionTok{is.null}\NormalTok{(df))}
+    
+\NormalTok{    x }\OtherTok{\textless{}{-}}\NormalTok{ df[[input}\SpecialCharTok{$}\NormalTok{var]]}
+\NormalTok{    x }\OtherTok{\textless{}{-}} \FunctionTok{as.numeric}\NormalTok{(x)}
+\NormalTok{    x }\OtherTok{\textless{}{-}}\NormalTok{ x[}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(x)]}
+    
+    \FunctionTok{req}\NormalTok{(}\FunctionTok{length}\NormalTok{(x) }\SpecialCharTok{\textgreater{}=} \DecValTok{3}\NormalTok{) }
+\NormalTok{    x}
+\NormalTok{  \})}
+  \CommentTok{\#Jumlah Sampel}
+\NormalTok{  sample\_size }\OtherTok{\textless{}{-}} \FunctionTok{reactive}\NormalTok{(\{}
+    \FunctionTok{length}\NormalTok{(}\FunctionTok{selected\_data}\NormalTok{())}
+\NormalTok{  \})}
+  \CommentTok{\#Mengambil Preview data di df sebanyak 10 baris}
+\NormalTok{  output}\SpecialCharTok{$}\NormalTok{data\_preview }\OtherTok{\textless{}{-}} \FunctionTok{renderTable}\NormalTok{(\{}
+\NormalTok{    df }\OtherTok{\textless{}{-}} \FunctionTok{raw\_data}\NormalTok{(); }\FunctionTok{req}\NormalTok{(df)}
+    \FunctionTok{head}\NormalTok{(df, }\DecValTok{10}\NormalTok{)}
+\NormalTok{  \})}
+  \CommentTok{\#Rekomendasi Uji di Tab Formal Sesuai dengan sampel kecil, sampel besar, Sampel sangat besar}
+\NormalTok{  test\_recommendations }\OtherTok{\textless{}{-}} \FunctionTok{reactive}\NormalTok{(\{}
+\NormalTok{    x }\OtherTok{\textless{}{-}} \FunctionTok{selected\_data}\NormalTok{(); }\FunctionTok{req}\NormalTok{(x)}
+\NormalTok{    N }\OtherTok{\textless{}{-}} \FunctionTok{length}\NormalTok{(x)}
+    
+    \ControlFlowTok{if}\NormalTok{ (N }\SpecialCharTok{\textless{}} \DecValTok{3}\NormalTok{) \{}
+      \FunctionTok{return}\NormalTok{(}\FunctionTok{list}\NormalTok{(}
+        \AttributeTok{status =} \StringTok{"Data Terlalu Sedikit"}\NormalTok{,}
+        \AttributeTok{recommendation =} \StringTok{"Normalitas tidak dapat diuji secara statistik. Min. n=3 untuk Shapiro{-}Wilk."}\NormalTok{,}
+        \AttributeTok{icon =} \StringTok{"fas fa{-}exclamation{-}triangle"}
+\NormalTok{      ))}
+\NormalTok{    \} }\ControlFlowTok{else} \ControlFlowTok{if}\NormalTok{ (N }\SpecialCharTok{\textless{}} \DecValTok{30}\NormalTok{) \{}
+      \FunctionTok{return}\NormalTok{(}\FunctionTok{list}\NormalTok{(}
+        \AttributeTok{status =} \StringTok{"Sampel Kecil (n \textless{} 30)"}\NormalTok{,}
+        \AttributeTok{recommendation =} \StringTok{"Uji Paling Kuat: Shapiro{-}Wilk dan Lilliefors. Visualisasikan dengan Q{-}Q Plot."}\NormalTok{,}
+        \AttributeTok{icon =} \StringTok{"fas fa{-}leaf"}
+\NormalTok{      ))}
+\NormalTok{    \} }\ControlFlowTok{else} \ControlFlowTok{if}\NormalTok{ (N }\SpecialCharTok{\textgreater{}=} \DecValTok{30} \SpecialCharTok{\&\&}\NormalTok{ N }\SpecialCharTok{\textless{}=} \DecValTok{100}\NormalTok{) \{}
+      \FunctionTok{return}\NormalTok{(}\FunctionTok{list}\NormalTok{(}
+        \AttributeTok{status =} \StringTok{"Sampel Besar (30 \textless{} n \textless{}= 100)"}\NormalTok{,}
+        \AttributeTok{recommendation =} \StringTok{"Uji yang Direkomendasikan: Shapiro{-}Wilk (masih baik), Lilliefors/Kolmogorov{-}Smirnov dan Jarque{-}Bera (jika n≥20)."}\NormalTok{,}
+        \AttributeTok{icon =} \StringTok{"fas fa{-}balance{-}scale"}
+\NormalTok{      ))}
+\NormalTok{    \} }\ControlFlowTok{else} \ControlFlowTok{if}\NormalTok{ (N }\SpecialCharTok{\textgreater{}} \DecValTok{100}\NormalTok{) \{}
+      \FunctionTok{return}\NormalTok{(}\FunctionTok{list}\NormalTok{(}
+        \AttributeTok{status =} \StringTok{"Sampel sangat besar  (n \textgreater{} 100)"}\NormalTok{,}
+        \AttributeTok{recommendation =} \StringTok{"Uji yang Direkomendasikan: Jarque{-}Bera atau Chi{-}square Goodness{-}of{-}Fit. Waspada: Normalitas sering ditolak pada n besar."}\NormalTok{,}
+        \AttributeTok{icon =} \StringTok{"fas fa{-}city"}
+\NormalTok{      ))}
+\NormalTok{    \}}
+\NormalTok{  \})}
+  \CommentTok{\#Uji yang terfilter antara sampel besar (n\textgreater{}30) dan sampel kecil (n\textless{}= 30)}
+\NormalTok{  output}\SpecialCharTok{$}\NormalTok{test\_selector }\OtherTok{\textless{}{-}} \FunctionTok{renderUI}\NormalTok{(\{}
+\NormalTok{    n }\OtherTok{\textless{}{-}} \FunctionTok{sample\_size}\NormalTok{()}
+    \FunctionTok{req}\NormalTok{(n)}
+    
+    \ControlFlowTok{if}\NormalTok{ (n }\SpecialCharTok{\textless{}} \DecValTok{30}\NormalTok{) \{}
+\NormalTok{      choices }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}
+        \StringTok{"Shapiro–Wilk"} \OtherTok{=} \StringTok{"shapiro"}\NormalTok{,}
+        \StringTok{"Lilliefors"}   \OtherTok{=} \StringTok{"lillie"}
+\NormalTok{      )}
+\NormalTok{    \} }\ControlFlowTok{else}\NormalTok{ \{}
+\NormalTok{      choices }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}
+        \StringTok{"Jarque–Bera"}          \OtherTok{=} \StringTok{"jb"}\NormalTok{,}
+        \StringTok{"Kolmogorov–Smirnov"}   \OtherTok{=} \StringTok{"ks"}\NormalTok{,}
+        \StringTok{"Chi{-}square GOF"}       \OtherTok{=} \StringTok{"chi"}
+\NormalTok{      )}
+\NormalTok{    \}}
+    
+    \FunctionTok{selectInput}\NormalTok{(}
+      \StringTok{"selected\_test"}\NormalTok{,}
+      \StringTok{"Pilih Uji Normalitas"}\NormalTok{,}
+      \AttributeTok{choices =}\NormalTok{ choices}
+\NormalTok{    )}
+\NormalTok{  \})}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{5. Tahap Penerapan Analisis
+Statistik}\label{tahap-penerapan-analisis-statistik}
+
+Analisis statistik dimulai dengan perhitungan statistik deskriptif yang
+mencakup nilai mean, median, standar deviasi, skewness, dan kurtosis.
+Statistik ini digunakan sebagai indikasi awal bentuk distribusi data.
+
+Selanjutnya, aplikasi menerapkan uji normalitas formal yang dipilih
+secara adaptif berdasarkan ukuran sampel, antara lain:
+
+\begin{itemize}
+\item
+  Shapiro--Wilk Test untuk sampel kecil
+\item
+  Lilliefors Test sebagai pelengkap
+\item
+  Jarque--Bera Test untuk sampel menengah hingga besar
+\item
+  Kolmogorov--Smirnov Test sebagai pembanding
+\end{itemize}
+
+Pendekatan ini bertujuan untuk menghindari penggunaan uji yang tidak
+sesuai dengan karakteristik data.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#Ringkasan Statistik Mean, Median, SD, CV, Skewness, Kurtosis, IQR, Min, Max}
+\NormalTok{output}\SpecialCharTok{$}\NormalTok{summary\_stats }\OtherTok{\textless{}{-}} \FunctionTok{renderTable}\NormalTok{(\{}
+\NormalTok{    x }\OtherTok{\textless{}{-}} \FunctionTok{selected\_data}\NormalTok{(); }\FunctionTok{req}\NormalTok{(x)}
+    \FunctionTok{data.frame}\NormalTok{(}
+      \AttributeTok{Statistik =} \FunctionTok{c}\NormalTok{(}\StringTok{"n (Jumlah Data)"}\NormalTok{, }\StringTok{"Mean"}\NormalTok{, }\StringTok{"Median"}\NormalTok{, }\StringTok{"SD"}\NormalTok{, }\StringTok{"CV"}\NormalTok{, }\StringTok{"Skewness"}\NormalTok{, }\StringTok{"Kurtosis (Excess)"}\NormalTok{, }\StringTok{"Min"}\NormalTok{, }\StringTok{"Max"}\NormalTok{, }\StringTok{"IQR"}\NormalTok{),}
+      \AttributeTok{Nilai =} \FunctionTok{c}\NormalTok{(}
+        \FunctionTok{length}\NormalTok{(x), }\CommentTok{\# Menambahkan N}
+        \FunctionTok{round}\NormalTok{(}\FunctionTok{mean}\NormalTok{(x), }\DecValTok{6}\NormalTok{),}
+        \FunctionTok{round}\NormalTok{(}\FunctionTok{median}\NormalTok{(x), }\DecValTok{6}\NormalTok{),}
+        \FunctionTok{round}\NormalTok{(}\FunctionTok{sd}\NormalTok{(x), }\DecValTok{6}\NormalTok{),}
+        \FunctionTok{round}\NormalTok{(}\FunctionTok{ifelse}\NormalTok{(}\FunctionTok{mean}\NormalTok{(x) }\SpecialCharTok{!=} \DecValTok{0}\NormalTok{, }\FunctionTok{sd}\NormalTok{(x)}\SpecialCharTok{/}\FunctionTok{mean}\NormalTok{(x), }\ConstantTok{NA}\NormalTok{), }\DecValTok{6}\NormalTok{),}
+        \FunctionTok{round}\NormalTok{(}\FunctionTok{skewness}\NormalTok{(x), }\DecValTok{6}\NormalTok{),}
+        \FunctionTok{round}\NormalTok{(}\FunctionTok{kurtosis}\NormalTok{(x) }\SpecialCharTok{{-}} \DecValTok{3}\NormalTok{, }\DecValTok{6}\NormalTok{), }\CommentTok{\# Menggunakan Kurtosis Excess (Fisher)}
+        \FunctionTok{round}\NormalTok{(}\FunctionTok{min}\NormalTok{(x), }\DecValTok{6}\NormalTok{),}
+        \FunctionTok{round}\NormalTok{(}\FunctionTok{max}\NormalTok{(x), }\DecValTok{6}\NormalTok{),}
+        \FunctionTok{round}\NormalTok{(}\FunctionTok{IQR}\NormalTok{(x), }\DecValTok{6}\NormalTok{)}
+\NormalTok{      )}
+\NormalTok{    )}
+\NormalTok{  \}, }\AttributeTok{rownames =} \ConstantTok{FALSE}\NormalTok{)}
+
+
+  \CommentTok{\#Blok Kode Untuk Memilih Uji Formal}
+\NormalTok{  run\_tests }\OtherTok{\textless{}{-}} \FunctionTok{reactive}\NormalTok{(\{}
+\NormalTok{    x }\OtherTok{\textless{}{-}} \FunctionTok{selected\_data}\NormalTok{()}
+    \FunctionTok{req}\NormalTok{(x, input}\SpecialCharTok{$}\NormalTok{selected\_test)}
+    
+\NormalTok{    test }\OtherTok{\textless{}{-}}\NormalTok{ input}\SpecialCharTok{$}\NormalTok{selected\_test}
+    
+    \ControlFlowTok{if}\NormalTok{ (test }\SpecialCharTok{==} \StringTok{"shapiro"}\NormalTok{) \{}
+      \FunctionTok{return}\NormalTok{(}\FunctionTok{shapiro.test}\NormalTok{(x))}
+\NormalTok{    \}}
+    
+    \ControlFlowTok{if}\NormalTok{ (test }\SpecialCharTok{==} \StringTok{"lillie"}\NormalTok{) \{}
+      \FunctionTok{return}\NormalTok{(}\FunctionTok{lillie.test}\NormalTok{(x))}
+\NormalTok{    \}}
+  
+    
+    \ControlFlowTok{if}\NormalTok{ (test }\SpecialCharTok{==} \StringTok{"jb"}\NormalTok{) \{}
+\NormalTok{      res }\OtherTok{\textless{}{-}} \FunctionTok{jarque\_bera\_manual}\NormalTok{(x)}
+      \FunctionTok{req}\NormalTok{(res)}
+      \FunctionTok{return}\NormalTok{(res)}
+\NormalTok{    \}}
+    
+    \ControlFlowTok{if}\NormalTok{ (test }\SpecialCharTok{==} \StringTok{"ks"}\NormalTok{) \{}
+      \FunctionTok{return}\NormalTok{(}\FunctionTok{ks.test}\NormalTok{(x, }\StringTok{"pnorm"}\NormalTok{, }\FunctionTok{mean}\NormalTok{(x), }\FunctionTok{sd}\NormalTok{(x)))}
+\NormalTok{    \}}
+    
+    \ControlFlowTok{if}\NormalTok{ (test }\SpecialCharTok{==} \StringTok{"chi"}\NormalTok{) \{}
+      \FunctionTok{return}\NormalTok{(}\FunctionTok{chi\_sq\_test}\NormalTok{(x))}
+\NormalTok{    \}}
+    
+    \ConstantTok{NULL}
+\NormalTok{  \})}
+\CommentTok{\#Ringkasan Data dan Rekomendasi Uji pada uji formal agar uji yang dipakai sesuai dengan karakteristik  data}
+\NormalTok{  output}\SpecialCharTok{$}\NormalTok{test\_data\_summary }\OtherTok{\textless{}{-}} \FunctionTok{renderUI}\NormalTok{(\{}
+\NormalTok{    x }\OtherTok{\textless{}{-}} \FunctionTok{selected\_data}\NormalTok{(); }\FunctionTok{req}\NormalTok{(x)}
+\NormalTok{    N }\OtherTok{\textless{}{-}} \FunctionTok{length}\NormalTok{(x)}
+\NormalTok{    rec }\OtherTok{\textless{}{-}} \FunctionTok{test\_recommendations}\NormalTok{()}
+    
+    \FunctionTok{HTML}\NormalTok{(}\FunctionTok{paste0}\NormalTok{(}
+      \StringTok{"\textless{}div style=\textquotesingle{}background{-}color: \#ECF0F1; padding: 15px; border{-}radius: 8px; border{-}left: 5px solid \#00A388;\textquotesingle{}\textgreater{}"}\NormalTok{,}
+      \StringTok{"\textless{}h4\textgreater{}\textless{}i class=\textquotesingle{}"}\NormalTok{, rec}\SpecialCharTok{$}\NormalTok{icon, }\StringTok{"\textquotesingle{}\textgreater{}\textless{}/i\textgreater{} Status Data \& Rekomendasi\textless{}/h4\textgreater{}"}\NormalTok{,}
+      \StringTok{"\textless{}p style=\textquotesingle{}margin{-}bottom: 5px;\textquotesingle{}\textgreater{}Jumlah Data (n): \textless{}span style=\textquotesingle{}font{-}size:1.2em; font{-}weight:700;\textquotesingle{}\textgreater{}"}\NormalTok{, N , }\StringTok{"\textless{}/span\textgreater{}\textless{}/p\textgreater{}"}\NormalTok{,}
+      \StringTok{"\textless{}p style=\textquotesingle{}margin{-}bottom: 10px;\textquotesingle{}\textgreater{}Kelompok Sampel: \textless{}span style=\textquotesingle{}font{-}weight:600;\textquotesingle{}\textgreater{}"}\NormalTok{, rec}\SpecialCharTok{$}\NormalTok{status, }\StringTok{"\textless{}/span\textgreater{}\textless{}/p\textgreater{}"}\NormalTok{,}
+      \StringTok{"Rekomendasi Uji: "}\NormalTok{, rec}\SpecialCharTok{$}\NormalTok{recommendation,}
+      \StringTok{"\textless{}/div\textgreater{}"}
+\NormalTok{    ))}
+\NormalTok{  \})}
+  
+  
+  \CommentTok{\#Hasil Dari Uji Formal yang dipilih menggunakan p{-}value}
+\NormalTok{  output}\SpecialCharTok{$}\NormalTok{test\_results\_table }\OtherTok{\textless{}{-}} \FunctionTok{renderTable}\NormalTok{(\{}
+\NormalTok{    res }\OtherTok{\textless{}{-}} \FunctionTok{run\_tests}\NormalTok{()}
+    \FunctionTok{req}\NormalTok{(res)}
+    
+    \ControlFlowTok{if}\NormalTok{ (}\SpecialCharTok{!}\FunctionTok{is.null}\NormalTok{(res}\SpecialCharTok{$}\NormalTok{error)) \{}
+      \FunctionTok{return}\NormalTok{(}\FunctionTok{data.frame}\NormalTok{(}
+        \AttributeTok{Uji =}\NormalTok{ res}\SpecialCharTok{$}\NormalTok{method,}
+        \AttributeTok{Statistik =} \ConstantTok{NA}\NormalTok{,}
+        \AttributeTok{P\_Value =} \ConstantTok{NA}\NormalTok{,}
+        \AttributeTok{Keputusan =}\NormalTok{ res}\SpecialCharTok{$}\NormalTok{error}
+\NormalTok{      ))}
+\NormalTok{    \}}
+    
+\NormalTok{    keputusan }\OtherTok{\textless{}{-}} \FunctionTok{ifelse}\NormalTok{(}
+\NormalTok{      res}\SpecialCharTok{$}\NormalTok{p.value }\SpecialCharTok{\textgreater{}}\NormalTok{ input}\SpecialCharTok{$}\NormalTok{alpha,}
+      \StringTok{"NORMAL (Gagal Tolak H₀)"}\NormalTok{,}
+      \StringTok{"TIDAK NORMAL (Tolak H₀)"}
+\NormalTok{    )}
+    
+    \FunctionTok{data.frame}\NormalTok{(}
+      \AttributeTok{Uji =}\NormalTok{ res}\SpecialCharTok{$}\NormalTok{method,}
+      \AttributeTok{Statistik =} \FunctionTok{round}\NormalTok{(}\FunctionTok{as.numeric}\NormalTok{(res}\SpecialCharTok{$}\NormalTok{statistic)[}\DecValTok{1}\NormalTok{], }\DecValTok{6}\NormalTok{),}
+      \AttributeTok{P\_Value =} \FunctionTok{formatC}\NormalTok{(res}\SpecialCharTok{$}\NormalTok{p.value, }\AttributeTok{format =} \StringTok{"f"}\NormalTok{, }\AttributeTok{digits =} \DecValTok{5}\NormalTok{),}
+      \AttributeTok{Keputusan =} \FunctionTok{ifelse}\NormalTok{(}
+\NormalTok{        res}\SpecialCharTok{$}\NormalTok{p.value }\SpecialCharTok{\textgreater{}}\NormalTok{ input}\SpecialCharTok{$}\NormalTok{alpha,}
+        \StringTok{"NORMAL (Gagal Tolak H₀)"}\NormalTok{,}
+        \StringTok{"TIDAK NORMAL (Tolak H₀)"}
+\NormalTok{      )}
+\NormalTok{    )}
+\NormalTok{  \}, }\AttributeTok{rownames =} \ConstantTok{FALSE}\NormalTok{)}
+
+    \CommentTok{\#Menampilkan catatan kurtosis dan catatan skewness}
+\NormalTok{    output}\SpecialCharTok{$}\NormalTok{skk\_notes }\OtherTok{\textless{}{-}} \FunctionTok{renderUI}\NormalTok{(\{}
+\NormalTok{    x }\OtherTok{\textless{}{-}} \FunctionTok{selected\_data}\NormalTok{(); }\FunctionTok{req}\NormalTok{(x)}
+\NormalTok{    sk }\OtherTok{\textless{}{-}} \FunctionTok{round}\NormalTok{(}\FunctionTok{skewness}\NormalTok{(x), }\DecValTok{4}\NormalTok{)}
+\NormalTok{    kt\_fish }\OtherTok{\textless{}{-}} \FunctionTok{round}\NormalTok{(}\FunctionTok{kurtosis}\NormalTok{(x) }\SpecialCharTok{{-}} \DecValTok{3}\NormalTok{, }\DecValTok{4}\NormalTok{)}
+    \FunctionTok{HTML}\NormalTok{(}\FunctionTok{paste0}\NormalTok{(}\StringTok{"Skewness: \textless{}b\textgreater{}"}\NormalTok{, sk, }\StringTok{"\textless{}/b\textgreater{}\textless{}br\textgreater{}Kurtosis Fisher: \textless{}b\textgreater{}"}\NormalTok{, kt\_fish, }\StringTok{"\textless{}/b\textgreater{}"}\NormalTok{))}
+\NormalTok{  \})}
+    
+    \CommentTok{\#Menghitung Jarak antara Skewness dan Kurtosis Data terhadap Normal}
+\NormalTok{    output}\SpecialCharTok{$}\NormalTok{sk\_kurt\_distance }\OtherTok{\textless{}{-}} \FunctionTok{renderText}\NormalTok{(\{}
+\NormalTok{    x }\OtherTok{\textless{}{-}} \FunctionTok{selected\_data}\NormalTok{(); }\FunctionTok{req}\NormalTok{(x)}
+    \FunctionTok{round}\NormalTok{(}\FunctionTok{sqrt}\NormalTok{(}\FunctionTok{skewness}\NormalTok{(x)}\SpecialCharTok{\^{}}\DecValTok{2} \SpecialCharTok{+}\NormalTok{ (}\FunctionTok{kurtosis}\NormalTok{(x)}\SpecialCharTok{{-}}\DecValTok{3}\NormalTok{)}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{), }\DecValTok{6}\NormalTok{) }
+\NormalTok{  \})}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{6. Tahap Visualisasi}\label{tahap-visualisasi}
+
+Visualisasi digunakan sebagai alat eksploratif untuk mendukung hasil
+yang diperoleh dari uji formal. Aplikasi menyediakan beberapa bentuk
+visualisasi, yaitu:
+
+\begin{itemize}
+\item
+  Histogram dan density plot untuk melihat bentuk distribusi data
+\item
+  Q--Q Plot untuk membandingkan distribusi data dengan distribusi normal
+  teoretis
+\item
+  Plot skewness dan kurtosis untuk mengevaluasi kedekatan data terhadap
+  distribusi normal
+\item
+  ECDF vs CDF Normal untuk mengevaluasi distribusi data kumulatif dengan
+  distribusi normal kumulatif
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#Membuat Histogram}
+\NormalTok{  output}\SpecialCharTok{$}\NormalTok{hist\_plot }\OtherTok{\textless{}{-}} \FunctionTok{renderPlotly}\NormalTok{(\{}
+\NormalTok{    x }\OtherTok{\textless{}{-}} \FunctionTok{selected\_data}\NormalTok{(); }\FunctionTok{req}\NormalTok{(x, input}\SpecialCharTok{$}\NormalTok{bins)}
+    
+\NormalTok{    p }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{data.frame}\NormalTok{(}\AttributeTok{x =}\NormalTok{ x), }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ x)) }\SpecialCharTok{+}
+      \FunctionTok{geom\_histogram}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{y =} \FunctionTok{after\_stat}\NormalTok{(density)), }\AttributeTok{bins =}\NormalTok{ input}\SpecialCharTok{$}\NormalTok{bins,}
+                     \AttributeTok{fill =} \StringTok{"\#00A388"}\NormalTok{, }\AttributeTok{color =} \StringTok{"\#2F4858"}\NormalTok{, }\AttributeTok{alpha =}\NormalTok{ .}\DecValTok{7}\NormalTok{) }\SpecialCharTok{+}
+      \FunctionTok{theme\_minimal}\NormalTok{() }\SpecialCharTok{+}
+      \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \FunctionTok{paste}\NormalTok{(}\StringTok{"Histogram \& Density dari"}\NormalTok{, input}\SpecialCharTok{$}\NormalTok{var), }\AttributeTok{x =}\NormalTok{ input}\SpecialCharTok{$}\NormalTok{var, }\AttributeTok{y =} \StringTok{"Density"}\NormalTok{)}
+    
+    \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{isTRUE}\NormalTok{(input}\SpecialCharTok{$}\NormalTok{show\_density)) \{}
+\NormalTok{      p }\OtherTok{\textless{}{-}}\NormalTok{ p }\SpecialCharTok{+} \FunctionTok{geom\_density}\NormalTok{(}\AttributeTok{alpha =}\NormalTok{ .}\DecValTok{3}\NormalTok{, }\AttributeTok{color=}\StringTok{"\#FFB600"}\NormalTok{, }\AttributeTok{linewidth=}\FloatTok{1.2}\NormalTok{)}
+\NormalTok{    \}}
+    \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{isTRUE}\NormalTok{(input}\SpecialCharTok{$}\NormalTok{overlay\_normal)) \{}
+\NormalTok{      p }\OtherTok{\textless{}{-}}\NormalTok{ p }\SpecialCharTok{+} \FunctionTok{stat\_function}\NormalTok{(}\AttributeTok{fun =}\NormalTok{ dnorm, }\AttributeTok{args =} \FunctionTok{list}\NormalTok{(}\FunctionTok{mean}\NormalTok{(x), }\FunctionTok{sd}\NormalTok{(x)),}
+                             \AttributeTok{color =} \StringTok{"\#E74C3C"}\NormalTok{, }\AttributeTok{linewidth =} \DecValTok{1}\NormalTok{, }\AttributeTok{linetype=}\StringTok{"dashed"}\NormalTok{)}
+\NormalTok{    \}}
+    \FunctionTok{ggplotly}\NormalTok{(p) }\SpecialCharTok{\%\textgreater{}\%} \FunctionTok{config}\NormalTok{(}\AttributeTok{displayModeBar =} \ConstantTok{FALSE}\NormalTok{)}
+\NormalTok{  \})}
+  \CommentTok{\#Membuat Grafik Fungsi pdf}
+\NormalTok{  output}\SpecialCharTok{$}\NormalTok{density\_plot }\OtherTok{\textless{}{-}} \FunctionTok{renderPlotly}\NormalTok{(\{}
+\NormalTok{    x }\OtherTok{\textless{}{-}} \FunctionTok{selected\_data}\NormalTok{(); }\FunctionTok{req}\NormalTok{(x)}
+\NormalTok{    p }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{data.frame}\NormalTok{(}\AttributeTok{x =}\NormalTok{ x), }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ x)) }\SpecialCharTok{+}
+      \FunctionTok{geom\_density}\NormalTok{(}\AttributeTok{fill =} \StringTok{"\#00A388"}\NormalTok{, }\AttributeTok{alpha =}\NormalTok{ .}\DecValTok{35}\NormalTok{, }\AttributeTok{color=}\StringTok{"\#00A388"}\NormalTok{) }\SpecialCharTok{+}
+      \FunctionTok{theme\_minimal}\NormalTok{() }\SpecialCharTok{+}
+      \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \FunctionTok{paste}\NormalTok{(}\StringTok{"Density Plot {-}"}\NormalTok{, input}\SpecialCharTok{$}\NormalTok{var), }\AttributeTok{x =}\NormalTok{ input}\SpecialCharTok{$}\NormalTok{var, }\AttributeTok{y =} \StringTok{"Density"}\NormalTok{)}
+    \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{isTRUE}\NormalTok{(input}\SpecialCharTok{$}\NormalTok{overlay\_normal)) \{}
+\NormalTok{      p }\OtherTok{\textless{}{-}}\NormalTok{ p }\SpecialCharTok{+} \FunctionTok{stat\_function}\NormalTok{(}\AttributeTok{fun =}\NormalTok{ dnorm, }\AttributeTok{args =} \FunctionTok{list}\NormalTok{(}\FunctionTok{mean}\NormalTok{(x), }\FunctionTok{sd}\NormalTok{(x)), }\AttributeTok{color =} \StringTok{"\#E74C3C"}\NormalTok{, }\AttributeTok{linewidth=}\DecValTok{1}\NormalTok{, }\AttributeTok{linetype=}\StringTok{"dashed"}\NormalTok{)}
+\NormalTok{    \}}
+    \FunctionTok{ggplotly}\NormalTok{(p) }\SpecialCharTok{\%\textgreater{}\%} \FunctionTok{config}\NormalTok{(}\AttributeTok{displayModeBar =} \ConstantTok{FALSE}\NormalTok{)}
+\NormalTok{  \})}
+  \CommentTok{\#Membuat Grafik qq plot}
+\NormalTok{  output}\SpecialCharTok{$}\NormalTok{qq\_plot }\OtherTok{\textless{}{-}} \FunctionTok{renderPlotly}\NormalTok{(\{}
+\NormalTok{    x }\OtherTok{\textless{}{-}} \FunctionTok{selected\_data}\NormalTok{(); }
+    \FunctionTok{req}\NormalTok{(x) }
+    
+\NormalTok{    df\_plot }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\AttributeTok{Sample =}\NormalTok{ x)}
+    
+\NormalTok{    p }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(df\_plot, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{sample =}\NormalTok{ Sample)) }\SpecialCharTok{+}
+      \FunctionTok{stat\_qq}\NormalTok{(}\AttributeTok{color =} \StringTok{"\#2F4858"}\NormalTok{, }\AttributeTok{size=}\DecValTok{2}\NormalTok{) }\SpecialCharTok{+}
+      \FunctionTok{stat\_qq\_line}\NormalTok{(}\AttributeTok{color =} \StringTok{"\#E74C3C"}\NormalTok{, }\AttributeTok{linewidth=}\DecValTok{1}\NormalTok{) }\SpecialCharTok{+}
+      \FunctionTok{theme\_minimal}\NormalTok{() }\SpecialCharTok{+}
+      \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \FunctionTok{paste}\NormalTok{(}\StringTok{"Q{-}Q Plot {-}"}\NormalTok{, input}\SpecialCharTok{$}\NormalTok{var), }\AttributeTok{x =} \StringTok{"Theoretical Quantiles"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Sample Quantiles"}\NormalTok{)}
+    
+    \FunctionTok{ggplotly}\NormalTok{(p) }\SpecialCharTok{\%\textgreater{}\%} \FunctionTok{config}\NormalTok{(}\AttributeTok{displayModeBar =} \ConstantTok{FALSE}\NormalTok{)}
+\NormalTok{  \})}
+  
+  \CommentTok{\#Membuat Grafik kumulatif empiris dan Normal}
+\NormalTok{  output}\SpecialCharTok{$}\NormalTok{ecdf\_plot }\OtherTok{\textless{}{-}} \FunctionTok{renderPlotly}\NormalTok{(\{}
+\NormalTok{    x }\OtherTok{\textless{}{-}} \FunctionTok{selected\_data}\NormalTok{(); }\FunctionTok{req}\NormalTok{(x)}
+\NormalTok{    ec }\OtherTok{\textless{}{-}} \FunctionTok{ecdf}\NormalTok{(x)}
+\NormalTok{    xs }\OtherTok{\textless{}{-}} \FunctionTok{seq}\NormalTok{(}\FunctionTok{min}\NormalTok{(x), }\FunctionTok{max}\NormalTok{(x), }\AttributeTok{length.out =} \DecValTok{200}\NormalTok{)}
+\NormalTok{    df\_plot }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\AttributeTok{x =}\NormalTok{ xs, }\AttributeTok{ECDF =} \FunctionTok{ec}\NormalTok{(xs), }\AttributeTok{Normal =} \FunctionTok{pnorm}\NormalTok{(xs, }\FunctionTok{mean}\NormalTok{(x), }\FunctionTok{sd}\NormalTok{(x)))}
+\NormalTok{    p }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(df\_plot) }\SpecialCharTok{+}
+      \FunctionTok{geom\_line}\NormalTok{(}\FunctionTok{aes}\NormalTok{(x, ECDF, }\AttributeTok{text=}\FunctionTok{paste}\NormalTok{(}\StringTok{"ECDF Data:"}\NormalTok{, }\FunctionTok{round}\NormalTok{(ECDF,}\DecValTok{4}\NormalTok{))), }\AttributeTok{size =} \DecValTok{1}\NormalTok{, }\AttributeTok{color=}\StringTok{"\#00A388"}\NormalTok{) }\SpecialCharTok{+}
+      \FunctionTok{geom\_line}\NormalTok{(}\FunctionTok{aes}\NormalTok{(x, Normal, }\AttributeTok{text=}\FunctionTok{paste}\NormalTok{(}\StringTok{"Normal CDF:"}\NormalTok{, }\FunctionTok{round}\NormalTok{(Normal,}\DecValTok{4}\NormalTok{))), }\AttributeTok{size =} \DecValTok{1}\NormalTok{, }\AttributeTok{linetype =} \StringTok{"dashed"}\NormalTok{, }\AttributeTok{color =} \StringTok{"\#E74C3C"}\NormalTok{) }\SpecialCharTok{+}
+      \FunctionTok{theme\_minimal}\NormalTok{() }\SpecialCharTok{+}
+      \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \FunctionTok{paste}\NormalTok{(}\StringTok{"ECDF vs Normal CDF {-}"}\NormalTok{, input}\SpecialCharTok{$}\NormalTok{var), }\AttributeTok{x =}\NormalTok{ input}\SpecialCharTok{$}\NormalTok{var, }\AttributeTok{y =} \StringTok{"Probability"}\NormalTok{)}
+    \FunctionTok{ggplotly}\NormalTok{(p, }\AttributeTok{tooltip =} \FunctionTok{c}\NormalTok{(}\StringTok{"x"}\NormalTok{, }\StringTok{"ECDF"}\NormalTok{, }\StringTok{"Normal"}\NormalTok{)) }\SpecialCharTok{\%\textgreater{}\%} \FunctionTok{config}\NormalTok{(}\AttributeTok{displayModeBar =} \ConstantTok{FALSE}\NormalTok{)}
+\NormalTok{  \})}
+ \CommentTok{\#Membuat Grafik Kurtosis dan Skewness di Koordinat Kartesius}
+\NormalTok{  output}\SpecialCharTok{$}\NormalTok{sk\_kurt\_plot }\OtherTok{\textless{}{-}} \FunctionTok{renderPlotly}\NormalTok{(\{}
+\NormalTok{    x }\OtherTok{\textless{}{-}} \FunctionTok{selected\_data}\NormalTok{(); }\FunctionTok{req}\NormalTok{(x)}
+\NormalTok{    sk }\OtherTok{\textless{}{-}} \FunctionTok{skewness}\NormalTok{(x); kt\_fish }\OtherTok{\textless{}{-}} \FunctionTok{kurtosis}\NormalTok{(x) }\SpecialCharTok{{-}} \DecValTok{3}
+\NormalTok{    df\_skk }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}\AttributeTok{sk =}\NormalTok{ sk, }\AttributeTok{kt =}\NormalTok{ kt\_fish)}
+    
+\NormalTok{    p }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(df\_skk, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x=}\NormalTok{sk, }\AttributeTok{y=}\NormalTok{kt)) }\SpecialCharTok{+}
+      \FunctionTok{geom\_point}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{text =} \FunctionTok{paste}\NormalTok{(}\StringTok{"Skew:"}\NormalTok{, }\FunctionTok{round}\NormalTok{(sk, }\DecValTok{3}\NormalTok{), }\StringTok{"\textless{}br\textgreater{}Kurtosis:"}\NormalTok{, }\FunctionTok{round}\NormalTok{(kt, }\DecValTok{3}\NormalTok{))), }
+                 \AttributeTok{size =} \DecValTok{6}\NormalTok{, }\AttributeTok{color =} \StringTok{"\#E74C3C"}\NormalTok{) }\SpecialCharTok{+}
+      \FunctionTok{geom\_point}\NormalTok{(}\AttributeTok{x =} \DecValTok{0}\NormalTok{, }\AttributeTok{y =} \DecValTok{0}\NormalTok{, }\AttributeTok{color =} \StringTok{"\#00A388"}\NormalTok{, }\AttributeTok{size =} \DecValTok{8}\NormalTok{, }\AttributeTok{shape =} \DecValTok{4}\NormalTok{, }\AttributeTok{stroke =} \DecValTok{2}\NormalTok{) }\SpecialCharTok{+} 
+      \FunctionTok{annotate}\NormalTok{(}\StringTok{"text"}\NormalTok{, }\AttributeTok{x =} \DecValTok{0}\NormalTok{, }\AttributeTok{y =} \FloatTok{0.5}\NormalTok{, }\AttributeTok{label =} \StringTok{"Normal"}\NormalTok{, }\AttributeTok{color =} \StringTok{"\#00A388"}\NormalTok{, }\AttributeTok{size =} \DecValTok{4}\NormalTok{, }\AttributeTok{fontface =} \StringTok{"bold"}\NormalTok{) }\SpecialCharTok{+}
+      \FunctionTok{geom\_hline}\NormalTok{(}\AttributeTok{yintercept =} \DecValTok{0}\NormalTok{, }\AttributeTok{linetype =} \StringTok{"dashed"}\NormalTok{, }\AttributeTok{color =} \StringTok{"\#AAB7B8"}\NormalTok{) }\SpecialCharTok{+}
+      \FunctionTok{geom\_vline}\NormalTok{(}\AttributeTok{xintercept =} \DecValTok{0}\NormalTok{, }\AttributeTok{linetype =} \StringTok{"dashed"}\NormalTok{, }\AttributeTok{color =} \StringTok{"\#AAB7B8"}\NormalTok{) }\SpecialCharTok{+}
+      \FunctionTok{labs}\NormalTok{(}\AttributeTok{title =} \StringTok{"Plot Skewness vs Kurtosis (Kurtosis Fisher)"}\NormalTok{, }\AttributeTok{x =} \StringTok{"Skewness"}\NormalTok{, }\AttributeTok{y =} \StringTok{"Kurtosis Fisher (Excess)"}\NormalTok{) }\SpecialCharTok{+}
+      \FunctionTok{theme\_minimal}\NormalTok{()}
+    
+    \FunctionTok{ggplotly}\NormalTok{(p, }\AttributeTok{tooltip =} \StringTok{"text"}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%} \FunctionTok{config}\NormalTok{(}\AttributeTok{displayModeBar =} \ConstantTok{FALSE}\NormalTok{)}
+\NormalTok{  \})}
+  
+  \CommentTok{\#===================ANALISIS Grouping===========}
+  
+  \CommentTok{\#Membuat Bar Histogram Per Grup}
+\NormalTok{  output}\SpecialCharTok{$}\NormalTok{hist\_groups }\OtherTok{\textless{}{-}} \FunctionTok{renderPlotly}\NormalTok{(\{}
+    \FunctionTok{req}\NormalTok{(input}\SpecialCharTok{$}\NormalTok{group\_var, input}\SpecialCharTok{$}\NormalTok{group\_var }\SpecialCharTok{!=} \StringTok{"None"}\NormalTok{)}
+\NormalTok{    df }\OtherTok{\textless{}{-}} \FunctionTok{raw\_data}\NormalTok{(); }\FunctionTok{req}\NormalTok{(df)}
+    
+\NormalTok{    p }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(df, }\FunctionTok{aes\_string}\NormalTok{(}\AttributeTok{x =}\NormalTok{ input}\SpecialCharTok{$}\NormalTok{var, }\AttributeTok{fill =}\NormalTok{ input}\SpecialCharTok{$}\NormalTok{group\_var)) }\SpecialCharTok{+}
+      \FunctionTok{geom\_histogram}\NormalTok{(}\AttributeTok{position =} \StringTok{"identity"}\NormalTok{, }\AttributeTok{alpha =}\NormalTok{ .}\DecValTok{6}\NormalTok{, }\AttributeTok{bins =}\NormalTok{ input}\SpecialCharTok{$}\NormalTok{bins) }\SpecialCharTok{+}
+      \FunctionTok{labs}\NormalTok{(}\AttributeTok{title=}\FunctionTok{paste}\NormalTok{(}\StringTok{"Histogram Grouped by"}\NormalTok{, input}\SpecialCharTok{$}\NormalTok{group\_var)) }\SpecialCharTok{+}
+      \FunctionTok{theme\_minimal}\NormalTok{()}
+    
+    \FunctionTok{ggplotly}\NormalTok{(p) }\SpecialCharTok{\%\textgreater{}\%} \FunctionTok{config}\NormalTok{(}\AttributeTok{displayModeBar =} \ConstantTok{FALSE}\NormalTok{)}
+\NormalTok{  \})}
+  
+  \CommentTok{\#Membuat qq plot per group}
+\NormalTok{  output}\SpecialCharTok{$}\NormalTok{qq\_groups }\OtherTok{\textless{}{-}} \FunctionTok{renderPlotly}\NormalTok{(\{}
+    \FunctionTok{req}\NormalTok{(input}\SpecialCharTok{$}\NormalTok{group\_var, input}\SpecialCharTok{$}\NormalTok{group\_var }\SpecialCharTok{!=} \StringTok{"None"}\NormalTok{)}
+\NormalTok{    df }\OtherTok{\textless{}{-}} \FunctionTok{raw\_data}\NormalTok{(); }\FunctionTok{req}\NormalTok{(df)}
+    
+\NormalTok{    p }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(df, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{sample =}\NormalTok{ .data[[input}\SpecialCharTok{$}\NormalTok{var]], }\AttributeTok{color =}\NormalTok{ .data[[input}\SpecialCharTok{$}\NormalTok{group\_var]])) }\SpecialCharTok{+}
+      \FunctionTok{stat\_qq}\NormalTok{() }\SpecialCharTok{+} \FunctionTok{stat\_qq\_line}\NormalTok{() }\SpecialCharTok{+}
+      \FunctionTok{facet\_wrap}\NormalTok{(}\FunctionTok{as.formula}\NormalTok{(}\FunctionTok{paste}\NormalTok{(}\StringTok{"\textasciitilde{}"}\NormalTok{, input}\SpecialCharTok{$}\NormalTok{group\_var))) }\SpecialCharTok{+}
+      \FunctionTok{labs}\NormalTok{(}\AttributeTok{title=}\FunctionTok{paste}\NormalTok{(}\StringTok{"Q{-}Q Plot Grouped by"}\NormalTok{, input}\SpecialCharTok{$}\NormalTok{group\_var)) }\SpecialCharTok{+}
+      \FunctionTok{theme\_minimal}\NormalTok{()}
+    
+    \FunctionTok{ggplotly}\NormalTok{(p) }\SpecialCharTok{\%\textgreater{}\%} \FunctionTok{config}\NormalTok{(}\AttributeTok{displayModeBar =} \ConstantTok{FALSE}\NormalTok{)}
+\NormalTok{  \})}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{7. Tahap Interpretasi}\label{tahap-interpretasi}
+
+Pada tahap interpretasi, hasil visualisasi dan uji formal dianalisis
+secara bersama-sama. Aplikasi tidak langsung menyimpulkan normalitas
+hanya berdasarkan satu uji statistik, melainkan mempertimbangkan
+keseluruhan informasi yang tersedia.
+
+Interpretasi hasil disajikan dalam bentuk poin-poin sederhana yang
+menjelaskan apakah data dapat dianggap berdistribusi normal atau tidak,
+serta faktor-faktor pendukung keputusan tersebut.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+  \CommentTok{\#Interpretasi statistik deskriptif skewness, kurtosis, dan distribusi}
+\NormalTok{  output}\SpecialCharTok{$}\NormalTok{centrality\_note }\OtherTok{\textless{}{-}} \FunctionTok{renderUI}\NormalTok{(\{}
+\NormalTok{    x }\OtherTok{\textless{}{-}} \FunctionTok{selected\_data}\NormalTok{(); }\FunctionTok{req}\NormalTok{(x)}
+    \CommentTok{\# Ambang batas 10\% dari SD sebagai indikator signifikan perbedaan Mean{-}Median}
+\NormalTok{    threshold }\OtherTok{\textless{}{-}} \FloatTok{0.1} \SpecialCharTok{*} \FunctionTok{sd}\NormalTok{(x)}
+\NormalTok{    sk }\OtherTok{\textless{}{-}} \FunctionTok{skewness}\NormalTok{(x)}
+\NormalTok{    kt\_ex }\OtherTok{\textless{}{-}} \FunctionTok{kurtosis}\NormalTok{(x) }\SpecialCharTok{{-}} \DecValTok{3}
+    
+    \CommentTok{\# Interpretasi Simetri (Mean vs Median)}
+    \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{abs}\NormalTok{(}\FunctionTok{mean}\NormalTok{(x) }\SpecialCharTok{{-}} \FunctionTok{median}\NormalTok{(x)) }\SpecialCharTok{\textless{}}\NormalTok{ threshold) \{}
+\NormalTok{      simetri\_msg }\OtherTok{\textless{}{-}} \StringTok{"\textless{}span style=\textquotesingle{}color:\#00A388;\textquotesingle{}\textgreater{}Mean mendekati Median → Distribusi Simetris\textless{}/span\textgreater{}"}
+\NormalTok{    \} }\ControlFlowTok{else} \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{mean}\NormalTok{(x) }\SpecialCharTok{\textgreater{}} \FunctionTok{median}\NormalTok{(x)) \{}
+\NormalTok{      simetri\_msg }\OtherTok{\textless{}{-}} \StringTok{"\textless{}span style=\textquotesingle{}color:\#E74C3C;\textquotesingle{}\textgreater{}Mean \textgreater{} Median → Indikasi Skewness Positif\textless{}/span\textgreater{}"}
+\NormalTok{    \} }\ControlFlowTok{else}\NormalTok{ \{}
+\NormalTok{      simetri\_msg }\OtherTok{\textless{}{-}} \StringTok{"\textless{}span style=\textquotesingle{}color:\#E74C3C;\textquotesingle{}\textgreater{}Mean \textless{} Median → Indikasi Skewness Negatif\textless{}/span\textgreater{}"}
+\NormalTok{    \}}
+    
+    \CommentTok{\# Interpretasi Skewness dan Kurtosis (Rules of Thumb)}
+\NormalTok{    sk\_msg }\OtherTok{\textless{}{-}} \ControlFlowTok{if}\NormalTok{(}\FunctionTok{abs}\NormalTok{(sk)}\SpecialCharTok{==}\DecValTok{0}\NormalTok{)\{}
+      \StringTok{"Simetri"}
+\NormalTok{    \}  }
+      \ControlFlowTok{else} \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{abs}\NormalTok{(sk) }\SpecialCharTok{\textless{}} \FloatTok{0.5}\NormalTok{) \{}
+      \StringTok{"rendah (mendekati simetri)"}
+\NormalTok{    \} }\ControlFlowTok{else} \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{abs}\NormalTok{(sk) }\SpecialCharTok{\textless{}} \DecValTok{1}\NormalTok{) \{}
+      \StringTok{"sedang"}
+\NormalTok{    \} }\ControlFlowTok{else}\NormalTok{ \{}
+      \StringTok{"Kuat"}
+\NormalTok{    \}}
+\NormalTok{    kt\_msg }\OtherTok{\textless{}{-}} \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{abs}\NormalTok{(kt\_ex) }\SpecialCharTok{\textless{}} \FloatTok{0.5}\NormalTok{) \{}
+      \StringTok{"Kurtosis mendekati normal (mesokurtik)."}
+\NormalTok{    \} }\ControlFlowTok{else} \ControlFlowTok{if}\NormalTok{ (kt\_ex }\SpecialCharTok{\textgreater{}=} \FloatTok{0.5}\NormalTok{) \{}
+      \StringTok{"Distribusi leptokurtik (puncak runcing, ekor berat)."}
+\NormalTok{    \} }\ControlFlowTok{else}\NormalTok{ \{}
+      \StringTok{"Distribusi platykurtik (puncak datar, ekor ringan)."}
+\NormalTok{    \}}
+    \CommentTok{\# Gabungan}
+    \FunctionTok{HTML}\NormalTok{(}\FunctionTok{paste0}\NormalTok{(}
+      \StringTok{"\textless{}div style=\textquotesingle{}background{-}color: \#F7F7F7; padding: 10px; border{-}radius: 5px; border{-}left: 3px solid \#2E86C1;\textquotesingle{}\textgreater{}"}\NormalTok{,}
+      \StringTok{"\textless{}h4\textgreater{}Kesimpulan Deskriptif\textless{}/h4\textgreater{}"}\NormalTok{,}
+      \StringTok{"\textless{}ul\textgreater{}"}\NormalTok{,}
+      \StringTok{"\textless{}li\textgreater{}"}\NormalTok{, simetri\_msg, }\StringTok{"\textless{}/li\textgreater{}"}\NormalTok{,}
+      \StringTok{"\textless{}li\textgreater{}"}\NormalTok{, sk\_msg, }\StringTok{"\textless{}/li\textgreater{}"}\NormalTok{,}
+      \StringTok{"\textless{}li\textgreater{}"}\NormalTok{, kt\_msg, }\StringTok{"\textless{}/li\textgreater{}"}\NormalTok{,}
+      \StringTok{"\textless{}/ul\textgreater{}"}\NormalTok{,}
+      \StringTok{"\textless{}/div\textgreater{}"}
+\NormalTok{    ))}
+\NormalTok{  \})}
+\CommentTok{\#Interpretasi Hasil Uji Formal yang dipilih}
+\NormalTok{  output}\SpecialCharTok{$}\NormalTok{test\_interpretation }\OtherTok{\textless{}{-}} \FunctionTok{renderUI}\NormalTok{(\{}
+\NormalTok{    res }\OtherTok{\textless{}{-}} \FunctionTok{run\_tests}\NormalTok{()}
+    \FunctionTok{req}\NormalTok{(res)}
+    
+\NormalTok{    alpha }\OtherTok{\textless{}{-}}\NormalTok{ input}\SpecialCharTok{$}\NormalTok{alpha}
+\NormalTok{    normal }\OtherTok{\textless{}{-}}\NormalTok{ res}\SpecialCharTok{$}\NormalTok{p.value }\SpecialCharTok{\textgreater{}}\NormalTok{ alpha}
+\NormalTok{    color }\OtherTok{\textless{}{-}} \FunctionTok{ifelse}\NormalTok{(normal, }\StringTok{"\#00A388"}\NormalTok{, }\StringTok{"\#E74C3C"}\NormalTok{)}
+    
+    \FunctionTok{HTML}\NormalTok{(}\FunctionTok{paste0}\NormalTok{(}
+      \StringTok{"\textless{}div style=\textquotesingle{}border{-}left:5px solid "}\NormalTok{, color, }\StringTok{"; padding:12px;\textquotesingle{}\textgreater{}"}\NormalTok{,}
+      \StringTok{"\textless{}h4\textgreater{}Kesimpulan Uji\textless{}/h4\textgreater{}"}\NormalTok{,}
+      \StringTok{"\textless{}p\textgreater{}\textless{}b\textgreater{}"}\NormalTok{, res}\SpecialCharTok{$}\NormalTok{method, }\StringTok{"\textless{}/b\textgreater{}\textless{}/p\textgreater{}"}\NormalTok{,}
+      \StringTok{"\textless{}p\textgreater{}Keputusan: \textless{}b style=\textquotesingle{}color:"}\NormalTok{, color, }\StringTok{";\textquotesingle{}\textgreater{}"}\NormalTok{,}
+      \FunctionTok{ifelse}\NormalTok{(normal, }\StringTok{"NORMAL"}\NormalTok{, }\StringTok{"TIDAK NORMAL"}\NormalTok{),}
+      \StringTok{"\textless{}/b\textgreater{}\textless{}/p\textgreater{}"}\NormalTok{,}
+      \StringTok{"\textless{}/div\textgreater{}"}
+\NormalTok{    ))}
+\NormalTok{  \})}
+
+
+\CommentTok{\#Interpretasi Visual untuk kesimpulan final  }
+\NormalTok{interpret\_visual\_summary }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(x) \{}
+    
+    \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{length}\NormalTok{(x) }\SpecialCharTok{\textless{}} \DecValTok{3} \SpecialCharTok{||} \FunctionTok{all}\NormalTok{(}\FunctionTok{is.na}\NormalTok{(x))) \{}
+      \FunctionTok{return}\NormalTok{(}\FunctionTok{list}\NormalTok{(}
+        \AttributeTok{sk\_msg =} \StringTok{"Data belum cukup untuk interpretasi bentuk distribusi."}\NormalTok{,}
+        \AttributeTok{kt\_msg =} \StringTok{""}
+\NormalTok{      ))}
+\NormalTok{    \}}
+    
+\NormalTok{    sk }\OtherTok{\textless{}{-}}\NormalTok{ moments}\SpecialCharTok{::}\FunctionTok{skewness}\NormalTok{(x, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{    kt }\OtherTok{\textless{}{-}}\NormalTok{ moments}\SpecialCharTok{::}\FunctionTok{kurtosis}\NormalTok{(x, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{) }\SpecialCharTok{{-}} \DecValTok{3}
+    
+\NormalTok{    sk\_msg }\OtherTok{\textless{}{-}} \ControlFlowTok{if}\NormalTok{ (}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(sk) }\SpecialCharTok{\&\&} \FunctionTok{abs}\NormalTok{(sk) }\SpecialCharTok{\textless{}=} \FloatTok{0.5}\NormalTok{) \{}
+      \StringTok{"Distribusi relatif simetris."}
+\NormalTok{    \} }\ControlFlowTok{else} \ControlFlowTok{if}\NormalTok{ (}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(sk) }\SpecialCharTok{\&\&}\NormalTok{ sk }\SpecialCharTok{\textgreater{}} \FloatTok{0.5}\NormalTok{) \{}
+      \StringTok{"Distribusi condong ke kanan (positive skew)."}
+\NormalTok{    \} }\ControlFlowTok{else}\NormalTok{ \{}
+      \StringTok{"Distribusi condong ke kiri (negative skew)."}
+\NormalTok{    \}}
+    
+\NormalTok{    kt\_msg }\OtherTok{\textless{}{-}} \ControlFlowTok{if}\NormalTok{ (}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(kt) }\SpecialCharTok{\&\&} \FunctionTok{abs}\NormalTok{(kt) }\SpecialCharTok{\textless{}=} \FloatTok{0.5}\NormalTok{) \{}
+      \StringTok{"Keruncingan mendekati distribusi normal."}
+\NormalTok{    \} }\ControlFlowTok{else} \ControlFlowTok{if}\NormalTok{ (}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(kt) }\SpecialCharTok{\&\&}\NormalTok{ kt }\SpecialCharTok{\textgreater{}} \FloatTok{0.5}\NormalTok{) \{}
+      \StringTok{"Distribusi lebih runcing dari normal (leptokurtic)."}
+\NormalTok{    \} }\ControlFlowTok{else}\NormalTok{ \{}
+      \StringTok{"Distribusi lebih datar dari normal (platykurtic)."}
+\NormalTok{    \}}
+    
+    \FunctionTok{list}\NormalTok{(}
+      \AttributeTok{sk =}\NormalTok{ sk,}
+      \AttributeTok{kt =}\NormalTok{ kt,}
+      \AttributeTok{sk\_msg =}\NormalTok{ sk\_msg,}
+      \AttributeTok{kt\_msg =}\NormalTok{ kt\_msg}
+\NormalTok{    )}
+\NormalTok{\}}
+\CommentTok{\#Hasil Final Menggunakan Uji Shapiro Wilks ketika sampel kecil dan Uji JB ketika Sampel besar}
+\NormalTok{  final\_test\_result }\OtherTok{\textless{}{-}} \FunctionTok{reactive}\NormalTok{(\{}
+\NormalTok{    x }\OtherTok{\textless{}{-}} \FunctionTok{selected\_data}\NormalTok{()}
+    \FunctionTok{req}\NormalTok{(x, input}\SpecialCharTok{$}\NormalTok{selected\_test)}
+    
+\NormalTok{    test\_res }\OtherTok{\textless{}{-}} \FunctionTok{run\_tests}\NormalTok{()}
+    \FunctionTok{req}\NormalTok{(test\_res)}
+    
+\NormalTok{    n }\OtherTok{\textless{}{-}} \FunctionTok{length}\NormalTok{(x)}
+\NormalTok{    test\_name }\OtherTok{\textless{}{-}}\NormalTok{ test\_res}\SpecialCharTok{$}\NormalTok{method}
+\NormalTok{    pval }\OtherTok{\textless{}{-}}\NormalTok{ test\_res}\SpecialCharTok{$}\NormalTok{p.value}
+    
+\NormalTok{    decision }\OtherTok{\textless{}{-}} \FunctionTok{ifelse}\NormalTok{(}
+\NormalTok{      pval }\SpecialCharTok{\textgreater{}}\NormalTok{ input}\SpecialCharTok{$}\NormalTok{alpha,}
+      \StringTok{"GAGAL\_TOLAK\_H0"}\NormalTok{,}
+      \StringTok{"TOLAK\_H0"}
+\NormalTok{    )}
+    
+    \CommentTok{\# ===== VALIDITAS UJI =====}
+\NormalTok{    valid }\OtherTok{\textless{}{-}} \ConstantTok{TRUE}
+\NormalTok{    warning }\OtherTok{\textless{}{-}} \ConstantTok{NULL}
+    
+    \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{grepl}\NormalTok{(}\StringTok{"Jarque"}\NormalTok{, test\_name) }\SpecialCharTok{\&\&}\NormalTok{ n }\SpecialCharTok{\textgreater{}} \DecValTok{200}\NormalTok{) \{}
+\NormalTok{      warning }\OtherTok{\textless{}{-}} \StringTok{"Uji Jarque–Bera sangat sensitif pada ukuran sampel besar. Penyimpangan kecil dari normalitas dapat terdeteksi signifikan."}
+\NormalTok{    \}}
+    
+    \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{grepl}\NormalTok{(}\StringTok{"Kolmogorov"}\NormalTok{, test\_name)) \{}
+\NormalTok{      warning }\OtherTok{\textless{}{-}} \StringTok{"Uji Kolmogorov–Smirnov kurang ideal jika parameter distribusi (mean \& SD) diestimasi dari data."}
+\NormalTok{    \}}
+ 
+    
+    \FunctionTok{list}\NormalTok{(}
+      \AttributeTok{n =}\NormalTok{ n,}
+      \AttributeTok{test\_name =}\NormalTok{ test\_name,}
+      \AttributeTok{p\_value =}\NormalTok{ pval,}
+      \AttributeTok{decision =}\NormalTok{ decision,}
+      \AttributeTok{valid =} \FunctionTok{is.null}\NormalTok{(warning),}
+      \AttributeTok{warning =}\NormalTok{ warning}
+\NormalTok{    )}
+\NormalTok{  \})}
+  
+  \CommentTok{\#Keputusan Final Menggunakan Saphiro Wilks ketika sampel kecil dan Jarque bera ketika sampel besar}
+\NormalTok{  output}\SpecialCharTok{$}\NormalTok{final\_conclusion }\OtherTok{\textless{}{-}} \FunctionTok{renderUI}\NormalTok{(\{}
+\NormalTok{    x }\OtherTok{\textless{}{-}} \FunctionTok{selected\_data}\NormalTok{(); }\FunctionTok{req}\NormalTok{(x)}
+\NormalTok{    res }\OtherTok{\textless{}{-}} \FunctionTok{final\_test\_result}\NormalTok{(); }\FunctionTok{req}\NormalTok{(res)}
+\NormalTok{    vis }\OtherTok{\textless{}{-}} \FunctionTok{interpret\_visual\_summary}\NormalTok{(x)}
+    
+\NormalTok{    normal }\OtherTok{\textless{}{-}}\NormalTok{ res}\SpecialCharTok{$}\NormalTok{decision }\SpecialCharTok{==} \StringTok{"GAGAL\_TOLAK\_H0"}
+\NormalTok{    color }\OtherTok{\textless{}{-}} \FunctionTok{ifelse}\NormalTok{(normal, }\StringTok{"\#00A388"}\NormalTok{, }\StringTok{"\#E74C3C"}\NormalTok{)}
+    
+    \FunctionTok{HTML}\NormalTok{(}\FunctionTok{paste0}\NormalTok{(}
+      \StringTok{"\textless{}div style=\textquotesingle{}padding:15px; background:\#F9FBFC; border{-}radius:8px;}
+\StringTok{                border{-}left:5px solid "}\NormalTok{, color, }\StringTok{";\textquotesingle{}\textgreater{}"}\NormalTok{,}
+      
+      \StringTok{"\textless{}h4\textgreater{} Kesimpulan Statistik\textless{}/h4\textgreater{}"}\NormalTok{,}
+      \StringTok{"\textless{}p\textgreater{}\textless{}b\textgreater{}Uji yang digunakan:\textless{}/b\textgreater{} "}\NormalTok{, res}\SpecialCharTok{$}\NormalTok{test\_name, }\StringTok{"\textless{}/p\textgreater{}"}\NormalTok{,}
+      \StringTok{"\textless{}p\textgreater{}\textless{}b\textgreater{}P{-}value:\textless{}/b\textgreater{} "}\NormalTok{, }\FunctionTok{round}\NormalTok{(res}\SpecialCharTok{$}\NormalTok{p\_value, }\DecValTok{5}\NormalTok{), }\StringTok{"\textless{}/p\textgreater{}"}\NormalTok{,}
+      \StringTok{"\textless{}p\textgreater{}\textless{}b\textgreater{}Keputusan:\textless{}/b\textgreater{} "}\NormalTok{,}
+      \FunctionTok{ifelse}\NormalTok{(normal,}
+             \StringTok{"\textless{}b style=\textquotesingle{}color:\#00A388;\textquotesingle{}\textgreater{}NORMAL (Gagal Tolak H₀)\textless{}/b\textgreater{}"}\NormalTok{,}
+             \StringTok{"\textless{}b style=\textquotesingle{}color:\#E74C3C;\textquotesingle{}\textgreater{}TIDAK NORMAL (Tolak H₀)\textless{}/b\textgreater{}"}
+\NormalTok{      ),}
+      \StringTok{"\textless{}/p\textgreater{}"}\NormalTok{,}
+      
+      \ControlFlowTok{if}\NormalTok{ (}\SpecialCharTok{!}\FunctionTok{is.null}\NormalTok{(res}\SpecialCharTok{$}\NormalTok{warning)) \{}
+        \FunctionTok{paste0}\NormalTok{(}
+          \StringTok{"\textless{}div style=\textquotesingle{}margin{-}top:10px; color:\#856404;}
+\StringTok{                    background:\#fff3cd; padding:10px;}
+\StringTok{                    border{-}radius:5px;\textquotesingle{}\textgreater{}"}\NormalTok{,}
+          \StringTok{"⚠ "}\NormalTok{, res}\SpecialCharTok{$}\NormalTok{warning,}
+          \StringTok{"\textless{}/div\textgreater{}"}
+\NormalTok{        )}
+\NormalTok{      \} }\ControlFlowTok{else} \StringTok{""}\NormalTok{,}
+      
+      \StringTok{"\textless{}h4 style=\textquotesingle{}margin{-}top:15px;\textquotesingle{}\textgreater{} Interpretasi Visual\textless{}/h4\textgreater{}"}\NormalTok{,}
+      \StringTok{"\textless{}ul\textgreater{}"}\NormalTok{,}
+      \StringTok{"\textless{}li\textgreater{}"}\NormalTok{, vis}\SpecialCharTok{$}\NormalTok{sk\_msg, }\StringTok{"\textless{}/li\textgreater{}"}\NormalTok{,}
+      \StringTok{"\textless{}li\textgreater{}"}\NormalTok{, vis}\SpecialCharTok{$}\NormalTok{kt\_msg, }\StringTok{"\textless{}/li\textgreater{}"}\NormalTok{,}
+      \StringTok{"\textless{}/ul\textgreater{}"}\NormalTok{,}
+      
+      \StringTok{"\textless{}p style=\textquotesingle{}font{-}size:12px; color:\#6c757d;\textquotesingle{}\textgreater{}}
+\StringTok{     Catatan: Uji formal sangat sensitif pada ukuran sampel besar.}
+\StringTok{     Visualisasi digunakan sebagai pendukung interpretasi.}
+\StringTok{     \textless{}/p\textgreater{}"}\NormalTok{,}
+      
+      \StringTok{"\textless{}/div\textgreater{}"}
+\NormalTok{    ))}
+\NormalTok{  \})}
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{9. Tahap Pembangunan Output Offline(HTML dan
+CSV)}\label{tahap-pembangunan-output-offlinehtml-dan-csv}
+
+Fungsi di sini berguna untuk memberikan laporan test secara offline
+dalam format HTML dengan fungsi di bawah ini pengguna dapat mengunduh
+file yang berisi uji normalitas dan statistik deskriptifnya. Apabila
+pengguna kehilangan file awal, pengguna dapat mengunduh lagi file yang
+masih tersimpan di aplikasi
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#Fungsi untuk mengunduh Laporan Uji formal dengan JB yang digunakan apabila sampel \textgreater{}30 dan Shapiro wilks apabila sampel \textless{}30 dan lebih dari 3}
+\NormalTok{output}\SpecialCharTok{$}\NormalTok{download\_report }\OtherTok{\textless{}{-}} \FunctionTok{downloadHandler}\NormalTok{(}
+    \AttributeTok{filename =} \ControlFlowTok{function}\NormalTok{() \{}
+      \FunctionTok{paste0}\NormalTok{(}\StringTok{"normality\_report\_"}\NormalTok{, }\FunctionTok{Sys.Date}\NormalTok{(), }\StringTok{".html"}\NormalTok{)}
+\NormalTok{    \},}
+    \AttributeTok{content =} \ControlFlowTok{function}\NormalTok{(file) \{}
+      
+\NormalTok{      x }\OtherTok{\textless{}{-}} \FunctionTok{selected\_data}\NormalTok{()}
+      \ControlFlowTok{if}\NormalTok{(}\FunctionTok{length}\NormalTok{(x) }\SpecialCharTok{\textless{}} \DecValTok{3}\NormalTok{) \{}
+        \FunctionTok{showNotification}\NormalTok{(}\StringTok{"Data tidak cukup untuk analisis normalitas."}\NormalTok{, }\AttributeTok{type =} \StringTok{"error"}\NormalTok{)}
+        \FunctionTok{return}\NormalTok{(}\ConstantTok{NULL}\NormalTok{)}
+\NormalTok{      \}}
+\NormalTok{      n }\OtherTok{\textless{}{-}} \FunctionTok{length}\NormalTok{(x)}
+\NormalTok{      alpha }\OtherTok{\textless{}{-}}\NormalTok{ input}\SpecialCharTok{$}\NormalTok{alpha}
+      
+\NormalTok{      stats }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+        \AttributeTok{Mean =} \FunctionTok{mean}\NormalTok{(x),}
+        \AttributeTok{Median =} \FunctionTok{median}\NormalTok{(x),}
+        \AttributeTok{SD =} \FunctionTok{sd}\NormalTok{(x),}
+        \AttributeTok{Min =} \FunctionTok{min}\NormalTok{(x),}
+        \AttributeTok{Max =} \FunctionTok{max}\NormalTok{(x)}
+\NormalTok{      )}
+      
+\NormalTok{      sh }\OtherTok{\textless{}{-}}\NormalTok{ li }\OtherTok{\textless{}{-}}\NormalTok{ jb }\OtherTok{\textless{}{-}}\NormalTok{ ks }\OtherTok{\textless{}{-}}\NormalTok{ chisq }\OtherTok{\textless{}{-}} \ConstantTok{NA}
+      
+      \CommentTok{\# Small sample (n \textless{}= 30)}
+      \ControlFlowTok{if}\NormalTok{ (n }\SpecialCharTok{\textless{}=} \DecValTok{30}\NormalTok{) \{}
+\NormalTok{        sh }\OtherTok{\textless{}{-}} \FunctionTok{shapiro.test}\NormalTok{(x)}\SpecialCharTok{$}\NormalTok{p.value}
+\NormalTok{        li }\OtherTok{\textless{}{-}} \ControlFlowTok{if}\NormalTok{ (n }\SpecialCharTok{\textgreater{}=} \DecValTok{6}\NormalTok{) }\FunctionTok{lillie.test}\NormalTok{(x)}\SpecialCharTok{$}\NormalTok{p.value }\ControlFlowTok{else} \ConstantTok{NA}
+\NormalTok{      \}}
+      
+      \CommentTok{\# Medium sample (30 \textless{} n \textless{}= 100)}
+      \ControlFlowTok{if}\NormalTok{ (n }\SpecialCharTok{\textgreater{}} \DecValTok{30} \SpecialCharTok{\&\&}\NormalTok{ n }\SpecialCharTok{\textless{}=} \DecValTok{100}\NormalTok{) \{}
+\NormalTok{        jb }\OtherTok{\textless{}{-}} \FunctionTok{tryCatch}\NormalTok{(}
+        \FunctionTok{jarque\_bera\_manual}\NormalTok{(x)}\SpecialCharTok{$}\NormalTok{p.value,}
+        \AttributeTok{error =} \ControlFlowTok{function}\NormalTok{(e) }\ConstantTok{NA}
+\NormalTok{          )}
+
+        
+\NormalTok{        ks }\OtherTok{\textless{}{-}} \FunctionTok{tryCatch}\NormalTok{(}
+          \FunctionTok{ks.test}\NormalTok{(x, }\StringTok{"pnorm"}\NormalTok{, }\FunctionTok{mean}\NormalTok{(x), }\FunctionTok{sd}\NormalTok{(x))}\SpecialCharTok{$}\NormalTok{p.value,}
+          \AttributeTok{error =} \ControlFlowTok{function}\NormalTok{(e) }\ConstantTok{NA}
+\NormalTok{        )}
+        
+        
+\NormalTok{        chisq }\OtherTok{\textless{}{-}} \FunctionTok{tryCatch}\NormalTok{(\{}
+\NormalTok{          bins }\OtherTok{\textless{}{-}} \FunctionTok{floor}\NormalTok{(}\FunctionTok{sqrt}\NormalTok{(n))}
+\NormalTok{          observed }\OtherTok{\textless{}{-}} \FunctionTok{table}\NormalTok{(}\FunctionTok{cut}\NormalTok{(x, bins))}
+\NormalTok{          expected }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\FunctionTok{length}\NormalTok{(x) }\SpecialCharTok{/} \FunctionTok{length}\NormalTok{(observed), }\FunctionTok{length}\NormalTok{(observed))}
+          \FunctionTok{chisq.test}\NormalTok{(observed, }\AttributeTok{p =}\NormalTok{ expected }\SpecialCharTok{/} \FunctionTok{sum}\NormalTok{(expected))}\SpecialCharTok{$}\NormalTok{p.value}
+\NormalTok{        \}, }\AttributeTok{error =} \ControlFlowTok{function}\NormalTok{(e) }\ConstantTok{NA}\NormalTok{)}
+\NormalTok{      \}}
+      
+      \CommentTok{\# Large sample (n \textgreater{} 100)}
+      \ControlFlowTok{if}\NormalTok{ (n }\SpecialCharTok{\textgreater{}} \DecValTok{100}\NormalTok{) \{}
+\NormalTok{          jb }\OtherTok{\textless{}{-}} \FunctionTok{tryCatch}\NormalTok{(}
+          \FunctionTok{jarque\_bera\_manual}\NormalTok{(x)}\SpecialCharTok{$}\NormalTok{p.value,}
+        \AttributeTok{error =} \ControlFlowTok{function}\NormalTok{(e) }\ConstantTok{NA}
+\NormalTok{      )}
+
+        
+\NormalTok{        bins }\OtherTok{\textless{}{-}} \FunctionTok{floor}\NormalTok{(}\FunctionTok{sqrt}\NormalTok{(n))}
+\NormalTok{        chisq }\OtherTok{\textless{}{-}} \FunctionTok{tryCatch}\NormalTok{(\{}
+\NormalTok{          observed }\OtherTok{\textless{}{-}} \FunctionTok{table}\NormalTok{(}\FunctionTok{cut}\NormalTok{(x, bins))}
+\NormalTok{          expected }\OtherTok{\textless{}{-}} \FunctionTok{rep}\NormalTok{(}\FunctionTok{length}\NormalTok{(x) }\SpecialCharTok{/} \FunctionTok{length}\NormalTok{(observed), }\FunctionTok{length}\NormalTok{(observed))}
+          \FunctionTok{chisq.test}\NormalTok{(observed, }\AttributeTok{p =}\NormalTok{ expected }\SpecialCharTok{/} \FunctionTok{sum}\NormalTok{(expected))}\SpecialCharTok{$}\NormalTok{p.value}
+\NormalTok{        \}, }\AttributeTok{error =} \ControlFlowTok{function}\NormalTok{(e) }\ConstantTok{NA}\NormalTok{)}
+\NormalTok{      \}}
+\NormalTok{      fmt\_p }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(p) \{}
+        \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{is.na}\NormalTok{(p)) }\StringTok{"NA"}
+        \ControlFlowTok{else} \FunctionTok{round}\NormalTok{(p, }\DecValTok{5}\NormalTok{)}
+\NormalTok{      \}}
+      
+\NormalTok{      keputusan }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(p) \{}
+        \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{is.na}\NormalTok{(p)) }\StringTok{"N/A"}
+        \ControlFlowTok{else} \ControlFlowTok{if}\NormalTok{ (p }\SpecialCharTok{\textgreater{}}\NormalTok{ alpha) }\StringTok{"NORMAL (Gagal Tolak H₀)"}
+        \ControlFlowTok{else} \StringTok{"TIDAK NORMAL (Tolak H₀)"}
+\NormalTok{      \}}
+\NormalTok{      tests\_html }\OtherTok{\textless{}{-}} \StringTok{""}
+      
+      \CommentTok{\# n \textless{}= 30}
+      \ControlFlowTok{if}\NormalTok{ (n }\SpecialCharTok{\textless{}=} \DecValTok{30}\NormalTok{) \{}
+\NormalTok{        tests\_html }\OtherTok{\textless{}{-}} \FunctionTok{paste0}\NormalTok{(}
+          \StringTok{"\textless{}ul\textgreater{}"}\NormalTok{,}
+          \StringTok{"\textless{}li\textgreater{}Shapiro{-}Wilk p{-}value: "}\NormalTok{, }\FunctionTok{fmt\_p}\NormalTok{(sh), }\StringTok{" → \textless{}b\textgreater{}"}\NormalTok{, }\FunctionTok{keputusan}\NormalTok{(sh), }\StringTok{"\textless{}/b\textgreater{}\textless{}/li\textgreater{}"}\NormalTok{,}
+          \StringTok{"\textless{}li\textgreater{}Lilliefors p{-}value: "}\NormalTok{, }\FunctionTok{fmt\_p}\NormalTok{(li), }\StringTok{" → \textless{}b\textgreater{}"}\NormalTok{, }\FunctionTok{keputusan}\NormalTok{(li), }\StringTok{"\textless{}/b\textgreater{}\textless{}/li\textgreater{}"}\NormalTok{,}
+          \StringTok{"\textless{}/ul\textgreater{}"}
+\NormalTok{        )}
+\NormalTok{      \}}
+      
+      \CommentTok{\# 30 \textless{} n \textless{}= 100}
+      \ControlFlowTok{if}\NormalTok{ (n }\SpecialCharTok{\textgreater{}} \DecValTok{30} \SpecialCharTok{\&\&}\NormalTok{ n }\SpecialCharTok{\textless{}=} \DecValTok{100}\NormalTok{) \{}
+\NormalTok{        tests\_html }\OtherTok{\textless{}{-}} \FunctionTok{paste0}\NormalTok{(}
+          \StringTok{"\textless{}ul\textgreater{}"}\NormalTok{,}
+          \StringTok{"\textless{}li\textgreater{}Jarque{-}Bera p{-}value: "}\NormalTok{, }\FunctionTok{fmt\_p}\NormalTok{(jb), }\StringTok{" → \textless{}b\textgreater{}"}\NormalTok{, }\FunctionTok{keputusan}\NormalTok{(jb), }\StringTok{"\textless{}/b\textgreater{}\textless{}/li\textgreater{}"}\NormalTok{,}
+          \StringTok{"\textless{}li\textgreater{}Kolmogorov–Smirnov p{-}value: "}\NormalTok{, }\FunctionTok{fmt\_p}\NormalTok{(ks), }\StringTok{" → \textless{}b\textgreater{}"}\NormalTok{, }\FunctionTok{keputusan}\NormalTok{(ks), }\StringTok{"\textless{}/b\textgreater{}\textless{}/li\textgreater{}"}\NormalTok{,}
+          \StringTok{"\textless{}li\textgreater{}Chi{-}square GoF p{-}value: "}\NormalTok{, }\FunctionTok{fmt\_p}\NormalTok{(chisq), }\StringTok{" → \textless{}b\textgreater{}"}\NormalTok{, }\FunctionTok{keputusan}\NormalTok{(chisq), }\StringTok{"\textless{}/b\textgreater{}\textless{}/li\textgreater{}"}\NormalTok{,}
+          \StringTok{"\textless{}/ul\textgreater{}"}
+\NormalTok{        )}
+\NormalTok{      \}}
+      
+      \CommentTok{\# n \textgreater{} 100}
+      \ControlFlowTok{if}\NormalTok{ (n }\SpecialCharTok{\textgreater{}} \DecValTok{100}\NormalTok{) \{}
+\NormalTok{        tests\_html }\OtherTok{\textless{}{-}} \FunctionTok{paste0}\NormalTok{(}
+          \StringTok{"\textless{}ul\textgreater{}"}\NormalTok{,}
+          \StringTok{"\textless{}li\textgreater{}Jarque{-}Bera p{-}value: "}\NormalTok{, }\FunctionTok{fmt\_p}\NormalTok{(jb), }\StringTok{" → \textless{}b\textgreater{}"}\NormalTok{, }\FunctionTok{keputusan}\NormalTok{(jb), }\StringTok{"\textless{}/b\textgreater{}\textless{}/li\textgreater{}"}\NormalTok{,}
+          \StringTok{"\textless{}li\textgreater{}Chi{-}square GoF p{-}value: "}\NormalTok{, }\FunctionTok{fmt\_p}\NormalTok{(chisq), }\StringTok{" → \textless{}b\textgreater{}"}\NormalTok{, }\FunctionTok{keputusan}\NormalTok{(chisq), }\StringTok{"\textless{}/b\textgreater{}\textless{}/li\textgreater{}"}\NormalTok{,}
+          \StringTok{"\textless{}/ul\textgreater{}"}
+\NormalTok{        )}
+\NormalTok{      \}}
+      
+\NormalTok{      res }\OtherTok{\textless{}{-}} \FunctionTok{evaluate\_normality}\NormalTok{(x, alpha)}
+      
+\NormalTok{      final\_text }\OtherTok{\textless{}{-}} \ControlFlowTok{if}\NormalTok{ (res}\SpecialCharTok{$}\NormalTok{decision }\SpecialCharTok{==} \StringTok{"GAGAL\_TOLAK\_H0"}\NormalTok{)}
+        \StringTok{"Distribusi data mendekati normal."}
+      \ControlFlowTok{else} \ControlFlowTok{if}\NormalTok{ (res}\SpecialCharTok{$}\NormalTok{decision }\SpecialCharTok{==} \StringTok{"TOLAK\_H0"}\NormalTok{)}
+        \StringTok{"Distribusi data menunjukkan penyimpangan dari normalitas."}
+      \ControlFlowTok{else}
+        \StringTok{"Data tidak cukup untuk dianalisis."}
+\NormalTok{      final\_normal }\OtherTok{\textless{}{-}} \ControlFlowTok{if}\NormalTok{(}\SpecialCharTok{!}\FunctionTok{is.null}\NormalTok{(res}\SpecialCharTok{$}\NormalTok{decision) }\SpecialCharTok{\&\&}\NormalTok{ res}\SpecialCharTok{$}\NormalTok{decision }\SpecialCharTok{==} \StringTok{"GAGAL\_TOLAK\_H0"}\NormalTok{) }\ConstantTok{TRUE} \ControlFlowTok{else} \ConstantTok{FALSE}
+      
+\NormalTok{      html }\OtherTok{\textless{}{-}} \FunctionTok{paste0}\NormalTok{(}
+        \StringTok{"\textless{}!DOCTYPE html\textgreater{}}
+\StringTok{      \textless{}html\textgreater{}}
+\StringTok{      \textless{}head\textgreater{}}
+\StringTok{        \textless{}meta charset=\textquotesingle{}UTF{-}8\textquotesingle{}\textgreater{}}
+\StringTok{        \textless{}title\textgreater{}Normality Analysis Report\textless{}/title\textgreater{}}
+\StringTok{        \textless{}style\textgreater{}}
+\StringTok{          body \{ font{-}family: Arial; margin: 40px; \}}
+\StringTok{          h2 \{ color: \#00A388; \}}
+\StringTok{          table \{ border{-}collapse: collapse; width: 60\%; \}}
+\StringTok{          th, td \{ border: 1px solid \#ccc; padding: 8px; text{-}align:center; \}}
+\StringTok{          th \{ background{-}color: \#f2f2f2; \}}
+\StringTok{        \textless{}/style\textgreater{}}
+\StringTok{      \textless{}/head\textgreater{}}
+\StringTok{      \textless{}body\textgreater{}}
+
+\StringTok{      \textless{}h2\textgreater{}Normality Analysis Report\textless{}/h2\textgreater{}}
+
+\StringTok{      \textless{}p\textgreater{}\textless{}b\textgreater{}Sample Size (n):\textless{}/b\textgreater{} "}\NormalTok{, n, }\StringTok{"\textless{}/p\textgreater{}}
+\StringTok{      \textless{}p\textgreater{}\textless{}b\textgreater{}Alpha:\textless{}/b\textgreater{} "}\NormalTok{, alpha, }\StringTok{"\textless{}/p\textgreater{}}
+
+\StringTok{      \textless{}h3\textgreater{}Descriptive Statistics\textless{}/h3\textgreater{}}
+\StringTok{      \textless{}table\textgreater{}}
+\StringTok{        \textless{}tr\textgreater{}\textless{}th\textgreater{}Mean\textless{}/th\textgreater{}\textless{}th\textgreater{}Median\textless{}/th\textgreater{}\textless{}th\textgreater{}SD\textless{}/th\textgreater{}\textless{}th\textgreater{}Min\textless{}/th\textgreater{}\textless{}th\textgreater{}Max\textless{}/th\textgreater{}\textless{}/tr\textgreater{}}
+\StringTok{        \textless{}tr\textgreater{}}
+\StringTok{          \textless{}td\textgreater{}"}\NormalTok{, }\FunctionTok{round}\NormalTok{(stats}\SpecialCharTok{$}\NormalTok{Mean,}\DecValTok{4}\NormalTok{), }\StringTok{"\textless{}/td\textgreater{}}
+\StringTok{          \textless{}td\textgreater{}"}\NormalTok{, }\FunctionTok{round}\NormalTok{(stats}\SpecialCharTok{$}\NormalTok{Median,}\DecValTok{4}\NormalTok{), }\StringTok{"\textless{}/td\textgreater{}}
+\StringTok{          \textless{}td\textgreater{}"}\NormalTok{, }\FunctionTok{round}\NormalTok{(stats}\SpecialCharTok{$}\NormalTok{SD,}\DecValTok{4}\NormalTok{), }\StringTok{"\textless{}/td\textgreater{}}
+\StringTok{          \textless{}td\textgreater{}"}\NormalTok{, }\FunctionTok{round}\NormalTok{(stats}\SpecialCharTok{$}\NormalTok{Min,}\DecValTok{4}\NormalTok{), }\StringTok{"\textless{}/td\textgreater{}}
+\StringTok{          \textless{}td\textgreater{}"}\NormalTok{, }\FunctionTok{round}\NormalTok{(stats}\SpecialCharTok{$}\NormalTok{Max,}\DecValTok{4}\NormalTok{), }\StringTok{"\textless{}/td\textgreater{}}
+\StringTok{        \textless{}/tr\textgreater{}}
+\StringTok{      \textless{}/table\textgreater{}}
+
+\StringTok{    \textless{}h3\textgreater{}Normality Tests\textless{}/h3\textgreater{}}
+\StringTok{    "}\NormalTok{, tests\_html, }\StringTok{"}
+
+\StringTok{      \textless{}h3\textgreater{}Final Conclusion\textless{}/h3\textgreater{}}
+\StringTok{      \textless{}p\textgreater{}"}\NormalTok{,}
+        \ControlFlowTok{if}\NormalTok{ (final\_normal)}
+          \StringTok{"\textless{}b style=\textquotesingle{}color:green;\textquotesingle{}\textgreater{}Data secara umum BERDISTRIBUSI NORMAL.\textless{}/b\textgreater{}"}
+        \ControlFlowTok{else}
+          \StringTok{"\textless{}b style=\textquotesingle{}color:red;\textquotesingle{}\textgreater{}Data menunjukkan indikasi TIDAK NORMAL.\textless{}/b\textgreater{}"}\NormalTok{,}
+        \StringTok{"\textless{}/p\textgreater{}}
+
+\StringTok{      \textless{}hr\textgreater{}}
+\StringTok{      \textless{}p\textgreater{}\textless{}i\textgreater{}Generated by Normality Lab Shiny App\textless{}/i\textgreater{}\textless{}/p\textgreater{}}
+
+\StringTok{      \textless{}/body\textgreater{}}
+\StringTok{      \textless{}/html\textgreater{}"}
+\NormalTok{      )}
+      
+      \FunctionTok{writeLines}\NormalTok{(html, file)}
+\NormalTok{    \}}
+\NormalTok{  )}
+\CommentTok{\#Fungsi untuk mengunduh data yang ada}
+\NormalTok{  output}\SpecialCharTok{$}\NormalTok{download\_data }\OtherTok{\textless{}{-}} \FunctionTok{downloadHandler}\NormalTok{(}
+    \AttributeTok{filename =} \ControlFlowTok{function}\NormalTok{() }\FunctionTok{paste0}\NormalTok{(}\StringTok{"data\_normality\_lab\_"}\NormalTok{, }\FunctionTok{Sys.Date}\NormalTok{(), }\StringTok{".csv"}\NormalTok{),}
+    \AttributeTok{content =} \ControlFlowTok{function}\NormalTok{(file) \{}
+\NormalTok{      df }\OtherTok{\textless{}{-}} \FunctionTok{raw\_data}\NormalTok{();}
+      \FunctionTok{write.csv}\NormalTok{(df, file, }\AttributeTok{row.names =} \ConstantTok{FALSE}\NormalTok{)}
+\NormalTok{    \}}
+\NormalTok{  )}
+\ErrorTok{\}}
+\CommentTok{\#Penggerak UI dan Server}
+\FunctionTok{shinyApp}\NormalTok{(ui, server) }
+\end{Highlighting}
+\end{Shaded}
+
+\subsubsection{9. Tahap Pengujian dan
+Perbaikan}\label{tahap-pengujian-dan-perbaikan}
+
+Tahap pengujian dilakukan untuk memastikan aplikasi berjalan dengan baik
+pada berbagai kondisi data, seperti:
+
+\begin{itemize}
+\item
+  Ukuran sampel kecil dan besar
+\item
+  Data dengan distribusi normal dan tidak normal
+\item
+  Data dengan nilai ekstrem atau outlier
+\end{itemize}
+
+\textbf{Berdasarkan hasil pengujian, dilakukan perbaikan pada validasi
+input, stabilitas reaktif, serta kejelasan interpretasi hasil agar
+aplikasi lebih andal dan minim kesalahan.} Pada tahap ini kelompok kami
+memperbaiki logika-logika yang kurang sesuai dan berpotensi menimbulkan
+error. untuk tahap yang perlu diperbaiki/sangat sering error adalah : 1.
+Download report pada tahap ini penulisan logika ditulis ulang untuk
+menyertakan uji yang ada dengan menggunakan fungsi evaluate\_normality
+untuk mendapat keputusan final 2. Kesimpulan Final memperbaiki kode yang
+error karena setiap uji memiliki kondisi sampel masing-masing dan
+kelemahan masing masing sehingga kami menyertakan \emph{Peringatan} agar
+bisa dipahami kekuatan dan kelemahan uji formal yang digunakan 3.
+Perbaikan UI dan tata letak Penambahan seperti pintasan di bagian UI
+yang sebelumnya tidak ada juga merupakan upgrade dari tahap Pengujian
+dan Perbaikan
+
+\subsubsection{10. Tahap Deployment}\label{tahap-deployment}
+
+Tahap akhir adalah deployment aplikasi sehingga dapat diakses oleh
+pengguna. Menggunakan shinyapps.io aplikasi mendapatkan alamat web
+tersendiri
+
+\end{document}

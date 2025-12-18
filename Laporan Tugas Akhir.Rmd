@@ -9,7 +9,7 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(eval = FALSE)
 ```
 
 # Bab 1. Pendahuluan
@@ -207,12 +207,12 @@ evaluate_normality <- function(x, alpha = 0.05) {
 
 1.  Header dan Sidebar Header merupakan judul di atas aplikasi, sementara Sidebar adalah menu navigasi yang terletak di samping kiri.
 
-```{r}
+```{r, eval=FALSE, results='hide'}
 ui <- dashboardPage(
   
   # HEADER
   dashboardHeader(
-    title = tags$span("🔬 Normality Lab", class = "title-font-header"),
+    title = tags$span(" Normality Lab", class = "title-font-header"),
     tags$li(class = "dropdown", style = "padding: 8px; color: #444;", 
     )
   ),
@@ -247,20 +247,18 @@ ui <- dashboardPage(
             ")))
     ),
     sidebarMenu(id = "tabs",
-                menuItem("🏠 Home", tabName = "home"),
-                menuItem("📊 Unggah & Deskripsi Data", tabName = "desc"),
-                menuItem("📈 Visualisasi Distribusi", tabName = "visual"),
-                menuItem("✅ Uji Formal Normalitas", tabName = "formal"), 
-                menuItem("🎯 Skewness & Kurtosis", tabName = "skk"),
-                menuItem("👥 Analisis Grouping", tabName = "groups"),
-                menuItem("⭐ Kesimpulan Final", tabName = "final")
+                menuItem(" Home", tabName = "home"),
+                menuItem(" Unggah & Deskripsi Data", tabName = "desc"),
+                menuItem(" Visualisasi Distribusi", tabName = "visual"),
+                menuItem("Uji Formal Normalitas", tabName = "formal"), 
+                menuItem(" Skewness & Kurtosis", tabName = "skk"),
+                menuItem(" Analisis Grouping", tabName = "groups"),
+                menuItem(" Kesimpulan Final", tabName = "final")
     )
   ),
-```
 
-2.  DashboardBody Dashboar Body merupakan isi dari setiap tab yang ada di dalam sidebar. Baris kode ini bertugas untuk menampilkan perhitungan/operasi yang ada di server baik dari visualisasi, uji formal, dan kesimpulan.
+#2.  DashboardBody Dashboar Body merupakan isi dari setiap tab yang ada di dalam sidebar. Baris kode ini bertugas untuk menampilkan perhitungan/operasi yang ada di server baik dari visualisasi, uji formal, dan kesimpulan.
 
-```{r}
 dashboardBody(
     
     theme = light_theme, 
@@ -268,7 +266,7 @@ dashboardBody(
     tabItems(
       # Beranda: pengantar aplikasi & tombol mulai analisis
       tabItem("home",   
-              tags$h2("🔬 Normality Lab", class="tab-title-accent"),
+              tags$h2(" Normality Lab", class="tab-title-accent"),
               
               box(
                 id = "about-box",
@@ -285,7 +283,7 @@ dashboardBody(
                            " menggunakan pendekatan visual, statistik deskriptif, dan uji formal. Tujuan utama adalah mempermudah identifikasi normalitas data."
                          ),
                          tags$ul(
-                           tags$li("Menyesuaikan uji dengan ukuran sampel (n < 30: Shapiro-Wilk; 30 < n ≤ 200: Jarque-Bera)."),
+                           tags$li("Menyesuaikan uji dengan ukuran sampel (n < 30: Shapiro-Wilk; 30 < n <= 200: Jarque-Bera)."),
                            tags$li("Menampilkan interpretasi statistik & visual secara komprehensif."),
                            tags$li("Dirancang untuk analisis akademik & praktis.")
                          )
@@ -294,7 +292,7 @@ dashboardBody(
               ),
               
               fluidRow(
-                box(width = 12, actionButton("go_desc", "📂 Mulai Analisis: Unggah & Deskripsi Data", class = "btn-success", width = "100%"))
+                box(width = 12, actionButton("go_desc", " Mulai Analisis: Unggah & Deskripsi Data", class = "btn-success", width = "100%"))
               )
       ),
       # Unggah data, pilih variabel, dan statistik deskriptif awal  
@@ -323,10 +321,10 @@ dashboardBody(
               #Pintasan
               fluidRow(
                 box(width = 6, 
-                    actionButton("go_visual", "📈 Visualisasi Distribusi", 
+                    actionButton("go_visual", " Visualisasi Distribusi", 
                                  class = "btn-success", width = "100%")),
                 box(width = 6,
-                    actionButton("go_formal", "✅ Uji Formal Normalitas",
+                    actionButton("go_formal", "Uji Formal Normalitas",
                                  class = "btn-success", width = "100%"))
               ),
               
@@ -390,8 +388,8 @@ dashboardBody(
                 box(title = tags$span(icon("vial"), " Pengaturan Uji"),
                     width = 4, tags$i(class="icon-decor fas fa-flask d1"), 
                     uiOutput("test_selector"), 
-                    tags$p("H₀: Data Populasi mengikuti distribusi normal."),
-                    tags$p("H₁: Data Populasi tidak mengikuti distribusi normal."),
+                    tags$p("H0: Data Populasi mengikuti distribusi normal."),
+                    tags$p("H1: Data Populasi tidak mengikuti distribusi normal."),
                     uiOutput("alpha_display")),
                 box(title = tags$span(icon("info-circle"), " Ringkasan Data & Rekomendasi"),
                     width = 8, tags$i(class="icon-decor fas fa-lightbulb d2"), uiOutput("test_data_summary"))
@@ -411,7 +409,7 @@ dashboardBody(
                 box(
                   title = tags$span(icon("chart-scatter"), " Plot Skewness vs Kurtosis"),
                   width = 8, tags$i(class="icon-decor fas fa-dot-circle d1"),
-                  tags$p("Normalitas didekati saat Skewness ≈ 0 dan Kurtosis ≈ 3 (Kurtosis Fisher ≈ 0)"),
+                  tags$p("Normalitas didekati saat Skewness medekati 0 dan Kurtosis mendekati 3 (Kurtosis Fisher mendekati 0)"),
                   plotlyOutput("sk_kurt_plot", height = "400px")
                 ),
                 box(
@@ -455,9 +453,7 @@ dashboardBody(
               )
       )
     )
-  )
-)
-
+  ))
 ```
 
 ### 4. Tahap Penerapan Pengolahan Data
@@ -565,7 +561,7 @@ server <- function(input, output, session) {
       ))
     } else if (N >= 30 && N <= 100) {
       return(list(
-        status = "Sampel Besar (30 < n ≤ 100)",
+        status = "Sampel Besar (30 < n <= 100)",
         recommendation = "Uji yang Direkomendasikan: Shapiro-Wilk (masih baik), Lilliefors/Kolmogorov-Smirnov dan Jarque-Bera (jika n≥20).",
         icon = "fas fa-balance-scale"
       ))
@@ -601,7 +597,7 @@ server <- function(input, output, session) {
       choices = choices
     )
   })
-  
+}
 ```
 
 ### 5. Tahap Penerapan Analisis Statistik
@@ -880,7 +876,7 @@ Interpretasi hasil disajikan dalam bentuk poin-poin sederhana yang menjelaskan a
     
     # Interpretasi Simetri (Mean vs Median)
     if (abs(mean(x) - median(x)) < threshold) {
-      simetri_msg <- "<span style='color:#00A388;'>Mean ≈ Median → Distribusi Simetris</span>"
+      simetri_msg <- "<span style='color:#00A388;'>Mean mendekati Median → Distribusi Simetris</span>"
     } else if (mean(x) > median(x)) {
       simetri_msg <- "<span style='color:#E74C3C;'>Mean > Median → Indikasi Skewness Positif</span>"
     } else {
@@ -1028,7 +1024,7 @@ interpret_visual_summary <- function(x) {
       "<div style='padding:15px; background:#F9FBFC; border-radius:8px;
                 border-left:5px solid ", color, ";'>",
       
-      "<h4>📌 Kesimpulan Statistik</h4>",
+      "<h4> Kesimpulan Statistik</h4>",
       "<p><b>Uji yang digunakan:</b> ", res$test_name, "</p>",
       "<p><b>P-value:</b> ", round(res$p_value, 5), "</p>",
       "<p><b>Keputusan:</b> ",
@@ -1043,12 +1039,12 @@ interpret_visual_summary <- function(x) {
           "<div style='margin-top:10px; color:#856404;
                     background:#fff3cd; padding:10px;
                     border-radius:5px;'>",
-          "⚠️ ", res$warning,
+          "⚠ ", res$warning,
           "</div>"
         )
       } else "",
       
-      "<h4 style='margin-top:15px;'>📊 Interpretasi Visual</h4>",
+      "<h4 style='margin-top:15px;'> Interpretasi Visual</h4>",
       "<ul>",
       "<li>", vis$sk_msg, "</li>",
       "<li>", vis$kt_msg, "</li>",
@@ -1092,13 +1088,13 @@ output$download_report <- downloadHandler(
       
       sh <- li <- jb <- ks <- chisq <- NA
       
-      # Small sample (n ≤ 30)
+      # Small sample (n <= 30)
       if (n <= 30) {
         sh <- shapiro.test(x)$p.value
         li <- if (n >= 6) lillie.test(x)$p.value else NA
       }
       
-      # Medium sample (30 < n ≤ 100)
+      # Medium sample (30 < n <= 100)
       if (n > 30 && n <= 100) {
         jb <- tryCatch(
         jarque_bera_manual(x)$p.value,
@@ -1147,7 +1143,7 @@ output$download_report <- downloadHandler(
       }
       tests_html <- ""
       
-      # n ≤ 30
+      # n <= 30
       if (n <= 30) {
         tests_html <- paste0(
           "<ul>",
@@ -1157,7 +1153,7 @@ output$download_report <- downloadHandler(
         )
       }
       
-      # 30 < n ≤ 100
+      # 30 < n <= 100
       if (n > 30 && n <= 100) {
         tests_html <- paste0(
           "<ul>",
