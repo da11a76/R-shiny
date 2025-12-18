@@ -9,7 +9,7 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# **Bab 1. Pendahuluan**
+# *Bab 1. Pendahuluan*
 
 ## 1.1 Latar Belakang {#sec-}
 
@@ -17,11 +17,11 @@ Uji kenormalan merupakan salah satu tahapan penting dalam analisis statistik inf
 
 Dalam praktik analisis data, pengujian normalitas biasanya hanya dilakukan menggunakan satu uji statistik formal tanpa mempertimbangkan karakteristik data secara menyeluruh, seperti ukuran sampel dan bentuk distribusi. Pendekatan tersebut dapat menghasilkan interpretasi yang kurang tepat, terutama ketika hasil uji statistik dipengaruhi oleh sensitivitas terhadap ukuran sampel.
 
-Berdasarkan kondisi tersebut, dikembangkan aplikasi **Normality Lab** berbasis **R Shiny** yang mengintegrasikan statistik deskriptif, visualisasi distribusi, dan uji kenormalan formal dalam satu lingkungan analisis yang interaktif. Aplikasi ini ditujukan bagi pengguna yang telah memiliki pemahaman dasar statistik sehingga dapat digunakan secara langsung tanpa penyediaan panduan penggunaan khusus. Dengan demikian, aplikasi **Normality Lab** diharapkan mampu membantu pengguna dalam mengevaluasi kenormalan data secara cepat, sistematis, dan menyeluruh.
+Berdasarkan kondisi tersebut, dikembangkan aplikasi *Normality Lab* berbasis *R Shiny* yang mengintegrasikan statistik deskriptif, visualisasi distribusi, dan uji kenormalan formal dalam satu lingkungan analisis yang interaktif. Aplikasi ini ditujukan bagi pengguna yang telah memiliki pemahaman dasar statistik sehingga dapat digunakan secara langsung tanpa penyediaan panduan penggunaan khusus. Dengan demikian, aplikasi *Normality Lab* diharapkan mampu membantu pengguna dalam mengevaluasi kenormalan data secara cepat, sistematis, dan menyeluruh.
 
 ## 1.2 Tujuan
 
-Tujuan pembangunan aplikasi **Normality Lab** adalah sebagai berikut:
+Tujuan pembangunan aplikasi *Normality Lab* adalah sebagai berikut:
 
 1.  Menyediakan aplikasi berbasis web untuk pengujian normalitas data numerik.
 2.  Menggabungkan statistik deskriptif, visualisasi, dan uji normalitas formal dalam satu aplikasi.
@@ -32,62 +32,100 @@ Tujuan pembangunan aplikasi **Normality Lab** adalah sebagai berikut:
 
 ## 2.1 Tahapan Pembangunan Aplikasi
 
-### **1. Tahap Perencanaan**
+### *1. Tahap Perencanaan*
 
 Kelompok menentukan tujuan pembuatan aplikasi, dari situ kelompok berdiskusi terkait aplikasi seperti apa yang ingin dibuat, fitur-fitur utama yang akan dibuat, serta pembagian tugas anggota kelompok
 
 ### 2. Tahap Perancangan Aplikasi
-
-### 3. Tahap Penerapan UI
-
-### 4. Tahap Penerapan Pengolahan Data
-
-### 5. Tahap Penerapan Analisis Statistik
-
-### 6. Tahap Visualisasi
-
-### 7. Tahap Interpretasi
-
-### 8. Tahap Pengujian dan Perbaikan
-
-### 9. Tahap Deployment
-
-## 2.2 Hasil Knit Program R-Shiny
-
-### 
-
+Aplikasi terdiri dari 6 tab yaitu :
+1. Home
+2. Unggah dan deskripsi data 
+3. Visualisasi distribusi
+4. Uji Formal Normalitas
+5. Analisis Grouping
+6. Kesimpulan Final 
+Tab diisi Oleh fungsi fungsi yang sesuai dengan kebutuhan yang ada di server.
+berikut library yang dipakai, dan helper function yang akan digunakan di server
+LIBRARY & HELPER FUNCTION
 ```{r}
-library(shiny)
-library(shinydashboard)
-library(plotly)
-library(bslib)
-library(readxl)
-library(dplyr)
-library(ggplot2)
-library(moments) 
-library(tseries) 
-library(tidyverse)
-library(fontawesome) 
-library(nortest)
-PRIMARY_COLOR <- "#00A388"
-SECONDARY_COLOR <- "#2F4858"
-ACCENT_COLOR <- "#FFB600"
+library(shiny)          # Framework utama untuk membuat aplikasi web interaktif
+library(shinydashboard) # Layout dashboard (sidebar, header, box) ala admin panel
+library(plotly)         # Grafik interaktif (zoom, hover, tooltip)
+library(bslib)          # Kustomisasi tema Bootstrap (warna, font, mode light/dark)
+library(readxl)         # Membaca file Excel (.xls, .xlsx)
+library(moments)        # Statistik momen: skewness dan kurtosis
+library(tseries)        # Uji statistik time series (Jarque-Bera test, dll)
+library(tidyverse)      # Kumpulan paket data science (dplyr, tidyr, readr,ggplot2, dsb)
+library(fontawesome)    # Ikon Font Awesome untuk UI Shiny
+library(nortest)        # Uji normalitas (Lilliefors, Anderson-Darling, dll)
 
-light_theme <- bs_theme(
-  version = 5,
-  bootswatch = "flatly",
-  primary = PRIMARY_COLOR,
-  secondary = SECONDARY_COLOR,
-  success = "#2ECC71",
-  info = "#3498DB",
-  base_font = font_google("Inter"),
-  heading_font = font_google("Playfair Display", wght = "700")
+PRIMARY_COLOR   <- "#00A388"   # Warna utama tema
+SECONDARY_COLOR <- "#2F4858"   # Warna sekunder tema
+ACCENT_COLOR    <- "#FFB600"   # Warna aksen/highlight
+
+# Tema UI Shiny
+light_theme <- bs_theme(     
+  version = 5,              
+  bootswatch = "flatly",      
+  primary = PRIMARY_COLOR,     
+  secondary = SECONDARY_COLOR, 
+  success = "#2ECC71",         
+  info = "#3498DB",           
+  base_font = font_google("Inter"),                
+  heading_font = font_google("Playfair Display", wght = "700") 
 )
+
+# HELPER FUNCTION DI SERVER
+# Fungsi uji normalitas untuk Report/Laporan dalam bentuk HTML
+evaluate_normality <- function(x, alpha = 0.05) {   
+  
+  x <- x[!is.na(x)]                             
+  n <- length(x)                              
+  
+  if (n < 3) {                                    
+    return(list(
+      n = n,
+      test_name = NA,
+      p_value = NA,
+      decision = "DATA_TIDAK_CUKUP"
+    ))
+  }
+  
+  if (n >= 3 && n < 30) {                       
+    test_name <- "Shapiro-Wilk"
+    p_value <- tryCatch(
+      shapiro.test(x)$p.value,                  
+      error = function(e) NA
+    )
+  } else {                                        
+    test_name <- "Jarque-Bera"
+    p_value <- tryCatch(
+      tseries::jarque.test(x)$p.value,            
+      error = function(e) NA
+    )
+  }
+  
+  if (is.na(p_value)) {                           
+    decision <- "UJI_GAGAL"
+  } else if (p_value > alpha) {                   
+    decision <- "GAGAL_TOLAK_H0"
+  } else {                                      
+    decision <- "TOLAK_H0"
+  }
+  
+  list(
+    n = n,                                        
+    test_name = test_name,                      
+    p_value = p_value,                        
+    decision = decision                           
+  )
+}
 
 ```
 
-User interface
-
+### 3. Tahap Penerapan UI
+1. Header dan Sidebar
+Header merupakan judul di atas aplikasi, sementara Sidebar adalah menu navigasi yang terletak di samping kiri.
 ```{r}
 ui <- dashboardPage(
   
@@ -137,23 +175,19 @@ ui <- dashboardPage(
                 menuItem("⭐ Kesimpulan Final", tabName = "final")
     )
   ),
-  dashboardBody(
+```
+
+2. DashboardBody
+Dashboar Body merupakan isi dari setiap tab yang ada di dalam sidebar. Baris kode ini bertugas untuk menampilkan perhitungan/operasi yang ada di server baik dari visualisasi, uji formal, dan kesimpulan
+```{r}
+dashboardBody(
     
     theme = light_theme, 
     
     tabItems(
-      
-      # ===================== 
-      # 1. HOME & SETUP
-      # =====================
-      tabItem("home",
+      # Beranda: pengantar aplikasi & tombol mulai analisis
+      tabItem("home",   
               tags$h2("🔬 Normality Lab", class="tab-title-accent"),
-              
-              fluidRow(
-                valueBoxOutput("vb_status_data", width = 4),
-                valueBoxOutput("vb_sample_n", width = 4),
-                valueBoxOutput("vb_alpha_level", width = 4)
-              ),
               
               box(
                 id = "about-box",
@@ -170,7 +204,7 @@ ui <- dashboardPage(
                            " menggunakan pendekatan visual, statistik deskriptif, dan uji formal. Tujuan utama adalah mempermudah identifikasi normalitas data."
                          ),
                          tags$ul(
-                           tags$li("Menyesuaikan uji dengan ukuran sampel (n < 30: Shapiro-Wilk; n > 30: Jarque-Bera)."),
+                           tags$li("Menyesuaikan uji dengan ukuran sampel (n < 30: Shapiro-Wilk; 30 < n ≤ 200: Jarque-Bera)."),
                            tags$li("Menampilkan interpretasi statistik & visual secara komprehensif."),
                            tags$li("Dirancang untuk analisis akademik & praktis.")
                          )
@@ -182,12 +216,8 @@ ui <- dashboardPage(
                 box(width = 12, actionButton("go_desc", "📂 Mulai Analisis: Unggah & Deskripsi Data", class = "btn-success", width = "100%"))
               )
       ),
-      
-      
-      # ===========================================
-      # 2. DESKRIPSI DATA (Pintasan diatur sebaris)
-      # ===========================================
-      tabItem("desc",
+      # Unggah data, pilih variabel, dan statistik deskriptif awal  
+      tabItem("desc",       
               tags$h2("Unggah & Deskripsi Data", class="tab-title-accent"),
               
               fluidRow(
@@ -209,7 +239,7 @@ ui <- dashboardPage(
               
               hr(),
               
-              # PINTASAN DI SINI (sebaris, kiri dan kanan)
+              #Pintasan
               fluidRow(
                 box(width = 6, 
                     actionButton("go_visual", "📈 Visualisasi Distribusi", 
@@ -239,9 +269,8 @@ ui <- dashboardPage(
               )
       ),
       
-      # =====================
-      # 3. VISUALISASI DISTRIBUSI 
-      # =====================
+      # Visualisasi distribusi: histogram, density, QQ, ECDF
+      
       tabItem("visual",
               tags$h2("Visualisasi Distribusi", class="tab-title-accent"),
               fluidRow(
@@ -270,9 +299,8 @@ ui <- dashboardPage(
               )
       ),
       
-      # =====================
-      # 4. Sisa Tab 
-      # =====================
+      # Uji formal normalitas & interpretasi statistik
+      
       tabItem("formal", 
               tags$h2("Uji Formal Normalitas", class="tab-title-accent"),
               uiOutput("sample_info"),
@@ -295,6 +323,7 @@ ui <- dashboardPage(
               )
       ),
       
+      # Analisis skewness–kurtosis dan jarak dari normal
       tabItem("skk",
               tags$h2("Analisis Skewness dan Kurtosis", class="tab-title-accent"),
               fluidRow(
@@ -315,9 +344,7 @@ ui <- dashboardPage(
               )
       ),
       
-      # =====================
-      # 7. ANALISIS GROUPING
-      # =====================
+      # Perbandingan normalitas berdasarkan variabel grouping
       tabItem("groups",
               tags$h2("Analisis Normalitas Berdasarkan Grouping", class="tab-title-accent"),
               tags$p("Analisis ini membandingkan distribusi variabel yang dipilih di antara kategori-kategori variabel grouping."),
@@ -329,9 +356,9 @@ ui <- dashboardPage(
               )
       ),
       
-      # =====================
-      # 8. KESIMPULAN FINAL
-      # =====================
+      
+      # Kesimpulan akhir dan opsi unduh laporan/data
+      
       tabItem("final",
               tags$h2("Kesimpulan Akhir Normalitas", class="tab-title-accent"),
               fluidRow(
@@ -349,55 +376,39 @@ ui <- dashboardPage(
     )
   )
 )
+
 ```
 
-Helper function
+### 4. Tahap Penerapan Pengolahan Data
+
+
+### 5. Tahap Penerapan Analisis Statistik
+
+### 6. Tahap Visualisasi
+
+### 7. Tahap Interpretasi
+
+### 8. Tahap Pengujian dan Perbaikan
+
+### 9. Tahap Deployment
+
+## 2.2 Hasil Knit Program R-Shiny
+
+### 
 
 ```{r}
-evaluate_normality <- function(x, alpha = 0.05) {
-  
-  x <- x[!is.na(x)]
-  n <- length(x)
-  
-  if (n < 3) {
-    return(list(
-      n = n,
-      test_name = NA,
-      p_value = NA,
-      decision = "DATA_TIDAK_CUKUP"
-    ))
-  }
-  
-  if (n>=3 && n < 30) {
-    test_name <- "Shapiro-Wilk"
-    p_value <- tryCatch(
-      shapiro.test(x)$p.value,
-      error = function(e) NA
-    )
-  } else {
-    test_name <- "Jarque-Bera"
-    p_value <- tryCatch(
-      tseries::jarque.test(x)$p.value,
-      error = function(e) NA
-    )
-  }
-  
-  # Keputusan statistik murni
-  if (is.na(p_value)) {
-    decision <- "UJI_GAGAL"
-  } else if (p_value > alpha) {
-    decision <- "GAGAL_TOLAK_H0"
-  } else {
-    decision <- "TOLAK_H0"
-  }
-  
-  list(
-    n = n,
-    test_name = test_name,
-    p_value = p_value,
-    decision = decision
-  )
-}
+
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
 
 ```
 
@@ -483,7 +494,6 @@ server <- function(input, output, session) {
     length(selected_data())
   })
   
-  # =====================
   output$data_preview <- renderTable({
     df <- raw_data(); req(df)
     head(df, 10)

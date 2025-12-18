@@ -108,7 +108,7 @@ ui <- dashboardPage(
                            " menggunakan pendekatan visual, statistik deskriptif, dan uji formal. Tujuan utama adalah mempermudah identifikasi normalitas data."
                          ),
                          tags$ul(
-                           tags$li("Menyesuaikan uji dengan ukuran sampel (n < 30: Shapiro-Wilk; 30 < n <= 200: Jarque-Bera)."),
+                           tags$li("Menyesuaikan uji dengan ukuran sampel (n < 30: Shapiro-Wilk; 30 < n ≤ 200: Jarque-Bera)."),
                            tags$li("Menampilkan interpretasi statistik & visual secara komprehensif."),
                            tags$li("Dirancang untuk analisis akademik & praktis.")
                          )
