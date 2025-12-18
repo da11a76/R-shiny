@@ -1,6 +1,9 @@
 ---
 title: "Laporan Tugas Akhir Normality Lab"
-author: "Kelompok 6"
+author: "Kelompok 6
+Wahdana Djunaedi 
+Hafizh zaki rais
+Muhammad Daffa Alimuddin Pratama "
 date: "2025-12-17"
 output: pdf_document
 ---
@@ -749,7 +752,114 @@ Visualisasi digunakan sebagai alat eksploratif untuk mendukung hasil yang dipero
 -   ECDF vs CDF Normal untuk mengevaluasi distribusi data kumulatif dengan distribusi normal kumulatif
 
 ```{r}
-
+#Membuat Histogram
+  output$hist_plot <- renderPlotly({
+    x <- selected_data(); req(x, input$bins)
+    
+    p <- ggplot(data.frame(x = x), aes(x = x)) +
+      geom_histogram(aes(y = after_stat(density)), bins = input$bins,
+                     fill = "#00A388", color = "#2F4858", alpha = .7) +
+      theme_minimal() +
+      labs(title = paste("Histogram & Density dari", input$var), x = input$var, y = "Density")
+    
+    if (isTRUE(input$show_density)) {
+      p <- p + geom_density(alpha = .3, color="#FFB600", linewidth=1.2)
+    }
+    if (isTRUE(input$overlay_normal)) {
+      p <- p + stat_function(fun = dnorm, args = list(mean(x), sd(x)),
+                             color = "#E74C3C", linewidth = 1, linetype="dashed")
+    }
+    ggplotly(p) %>% config(displayModeBar = FALSE)
+  })
+  #Membuat Grafik Fungsi pdf
+  output$density_plot <- renderPlotly({
+    x <- selected_data(); req(x)
+    p <- ggplot(data.frame(x = x), aes(x = x)) +
+      geom_density(fill = "#00A388", alpha = .35, color="#00A388") +
+      theme_minimal() +
+      labs(title = paste("Density Plot -", input$var), x = input$var, y = "Density")
+    if (isTRUE(input$overlay_normal)) {
+      p <- p + stat_function(fun = dnorm, args = list(mean(x), sd(x)), color = "#E74C3C", linewidth=1, linetype="dashed")
+    }
+    ggplotly(p) %>% config(displayModeBar = FALSE)
+  })
+  #Membuat Grafik qq plot
+  output$qq_plot <- renderPlotly({
+    x <- selected_data(); 
+    req(x) 
+    
+    df_plot <- data.frame(Sample = x)
+    
+    p <- ggplot(df_plot, aes(sample = Sample)) +
+      stat_qq(color = "#2F4858", size=2) +
+      stat_qq_line(color = "#E74C3C", linewidth=1) +
+      theme_minimal() +
+      labs(title = paste("Q-Q Plot -", input$var), x = "Theoretical Quantiles", y = "Sample Quantiles")
+    
+    ggplotly(p) %>% config(displayModeBar = FALSE)
+  })
+  
+  #Membuat Grafik kumulatif empiris dan Normal
+  output$ecdf_plot <- renderPlotly({
+    x <- selected_data(); req(x)
+    ec <- ecdf(x)
+    xs <- seq(min(x), max(x), length.out = 200)
+    df_plot <- data.frame(x = xs, ECDF = ec(xs), Normal = pnorm(xs, mean(x), sd(x)))
+    p <- ggplot(df_plot) +
+      geom_line(aes(x, ECDF, text=paste("ECDF Data:", round(ECDF,4))), size = 1, color="#00A388") +
+      geom_line(aes(x, Normal, text=paste("Normal CDF:", round(Normal,4))), size = 1, linetype = "dashed", color = "#E74C3C") +
+      theme_minimal() +
+      labs(title = paste("ECDF vs Normal CDF -", input$var), x = input$var, y = "Probability")
+    ggplotly(p, tooltip = c("x", "ECDF", "Normal")) %>% config(displayModeBar = FALSE)
+  })
+ #Membuat Grafik Kurtosis dan Skewness di Koordinat Kartesius
+  output$sk_kurt_plot <- renderPlotly({
+    x <- selected_data(); req(x)
+    sk <- skewness(x); kt_fish <- kurtosis(x) - 3
+    df_skk <- data.frame(sk = sk, kt = kt_fish)
+    
+    p <- ggplot(df_skk, aes(x=sk, y=kt)) +
+      geom_point(aes(text = paste("Skew:", round(sk, 3), "<br>Kurtosis:", round(kt, 3))), 
+                 size = 6, color = "#E74C3C") +
+      geom_point(x = 0, y = 0, color = "#00A388", size = 8, shape = 4, stroke = 2) + 
+      annotate("text", x = 0, y = 0.5, label = "Normal", color = "#00A388", size = 4, fontface = "bold") +
+      geom_hline(yintercept = 0, linetype = "dashed", color = "#AAB7B8") +
+      geom_vline(xintercept = 0, linetype = "dashed", color = "#AAB7B8") +
+      labs(title = "Plot Skewness vs Kurtosis (Kurtosis Fisher)", x = "Skewness", y = "Kurtosis Fisher (Excess)") +
+      theme_minimal()
+    
+    ggplotly(p, tooltip = "text") %>% config(displayModeBar = FALSE)
+  })
+  
+  #===================ANALISIS Grouping===========
+  
+  #Membuat Bar Histogram Per Grup
+  output$hist_groups <- renderPlotly({
+    req(input$group_var, input$group_var != "None")
+    df <- raw_data(); req(df)
+    
+    p <- ggplot(df, aes_string(x = input$var, fill = input$group_var)) +
+      geom_histogram(position = "identity", alpha = .6, bins = input$bins) +
+      labs(title=paste("Histogram Grouped by", input$group_var)) +
+      theme_minimal()
+    
+    ggplotly(p) %>% config(displayModeBar = FALSE)
+  })
+  
+  #Membuat qq plot per group
+  output$qq_groups <- renderPlotly({
+    req(input$group_var, input$group_var != "None")
+    df <- raw_data(); req(df)
+    
+    p <- ggplot(df, aes(sample = .data[[input$var]], color = .data[[input$group_var]])) +
+      stat_qq() + stat_qq_line() +
+      facet_wrap(as.formula(paste("~", input$group_var))) +
+      labs(title=paste("Q-Q Plot Grouped by", input$group_var)) +
+      theme_minimal()
+    
+    ggplotly(p) %>% config(displayModeBar = FALSE)
+  })
+  
 ```
 
 ### 7. Tahap Interpretasi
@@ -1001,8 +1111,9 @@ output$download_report <- downloadHandler(
           error = function(e) NA
         )
         
-        bins <- floor(sqrt(n))
+        
         chisq <- tryCatch({
+          bins <- floor(sqrt(n))
           observed <- table(cut(x, bins))
           expected <- rep(length(x) / length(observed), length(observed))
           chisq.test(observed, p = expected / sum(expected))$p.value
@@ -1141,14 +1252,11 @@ output$download_report <- downloadHandler(
     }
   )
 }
+#Penggerak UI dan Server
+shinyApp(ui, server) 
 
 ```
-
-
-
-
-
-### 8. Tahap Pengujian dan Perbaikan
+### 9. Tahap Pengujian dan Perbaikan
 
 Tahap pengujian dilakukan untuk memastikan aplikasi berjalan dengan baik pada berbagai kondisi data, seperti:
 
@@ -1159,158 +1267,15 @@ Tahap pengujian dilakukan untuk memastikan aplikasi berjalan dengan baik pada be
 -   Data dengan nilai ekstrem atau outlier
 
 **Berdasarkan hasil pengujian, dilakukan perbaikan pada validasi input, stabilitas reaktif, serta kejelasan interpretasi hasil agar aplikasi lebih andal dan minim kesalahan.**
+Pada tahap ini kelompok kami memperbaiki logika-logika yang kurang sesuai dan berpotensi menimbulkan error. untuk tahap yang perlu diperbaiki/sangat sering error adalah :
+1. Download report 
+pada tahap ini penulisan logika ditulis ulang untuk menyertakan uji yang ada dengan menggunakan fungsi evaluate_normality untuk mendapat keputusan final
+2. Kesimpulan Final 
+memperbaiki kode yang error karena setiap uji memiliki kondisi sampel masing-masing dan kelemahan masing masing sehingga kami menyertakan *Peringatan* agar bisa dipahami kekuatan dan kelemahan uji formal yang digunakan
+3. Perbaikan UI dan tata letak
+Penambahan seperti pintasan di bagian UI yang sebelumnya tidak ada juga merupakan upgrade dari tahap Pengujian dan Perbaikan
 
-### 9. Tahap Deployment
+### 10. Tahap Deployment
 
-Tahap akhir adalah deployment aplikasi sehingga dapat diakses oleh pengguna.
+Tahap akhir adalah deployment aplikasi sehingga dapat diakses oleh pengguna. Menggunakan shinyapps.io aplikasi mendapatkan alamat web tersendiri
 
-## 2.2 Hasil Knit Program R-Shiny
-
-### 
-
-```{r}
-
-
-```
-
-Server
-
-```{r}
-
-  
- 
-  
-  
-  output$hist_plot <- renderPlotly({
-    x <- selected_data(); req(x, input$bins)
-    
-    p <- ggplot(data.frame(x = x), aes(x = x)) +
-      geom_histogram(aes(y = after_stat(density)), bins = input$bins,
-                     fill = "#00A388", color = "#2F4858", alpha = .7) +
-      theme_minimal() +
-      labs(title = paste("Histogram & Density dari", input$var), x = input$var, y = "Density")
-    
-    if (isTRUE(input$show_density)) {
-      p <- p + geom_density(alpha = .3, color="#FFB600", linewidth=1.2)
-    }
-    if (isTRUE(input$overlay_normal)) {
-      p <- p + stat_function(fun = dnorm, args = list(mean(x), sd(x)),
-                             color = "#E74C3C", linewidth = 1, linetype="dashed")
-    }
-    ggplotly(p) %>% config(displayModeBar = FALSE)
-  })
-  
-  output$density_plot <- renderPlotly({
-    x <- selected_data(); req(x)
-    p <- ggplot(data.frame(x = x), aes(x = x)) +
-      geom_density(fill = "#00A388", alpha = .35, color="#00A388") +
-      theme_minimal() +
-      labs(title = paste("Density Plot -", input$var), x = input$var, y = "Density")
-    if (isTRUE(input$overlay_normal)) {
-      p <- p + stat_function(fun = dnorm, args = list(mean(x), sd(x)), color = "#E74C3C", linewidth=1, linetype="dashed")
-    }
-    ggplotly(p) %>% config(displayModeBar = FALSE)
-  })
-  
-  output$qq_plot <- renderPlotly({
-    x <- selected_data(); 
-    req(x) 
-    
-    df_plot <- data.frame(Sample = x)
-    
-    p <- ggplot(df_plot, aes(sample = Sample)) +
-      stat_qq(color = "#2F4858", size=2) +
-      stat_qq_line(color = "#E74C3C", linewidth=1) +
-      theme_minimal() +
-      labs(title = paste("Q-Q Plot -", input$var), x = "Theoretical Quantiles", y = "Sample Quantiles")
-    
-    ggplotly(p) %>% config(displayModeBar = FALSE)
-  })
-  
-  output$ecdf_plot <- renderPlotly({
-    x <- selected_data(); req(x)
-    ec <- ecdf(x)
-    xs <- seq(min(x), max(x), length.out = 200)
-    df_plot <- data.frame(x = xs, ECDF = ec(xs), Normal = pnorm(xs, mean(x), sd(x)))
-    p <- ggplot(df_plot) +
-      geom_line(aes(x, ECDF, text=paste("ECDF Data:", round(ECDF,4))), size = 1, color="#00A388") +
-      geom_line(aes(x, Normal, text=paste("Normal CDF:", round(Normal,4))), size = 1, linetype = "dashed", color = "#E74C3C") +
-      theme_minimal() +
-      labs(title = paste("ECDF vs Normal CDF -", input$var), x = input$var, y = "Probability")
-    ggplotly(p, tooltip = c("x", "ECDF", "Normal")) %>% config(displayModeBar = FALSE)
-  })
-  
-
-  
-  # =====================
-  
-
-  
-
-
-  
-
-  
-  
-
-  
-
-
-  
-  
-  # PERBAIKAN 4: Interpretasi Hasil Uji Formal
-
- 
-  output$sk_kurt_plot <- renderPlotly({
-    x <- selected_data(); req(x)
-    sk <- skewness(x); kt_fish <- kurtosis(x) - 3
-    df_skk <- data.frame(sk = sk, kt = kt_fish)
-    
-    p <- ggplot(df_skk, aes(x=sk, y=kt)) +
-      geom_point(aes(text = paste("Skew:", round(sk, 3), "<br>Kurtosis:", round(kt, 3))), 
-                 size = 6, color = "#E74C3C") +
-      geom_point(x = 0, y = 0, color = "#00A388", size = 8, shape = 4, stroke = 2) + 
-      annotate("text", x = 0, y = 0.5, label = "Normal", color = "#00A388", size = 4, fontface = "bold") +
-      geom_hline(yintercept = 0, linetype = "dashed", color = "#AAB7B8") +
-      geom_vline(xintercept = 0, linetype = "dashed", color = "#AAB7B8") +
-      labs(title = "Plot Skewness vs Kurtosis (Kurtosis Fisher)", x = "Skewness", y = "Kurtosis Fisher (Excess)") +
-      theme_minimal()
-    
-    ggplotly(p, tooltip = "text") %>% config(displayModeBar = FALSE)
-  })
-  
-
-  
-  # =====================
-  output$hist_groups <- renderPlotly({
-    req(input$group_var, input$group_var != "None")
-    df <- raw_data(); req(df)
-    
-    p <- ggplot(df, aes_string(x = input$var, fill = input$group_var)) +
-      geom_histogram(position = "identity", alpha = .6, bins = input$bins) +
-      labs(title=paste("Histogram Grouped by", input$group_var)) +
-      theme_minimal()
-    
-    ggplotly(p) %>% config(displayModeBar = FALSE)
-  })
-  
-  output$qq_groups <- renderPlotly({
-    req(input$group_var, input$group_var != "None")
-    df <- raw_data(); req(df)
-    
-    p <- ggplot(df, aes(sample = .data[[input$var]], color = .data[[input$group_var]])) +
-      stat_qq() + stat_qq_line() +
-      facet_wrap(as.formula(paste("~", input$group_var))) +
-      labs(title=paste("Q-Q Plot Grouped by", input$group_var)) +
-      theme_minimal()
-    
-    ggplotly(p) %>% config(displayModeBar = FALSE)
-  })
-  
-```
-
-Fungsi Katalis kode
-
-```{r}
-shinyApp(ui, server)
-```
