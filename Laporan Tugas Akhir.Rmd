@@ -9,7 +9,7 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# *Bab 1. Pendahuluan*
+# Bab 1. Pendahuluan
 
 ## 1.1 Latar Belakang {#sec-}
 
@@ -37,16 +37,9 @@ Tujuan pembangunan aplikasi *Normality Lab* adalah sebagai berikut:
 Kelompok menentukan tujuan pembuatan aplikasi, dari situ kelompok berdiskusi terkait aplikasi seperti apa yang ingin dibuat, fitur-fitur utama yang akan dibuat, serta pembagian tugas anggota kelompok
 
 ### 2. Tahap Perancangan Aplikasi
-Aplikasi terdiri dari 6 tab yaitu :
-1. Home
-2. Unggah dan deskripsi data 
-3. Visualisasi distribusi
-4. Uji Formal Normalitas
-5. Analisis Grouping
-6. Kesimpulan Final 
-Tab diisi Oleh fungsi fungsi yang sesuai dengan kebutuhan yang ada di server.
-berikut library yang dipakai, dan helper function yang akan digunakan di server
-LIBRARY & HELPER FUNCTION
+
+Aplikasi terdiri dari 6 tab yaitu : 1. Home 2. Unggah dan deskripsi data 3. Visualisasi distribusi 4. Uji Formal Normalitas 5. Analisis Grouping 6. Kesimpulan Final Tab diisi Oleh fungsi fungsi yang sesuai dengan kebutuhan yang ada di server. berikut library yang dipakai, dan helper function yang akan digunakan di server LIBRARY & HELPER FUNCTION
+
 ```{r}
 library(shiny)          # Framework utama untuk membuat aplikasi web interaktif
 library(shinydashboard) # Layout dashboard (sidebar, header, box) ala admin panel
@@ -124,8 +117,9 @@ evaluate_normality <- function(x, alpha = 0.05) {
 ```
 
 ### 3. Tahap Penerapan UI
-1. Header dan Sidebar
-Header merupakan judul di atas aplikasi, sementara Sidebar adalah menu navigasi yang terletak di samping kiri.
+
+1.  Header dan Sidebar Header merupakan judul di atas aplikasi, sementara Sidebar adalah menu navigasi yang terletak di samping kiri.
+
 ```{r}
 ui <- dashboardPage(
   
@@ -177,8 +171,8 @@ ui <- dashboardPage(
   ),
 ```
 
-2. DashboardBody
-Dashboar Body merupakan isi dari setiap tab yang ada di dalam sidebar. Baris kode ini bertugas untuk menampilkan perhitungan/operasi yang ada di server baik dari visualisasi, uji formal, dan kesimpulan
+2.  DashboardBody Dashboar Body merupakan isi dari setiap tab yang ada di dalam sidebar. Baris kode ini bertugas untuk menampilkan perhitungan/operasi yang ada di server baik dari visualisasi, uji formal, dan kesimpulan
+
 ```{r}
 dashboardBody(
     
@@ -381,24 +375,77 @@ dashboardBody(
 
 ### 4. Tahap Penerapan Pengolahan Data
 
+Tahap pengolahan data bertujuan untuk memastikan data yang diunggah bisa dianalisis dalam kondisi yang layak secara statistik (data harus numerik). Data yang diunggah pengguna terlebih dahulu diproses dengan tahapan berikut:
+
+```{r}
+
+```
 
 ### 5. Tahap Penerapan Analisis Statistik
 
+Analisis statistik dimulai dengan perhitungan statistik deskriptif yang mencakup nilai mean, median, standar deviasi, skewness, dan kurtosis. Statistik ini digunakan sebagai indikasi awal bentuk distribusi data.
+
+Selanjutnya, aplikasi menerapkan uji normalitas formal yang dipilih secara adaptif berdasarkan ukuran sampel, antara lain:
+
+-   Shapiro–Wilk Test untuk sampel kecil
+
+-   Lilliefors Test sebagai pelengkap
+
+-   Jarque–Bera Test untuk sampel menengah hingga besar
+
+-   Kolmogorov–Smirnov Test sebagai pembanding
+
+Pendekatan ini bertujuan untuk menghindari penggunaan uji yang tidak sesuai dengan karakteristik data.
+
+```{r}
+
+```
+
 ### 6. Tahap Visualisasi
+
+Visualisasi digunakan sebagai alat eksploratif untuk mendukung hasil yang diperoleh dari uji formal. Aplikasi menyediakan beberapa bentuk visualisasi, yaitu:
+
+-   Histogram dan density plot untuk melihat bentuk distribusi data
+
+-   Q–Q Plot untuk membandingkan distribusi data dengan distribusi normal teoretis
+
+-   Plot skewness dan kurtosis untuk mengevaluasi kedekatan data terhadap distribusi normal
+
+-   ECDF vs CDF Normal untuk mengevaluasi distribusi data kumulatif dengan distribusi normal kumulatif
+
+```{r}
+
+```
 
 ### 7. Tahap Interpretasi
 
+Pada tahap interpretasi, hasil visualisasi dan uji formal dianalisis secara bersama-sama. Aplikasi tidak langsung menyimpulkan normalitas hanya berdasarkan satu uji statistik, melainkan mempertimbangkan keseluruhan informasi yang tersedia.
+
+Interpretasi hasil disajikan dalam bentuk poin-poin sederhana yang menjelaskan apakah data dapat dianggap berdistribusi normal atau tidak, serta faktor-faktor pendukung keputusan tersebut.
+
+```{r}
+
+```
+
 ### 8. Tahap Pengujian dan Perbaikan
 
+Tahap pengujian dilakukan untuk memastikan aplikasi berjalan dengan baik pada berbagai kondisi data, seperti:
+
+-   Ukuran sampel kecil dan besar
+
+-   Data dengan distribusi normal dan tidak normal
+
+-   Data dengan nilai ekstrem atau outlier
+
+**Berdasarkan hasil pengujian, dilakukan perbaikan pada validasi input, stabilitas reaktif, serta kejelasan interpretasi hasil agar aplikasi lebih andal dan minim kesalahan.**
+
 ### 9. Tahap Deployment
+
+Tahap akhir adalah deployment aplikasi sehingga dapat diakses oleh pengguna.
 
 ## 2.2 Hasil Knit Program R-Shiny
 
 ### 
-
-
-
-
 
 ```{r}
 
