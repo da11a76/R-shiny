@@ -1009,7 +1009,7 @@ server <- function(input, output, session) {
       # Medium sample (30 < n ≤ 100)
       if (n > 30 && n <= 100) {
         jb <- tryCatch(
-          jarque_bera_manual(x)$p_value,
+          jarque_bera_manual(x)$p.value,
           error = function(e) NA
         )
         
@@ -1030,7 +1030,7 @@ server <- function(input, output, session) {
       # Large sample (n > 100)
       if (n > 100) {
         jb <- tryCatch(
-          jarque_bera_manual(x)$p_value,
+          jarque_bera_manual(x)$p.value,
           error = function(e) NA
         )
         
